@@ -51,3 +51,12 @@ pnpm-debug.log*
 *.tmp
 *.temp
 .cache/
+
+# Agent & Architecture Metadata
+.agents/
+TESTING_STRATEGY.md
+skills-lock.json
+PROJECT_VISION.md
+INSTRUCTIONS.md
+FRONTEND_ARCHITECTURE.md
+BACKEND_ARCHITECTURE.md
