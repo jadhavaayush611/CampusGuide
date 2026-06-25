@@ -46,13 +46,14 @@ Council Information and Management
 Fields:
 
 * _id
-* name
+* name (unique index)
 * description
 * logoUrl
-* facultyCoordinator
-* contactEmail
-* socialLinks
-* createdBy
+* category
+* facultyAdvisorId (reference to User)
+* councilAdminIds (Array of references to User)
+* memberCount
+* isActive
 * createdAt
 * updatedAt
 
@@ -90,12 +91,14 @@ Student Communities
 Fields:
 
 * _id
-* name
+* name (unique index)
 * description
 * bannerUrl
-* createdBy
+* councilId (reference to Council)
 * memberCount
+* isActive
 * createdAt
+* updatedAt
 
 ---
 
@@ -107,13 +110,16 @@ Community Discussions
 Fields:
 
 * _id
-* communityId
-* authorId
+* communityId (reference to Community)
+* authorId (reference to User)
 * title
 * content
-* attachments
+* imageUrls (Array of Strings)
 * likeCount
 * commentCount
+* isPinned
+* isEdited
+* isDeleted (soft delete)
 * createdAt
 * updatedAt
 
@@ -127,10 +133,13 @@ Post Comments
 Fields:
 
 * _id
-* postId
-* authorId
+* postId (reference to Post)
+* authorId (reference to User)
 * content
+* isEdited
+* isDeleted (soft delete)
 * createdAt
+* updatedAt
 
 ---
 

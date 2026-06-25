@@ -1,6 +1,7 @@
 package com.campusguide.modules.auth.service;
 
 import com.campusguide.exception.BadRequestException;
+import com.campusguide.exception.ConflictException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import com.campusguide.modules.auth.dto.AuthResponse;
@@ -94,10 +95,10 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_ThrowsBadRequestException_WhenEmailExists() {
+    void register_ThrowsConflictException_WhenEmailExists() {
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(true);
 
-        assertThrows(BadRequestException.class, () -> authService.register(registerRequest));
+        assertThrows(ConflictException.class, () -> authService.register(registerRequest));
 
         verify(userRepository).existsByEmail(registerRequest.getEmail());
         verify(userRepository, never()).save(any(User.class));

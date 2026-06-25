@@ -3,10 +3,9 @@ package com.campusguide.modules.auth.controller;
 import com.campusguide.modules.auth.dto.AuthResponse;
 import com.campusguide.modules.auth.dto.LoginRequest;
 import com.campusguide.modules.auth.dto.RegisterRequest;
+import com.campusguide.modules.user.dto.UserResponse;
 import com.campusguide.modules.auth.service.AuthService;
 import com.campusguide.modules.user.entity.Role;
-import com.campusguide.modules.user.entity.User;
-import com.campusguide.modules.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,16 +42,13 @@ class AuthControllerTest {
     @Mock
     private AuthService authService;
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
     private AuthController authController;
 
     private RegisterRequest registerRequest;
     private LoginRequest loginRequest;
     private AuthResponse authResponse;
-    private User user;
+    private UserResponse userResponse;
 
     @BeforeEach
     void setUp() {
@@ -80,7 +76,7 @@ class AuthControllerTest {
                 .role(Role.STUDENT)
                 .build();
 
-        user = User.builder()
+        userResponse = UserResponse.builder()
                 .id("user123")
                 .email("test@campusguide.com")
                 .firstName("John")
@@ -129,7 +125,7 @@ class AuthControllerTest {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+        when(authService.getCurrentUser("test@campusguide.com")).thenReturn(userResponse);
 
         try {
             mockMvc.perform(get("/api/auth/me")

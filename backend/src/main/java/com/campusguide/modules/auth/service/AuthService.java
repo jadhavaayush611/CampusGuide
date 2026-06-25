@@ -3,11 +3,13 @@ package com.campusguide.modules.auth.service;
 import com.campusguide.modules.auth.dto.AuthResponse;
 import com.campusguide.modules.auth.dto.LoginRequest;
 import com.campusguide.modules.auth.dto.RegisterRequest;
+import com.campusguide.modules.user.dto.UserResponse;
 import com.campusguide.modules.user.entity.Role;
 import com.campusguide.modules.user.entity.User;
 import com.campusguide.modules.user.repository.UserRepository;
 import com.campusguide.security.JwtService;
 import com.campusguide.exception.BadRequestException;
+import com.campusguide.exception.ConflictException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
 
         User user = User.builder()
@@ -81,6 +83,26 @@ public class AuthService {
                 .token(token)
                 .email(user.getEmail())
                 .role(user.getRole())
+                .build();
+    }
+
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .department(user.getDepartment())
+                .year(user.getYear())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .phoneNumber(user.getPhoneNumber())
+                .bio(user.getBio())
+                .isPremium(user.getIsPremium())
+                .isVerified(user.getIsVerified())
                 .build();
     }
 }

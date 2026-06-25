@@ -7,6 +7,7 @@ import com.campusguide.modules.council.dto.UpdateCouncilRequest;
 import com.campusguide.modules.council.dto.CouncilResponse;
 import com.campusguide.modules.council.dto.CouncilSummaryResponse;
 import com.campusguide.exception.BadRequestException;
+import com.campusguide.exception.ConflictException;
 import com.campusguide.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class CouncilService {
      */
     public CouncilResponse createCouncil(CreateCouncilRequest request) {
         if (councilRepository.existsByName(request.getName())) {
-            throw new BadRequestException("Council with name '" + request.getName() + "' already exists");
+            throw new ConflictException("Council with name '" + request.getName() + "' already exists");
         }
 
         Council council = Council.builder()
