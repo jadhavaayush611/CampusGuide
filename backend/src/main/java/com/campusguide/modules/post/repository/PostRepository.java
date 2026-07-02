@@ -11,4 +11,10 @@ public interface PostRepository extends MongoRepository<Post, String> {
     List<Post> findByAuthorId(String authorId);
 
     List<Post> findByIsDeletedFalse();
+
+    List<Post> findByCommunityIdAndIsDeletedFalse(String communityId);
+
+    List<Post> findByAuthorIdAndIsDeletedFalse(String authorId);
+
+    List<Post> findByIsDeletedFalseOrderByCreatedAtDesc();
 }
