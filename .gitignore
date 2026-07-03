@@ -52,6 +52,9 @@ pnpm-debug.log*
 *.temp
 .cache/
 
+# MongoDB
+mongodb_data/**
+
 # Agent & Architecture Metadata
 .agents/
 TESTING_STRATEGY.md

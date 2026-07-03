@@ -1,0 +1,640 @@
+{
+  "info": {
+    "_postman_id": "db025713-7c55-4877-b1fb-89b67801e7b1",
+    "name": "CampusGuide",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "47703069",
+    "_collection_link": "https://go.postman.co/collection/47703069-db025713-7c55-4877-b1fb-89b67801e7b1?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"firstName\": \"Super\",\r\n  \"lastName\": \"Admin\",\r\n  \"email\": \"super.admin@campusguide.com\",\r\n  \"password\": \"Password@123\",\r\n  \"department\": \"Computer Science\",\r\n  \"year\": 3\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"super.admin@campusguide.com\",\n  \"password\": \"Password@123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Protected Token",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhYXl1c2guc3R1ZGVudEBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkxOTEsImV4cCI6MTc4MzE4NTU5MX0.7KWpOZ7Sikyu74wxPEIkNW2wHx9Y6TrxdCVFB-tYYdwBRjaIEQKHM00qeCcHdCxGcAKEWsDmUtkhMem5_WErtg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{supabase_service_role_api_key_082a}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/auth/me",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Protected Token Copy",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/auth/me",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Council",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlci5hZG1pbkBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkyOTEsImV4cCI6MTc4MzE4NTY5MX0.ChFsksmV38nvRTwOnNz42BWCdZxI3Mvy-dmldSyhkIHp-8Wrrh9klgOYsFA1L9dn6-GdeRKtn85QHyZ96meh-g",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Google Developer Student Club\",\n  \"description\": \"Official Google Developer Student Club of the university.\",\n  \"category\": \"TECHNICAL\",\n  \"facultyAdvisorId\": \"FAC001\",\n  \"logoUrl\": \"https://cdn.campusguide.com/councils/gdsc-logo.png\",\n  \"bannerUrl\": \"https://cdn.campusguide.com/councils/gdsc-banner.jpg\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/councils",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "councils"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Council",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkYXJzaGFuLnN0dWRlbnRAY2FtcHVzZ3VpZGUuY29tIiwiaWF0IjoxNzgzMDk5MTM2LCJleHAiOjE3ODMxODU1MzZ9.ynyD9-qRyIYDXLbm7_IWL46V-wRj-2R4CigrNjY0Fqkw2_UCSlboZWQ2ZeIm-RE7rw2tm9svGjJlzO0nbDkAsw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"IEEE Student Branch\",\n  \"description\": \"Technical council focused on innovation and engineering.\",\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"category\": \"Technical\",\n  \"facultyAdvisorId\": \"faculty-id\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/councils",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "councils"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Council by ID",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkYXJzaGFuLnN0dWRlbnRAY2FtcHVzZ3VpZGUuY29tIiwiaWF0IjoxNzgzMDk5MTM2LCJleHAiOjE3ODMxODU1MzZ9.ynyD9-qRyIYDXLbm7_IWL46V-wRj-2R4CigrNjY0Fqkw2_UCSlboZWQ2ZeIm-RE7rw2tm9svGjJlzO0nbDkAsw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"IEEE Student Branch\",\n  \"description\": \"Technical council focused on innovation and engineering.\",\n  \"logoUrl\": \"https://example.com/logo.png\",\n  \"category\": \"Technical\",\n  \"facultyAdvisorId\": \"faculty-id\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/councils/6a47f0bafd7ee52e37bf1f5b",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "councils",
+            "6a47f0bafd7ee52e37bf1f5b"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Council",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlci5hZG1pbkBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkyOTEsImV4cCI6MTc4MzE4NTY5MX0.ChFsksmV38nvRTwOnNz42BWCdZxI3Mvy-dmldSyhkIHp-8Wrrh9klgOYsFA1L9dn6-GdeRKtn85QHyZ96meh-g",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Official Google Developer Student Club promoting technology, innovation, and open-source development.\",\n  \"logoUrl\": \"https://cdn.campusguide.com/councils/gdsc-logo-v2.png\",\n  \"bannerUrl\": \"https://cdn.campusguide.com/councils/gdsc-banner-v2.jpg\",\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/councils/6a47f0bafd7ee52e37bf1f5b",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "councils",
+            "6a47f0bafd7ee52e37bf1f5b"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Community",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlci5hZG1pbkBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkyOTEsImV4cCI6MTc4MzE4NTY5MX0.ChFsksmV38nvRTwOnNz42BWCdZxI3Mvy-dmldSyhkIHp-8Wrrh9klgOYsFA1L9dn6-GdeRKtn85QHyZ96meh-g",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Web Development\",\n  \"description\": \"Everything related to frontend, backend, and full-stack development.\",\n  \"bannerUrl\": \"https://cdn.campusguide.com/communities/webdev-banner.jpg\",\n  \"councilId\": \"{{councilId}}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/communities",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "communities"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Community",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlci5hZG1pbkBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkyOTEsImV4cCI6MTc4MzE4NTY5MX0.ChFsksmV38nvRTwOnNz42BWCdZxI3Mvy-dmldSyhkIHp-8Wrrh9klgOYsFA1L9dn6-GdeRKtn85QHyZ96meh-g",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Discussions, projects, internships, and resources for web developers.\",\n  \"bannerUrl\": \"https://cdn.campusguide.com/communities/webdev-banner-v2.jpg\",\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/communities/6a47f416fd7ee52e37bf1f5c",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "communities",
+            "6a47f416fd7ee52e37bf1f5c"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Community by ID",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdXBlci5hZG1pbkBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkyOTEsImV4cCI6MTc4MzE4NTY5MX0.ChFsksmV38nvRTwOnNz42BWCdZxI3Mvy-dmldSyhkIHp-8Wrrh9klgOYsFA1L9dn6-GdeRKtn85QHyZ96meh-g",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/communities/6a47f416fd7ee52e37bf1f5c",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "communities",
+            "6a47f416fd7ee52e37bf1f5c"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Post",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhYXl1c2guc3R1ZGVudEBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkxOTEsImV4cCI6MTc4MzE4NTU5MX0.7KWpOZ7Sikyu74wxPEIkNW2wHx9Y6TrxdCVFB-tYYdwBRjaIEQKHM00qeCcHdCxGcAKEWsDmUtkhMem5_WErtg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"Welcome to the Web Development Community!\",\r\n  \"content\": \"Hello everyone! This community is dedicated to sharing resources, projects, internship opportunities, hackathons, and discussions related to modern web development. Feel free to introduce yourself and share what you're currently learning.\",\r\n  \"communityId\": \"{{communityId}}\",\r\n  \"imageUrls\": [\r\n    \"https://cdn.campusguide.com/posts/welcome-banner.png\"\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/posts",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Post Copy",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhYXl1c2guc3R1ZGVudEBjYW1wdXNndWlkZS5jb20iLCJpYXQiOjE3ODMwOTkxOTEsImV4cCI6MTc4MzE4NTU5MX0.7KWpOZ7Sikyu74wxPEIkNW2wHx9Y6TrxdCVFB-tYYdwBRjaIEQKHM00qeCcHdCxGcAKEWsDmUtkhMem5_WErtg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"title\": \"Welcome to the Web Development Community 🚀\",\r\n  \"content\": \"Hello everyone! This community is dedicated to frontend, backend, full-stack development, internships, hackathons, open-source projects, and everything related to building for the web.\",\r\n  \"imageUrls\": [\r\n    \"https://cdn.campusguide.com/posts/welcome-banner-v2.png\"\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/posts/6a47f5a0fd7ee52e37bf1f5d",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "posts",
+            "6a47f5a0fd7ee52e37bf1f5d"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Comment",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkYXJzaGFuLnN0dWRlbnRAY2FtcHVzZ3VpZGUuY29tIiwiaWF0IjoxNzgzMDk5MTM2LCJleHAiOjE3ODMxODU1MzZ9.ynyD9-qRyIYDXLbm7_IWL46V-wRj-2R4CigrNjY0Fqkw2_UCSlboZWQ2ZeIm-RE7rw2tm9svGjJlzO0nbDkAsw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"content\": \"Excited to be here! Looking forward to contributing and learning from everyone.\",\r\n  \"postId\": \"{{postId}}\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/comments",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "comments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Comment",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkYXJzaGFuLnN0dWRlbnRAY2FtcHVzZ3VpZGUuY29tIiwiaWF0IjoxNzgzMDk5MTM2LCJleHAiOjE3ODMxODU1MzZ9.ynyD9-qRyIYDXLbm7_IWL46V-wRj-2R4CigrNjY0Fqkw2_UCSlboZWQ2ZeIm-RE7rw2tm9svGjJlzO0nbDkAsw",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"content\": \"Excited to be here! Looking forward to contributing, collaborating on projects, and learning from everyone.\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/comments/6a47f69afd7ee52e37bf1f5e",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "comments",
+            "6a47f69afd7ee52e37bf1f5e"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "auth_secret_0jkc",
+      "secret": true
+    }
+  ]
+}

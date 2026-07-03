@@ -8,8 +8,6 @@ POST /api/auth/login
 
 GET /api/auth/me
 
-PUT /api/auth/profile
-
 ---
 
 ## Users
@@ -30,11 +28,11 @@ POST /api/councils
 
 PUT /api/councils/{id}
 
-DELETE /api/councils/{id}
+GET /api/councils/category/{category}
 
 ---
 
-## Membership Applications
+## Membership Applications (Planned / Future Phase)
 
 POST /api/memberships/apply
 
@@ -54,11 +52,17 @@ GET /api/communities/{id}
 
 POST /api/communities
 
+PUT /api/communities/{id}
+
+GET /api/communities/councils/{councilId}/communities
+
 ---
 
 ## Posts
 
 POST /api/posts
+
+GET /api/posts
 
 GET /api/posts/{id}
 
@@ -66,15 +70,25 @@ PUT /api/posts/{id}
 
 DELETE /api/posts/{id}
 
+GET /api/posts/community/{communityId}
+
+GET /api/posts/author/{authorId}
+
 ---
 
 ## Comments
 
 POST /api/comments
 
+GET /api/comments/{id}
+
 PUT /api/comments/{id}
 
 DELETE /api/comments/{id}
+
+GET /api/comments/post/{postId}
+
+GET /api/comments/author/{authorId}
 
 ---
 
