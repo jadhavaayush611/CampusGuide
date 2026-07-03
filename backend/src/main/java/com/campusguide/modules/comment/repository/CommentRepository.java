@@ -11,4 +11,8 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
     List<Comment> findByAuthorId(String authorId);
 
     List<Comment> findByIsDeletedFalse();
+
+    List<Comment> findByPostIdAndIsDeletedFalseOrderByCreatedAtAsc(String postId);
+
+    List<Comment> findByAuthorIdAndIsDeletedFalse(String authorId);
 }
