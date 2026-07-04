@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "events")
 @Data
@@ -40,6 +41,8 @@ public class Event {
     private Integer maxParticipants;
 
     private Integer attendeeCount;
+
+    private List<String> registeredUserIds;
 
     private String imageUrl;
 
