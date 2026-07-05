@@ -225,6 +225,57 @@ public class EventService {
                 .toList();
     }
 
+    /**
+     * Retrieves past events (non-deleted, startTime < current time) sorted by startTime descending.
+     *
+     * @return a list of past event summaries
+     */
+    public List<EventSummaryResponse> getPastEvents() {
+        return eventRepository.findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(LocalDateTime.now()).stream()
+                .map(this::toEventSummaryResponse)
+                .toList();
+    }
+
+    /**
+     * Retrieves active events organized by a specific user, sorted by startTime ascending.
+     *
+     * @param organizerId the ID of the organizer
+     * @return a list of event summaries
+     */
+    public List<EventSummaryResponse> getEventsByOrganizer(String organizerId) {
+        return eventRepository.findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc(organizerId).stream()
+                .map(this::toEventSummaryResponse)
+                .toList();
+    }
+
+    /**
+     * Searches for active events where title, description, or location matches the keyword (case-insensitive, partial match),
+     * sorted by startTime ascending.
+     *
+     * @param keyword the search keyword
+     * @return a list of matching event summaries
+     */
+    public List<EventSummaryResponse> searchEvents(String keyword) {
+        String searchKeyword = keyword != null ? keyword : "";
+        return eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                searchKeyword, searchKeyword, searchKeyword).stream()
+                .map(this::toEventSummaryResponse)
+                .toList();
+    }
+
+    /**
+     * Retrieves active events whose startTime falls within the range [startDate, endDate], sorted by startTime ascending.
+     *
+     * @param startDate the start date of the range
+     * @param endDate the end date of the range
+     * @return a list of event summaries
+     */
+    public List<EventSummaryResponse> getEventsBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return eventRepository.findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(startDate, endDate).stream()
+                .map(this::toEventSummaryResponse)
+                .toList();
+    }
+
     private void validateEventTimes(LocalDateTime startTime, LocalDateTime endTime, LocalDateTime registrationDeadline) {
         if (startTime != null && endTime != null && !endTime.isAfter(startTime)) {
             throw new IllegalArgumentException("End time must be after start time.");

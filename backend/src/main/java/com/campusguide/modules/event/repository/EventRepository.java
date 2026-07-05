@@ -12,4 +12,14 @@ public interface EventRepository extends MongoRepository<Event, String> {
     List<Event> findByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqualOrderByStartTimeAsc(LocalDateTime now);
 
     List<Event> findByIsDeletedFalseOrderByStartTimeAsc();
+
+    List<Event> findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(LocalDateTime now);
+
+    List<Event> findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc(String organizerId);
+
+    List<Event> findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+            String title, String description, String location);
+
+    List<Event> findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(LocalDateTime startDate, LocalDateTime endDate);
 }
+

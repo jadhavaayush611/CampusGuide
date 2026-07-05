@@ -405,4 +405,174 @@ class EventServiceTest {
         assertEquals(1, responses.size());
         assertEquals("event-789", responses.get(0).getId());
     }
+
+    // --- Past Events Tests ---
+
+    @Test
+    void getPastEvents_Successful() {
+        Event pastEvent = Event.builder()
+                .id("event-past")
+                .title("Past Conference")
+                .startTime(LocalDateTime.now().minusDays(2))
+                .isDeleted(false)
+                .build();
+
+        when(eventRepository.findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(any(LocalDateTime.class)))
+                .thenReturn(List.of(pastEvent));
+
+        List<EventSummaryResponse> responses = eventService.getPastEvents();
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-past", responses.get(0).getId());
+        assertEquals("Past Conference", responses.get(0).getTitle());
+    }
+
+    @Test
+    void getPastEvents_DeletedEventsExcluded() {
+        when(eventRepository.findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        List<EventSummaryResponse> responses = eventService.getPastEvents();
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+        verify(eventRepository).findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(any(LocalDateTime.class));
+    }
+
+    // --- Organizer Events Tests ---
+
+    @Test
+    void getEventsByOrganizer_OrganizerWithEvents() {
+        when(eventRepository.findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc("user-organizer"))
+                .thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.getEventsByOrganizer("user-organizer");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+        verify(eventRepository).findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc("user-organizer");
+    }
+
+    @Test
+    void getEventsByOrganizer_OrganizerWithoutEvents() {
+        when(eventRepository.findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc("user-none"))
+                .thenReturn(Collections.emptyList());
+
+        List<EventSummaryResponse> responses = eventService.getEventsByOrganizer("user-none");
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+        verify(eventRepository).findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc("user-none");
+    }
+
+    // --- Search Tests ---
+
+    @Test
+    void searchEvents_TitleMatch() {
+        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                "hack", "hack", "hack")).thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.searchEvents("hack");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+    }
+
+    @Test
+    void searchEvents_DescriptionMatch() {
+        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                "coding", "coding", "coding")).thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.searchEvents("coding");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+    }
+
+    @Test
+    void searchEvents_LocationMatch() {
+        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                "Seminar", "Seminar", "Seminar")).thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.searchEvents("Seminar");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+    }
+
+    @Test
+    void searchEvents_CaseInsensitive() {
+        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                "HACK", "HACK", "HACK")).thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.searchEvents("HACK");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+    }
+
+    @Test
+    void searchEvents_DeletedEventsExcluded() {
+        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+                "deleted", "deleted", "deleted")).thenReturn(Collections.emptyList());
+
+        List<EventSummaryResponse> responses = eventService.searchEvents("deleted");
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+    }
+
+    // --- Date Range Tests ---
+
+    @Test
+    void getEventsBetween_EventsInsideRange() {
+        LocalDateTime start = LocalDateTime.now().plusDays(4);
+        LocalDateTime end = LocalDateTime.now().plusDays(7);
+
+        when(eventRepository.findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(start, end))
+                .thenReturn(List.of(activeEvent));
+
+        List<EventSummaryResponse> responses = eventService.getEventsBetween(start, end);
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals("event-789", responses.get(0).getId());
+        verify(eventRepository).findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(start, end);
+    }
+
+    @Test
+    void getEventsBetween_EventsOutsideRange() {
+        LocalDateTime start = LocalDateTime.now().plusDays(10);
+        LocalDateTime end = LocalDateTime.now().plusDays(12);
+
+        when(eventRepository.findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(start, end))
+                .thenReturn(Collections.emptyList());
+
+        List<EventSummaryResponse> responses = eventService.getEventsBetween(start, end);
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+        verify(eventRepository).findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(start, end);
+    }
+
+    @Test
+    void getEventsBetween_EmptyResult() {
+        LocalDateTime start = LocalDateTime.now().plusDays(1);
+        LocalDateTime end = LocalDateTime.now().plusDays(2);
+
+        when(eventRepository.findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(start, end))
+                .thenReturn(Collections.emptyList());
+
+        List<EventSummaryResponse> responses = eventService.getEventsBetween(start, end);
+
+        assertNotNull(responses);
+        assertTrue(responses.isEmpty());
+    }
 }
+
