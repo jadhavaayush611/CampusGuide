@@ -94,31 +94,210 @@ GET /api/comments/author/{authorId}
 
 ## Events
 
-GET /api/events
+### POST /api/events
+* **Purpose**: Create a new event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body** (application/json):
+  ```json
+  {
+    "title": "String (1-150 characters, required)",
+    "description": "String (1-5000 characters, required)",
+    "councilId": "String (required, must exist)",
+    "location": "String (1-200 characters, required)",
+    "startTime": "String (ISO-8601 DateTime, e.g. 2026-07-05T12:00:00, required)",
+    "endTime": "String (ISO-8601 DateTime, required, must be after startTime)",
+    "registrationDeadline": "String (ISO-8601 DateTime, required, must be before startTime)",
+    "maxParticipants": "Integer (minimum 1, optional)",
+    "imageUrl": "String (optional)"
+  }
+  ```
+* **Response Body** (application/json):
+  ```json
+  {
+    "id": "String",
+    "title": "String",
+    "description": "String",
+    "councilId": "String",
+    "organizerId": "String",
+    "location": "String",
+    "startTime": "String (ISO-8601 DateTime)",
+    "endTime": "String (ISO-8601 DateTime)",
+    "registrationDeadline": "String (ISO-8601 DateTime)",
+    "maxParticipants": 100,
+    "attendeeCount": 0,
+    "imageUrl": "String or null",
+    "isCancelled": false,
+    "createdAt": "String (ISO-8601 DateTime)",
+    "updatedAt": "String (ISO-8601 DateTime)"
+  }
+  ```
+* **Success Status Codes**: `201 Created`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (empty required fields, invalid text length, end time before start time, or registration deadline after start time).
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Council or user not found.
 
-GET /api/events/{id}
+### PUT /api/events/{eventId}
+* **Purpose**: Update an existing event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Organizer of the event or `SUPER_ADMIN`.
+* **Request Body** (application/json):
+  ```json
+  {
+    "title": "String (max 150 characters, optional)",
+    "description": "String (max 5000 characters, optional)",
+    "location": "String (max 200 characters, optional)",
+    "startTime": "String (ISO-8601 DateTime, optional)",
+    "endTime": "String (ISO-8601 DateTime, optional)",
+    "registrationDeadline": "String (ISO-8601 DateTime, optional)",
+    "maxParticipants": "Integer (minimum 1, optional)",
+    "imageUrl": "String (optional)"
+  }
+  ```
+* **Response Body** (application/json):
+  Same format as `POST /api/events`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not the organizer of the event or a `SUPER_ADMIN`.
+  - `404 Not Found`: Event not found or soft-deleted.
 
-POST /api/events
+### DELETE /api/events/{eventId}
+* **Purpose**: Soft delete an existing event (sets `isDeleted` to true).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Organizer of the event or `SUPER_ADMIN`.
+* **Request Body**: None
+* **Response Body**: None
+* **Success Status Codes**: `204 No Content`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not the organizer of the event or a `SUPER_ADMIN`.
+  - `404 Not Found`: Event not found or already soft-deleted.
 
-PUT /api/events/{id}
+### GET /api/events
+* **Purpose**: Retrieve all active (non-deleted) events in the system, sorted by start time ascending.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  [
+    {
+      "id": "String",
+      "title": "String",
+      "councilId": "String",
+      "location": "String",
+      "startTime": "String (ISO-8601 DateTime)",
+      "attendeeCount": 0,
+      "maxParticipants": 100,
+      "imageUrl": "String or null"
+    }
+  ]
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
 
-DELETE /api/events/{id}
+### GET /api/events/upcoming
+* **Purpose**: Retrieve all upcoming active and non-cancelled events (start time greater than or equal to current time), sorted by start time ascending.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  List of event summaries, same format as `GET /api/events`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/events/{eventId}
+* **Purpose**: Retrieve detailed information of a specific event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  Same format as `POST /api/events`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Event not found or soft-deleted.
+
+### GET /api/events/council/{councilId}
+* **Purpose**: Retrieve all active events associated with a specific council.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  List of event summaries, same format as `GET /api/events`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Council not found.
 
 ---
 
 ## Event Registrations
 
-POST /api/events/{id}/register
+### POST /api/events/{eventId}/register
+* **Purpose**: Register the authenticated user for an event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  Same format as `POST /api/events` (returns updated event details).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Cannot register for a cancelled event, past event, event after registration deadline, or when event capacity is reached.
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Event not found or soft-deleted.
+  - `409 Conflict`: User is already registered for this event.
 
-GET /api/events/{id}/participants
+### DELETE /api/events/{eventId}/register
+* **Purpose**: Cancel the authenticated user's registration for an event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user who is currently registered.
+* **Request Body**: None
+* **Response Body** (application/json):
+  Same format as `POST /api/events` (returns updated event details).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: User is not registered for this event.
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Event not found or soft-deleted.
 
----
+### GET /api/events/{eventId}/registration-status
+* **Purpose**: Retrieve the registration status of the authenticated user for a specific event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  {
+    "registered": true
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Event not found or soft-deleted.
 
-## Event Results
-
-POST /api/events/{id}/results
-
-GET /api/events/{id}/results
+### GET /api/events/{eventId}/registrations
+* **Purpose**: Retrieve a list of user IDs registered for a specific event.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  [
+    "userId1",
+    "userId2"
+  ]
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Event not found or soft-deleted.
 
 ---
 

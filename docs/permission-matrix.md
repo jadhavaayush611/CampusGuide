@@ -45,15 +45,21 @@
 
 # Events
 
-| Feature            | Student | Faculty | Council Admin | Super Admin |
-| ------------------ | ------- | ------- | ------------- | ----------- |
-| View Events        | Yes     | Yes     | Yes           | Yes         |
-| Register for Event | Yes     | Yes     | Yes           | Yes         |
-| Create Event       | No      | No      | Yes           | Yes         |
-| Edit Event         | No      | No      | Yes           | Yes         |
-| Delete Event       | No      | No      | Yes           | Yes         |
-| View Participants  | No      | Yes     | Yes           | Yes         |
-| Publish Results    | No      | Yes     | Yes           | Yes         |
+| Feature | Student | Faculty | Council Admin | Super Admin | Event Organizer (Owner) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| View Events | Yes | Yes | Yes | Yes | Yes |
+| Create Event | Yes | Yes | Yes | Yes | N/A (Creator becomes organizer) |
+| Update Event | No | No | No | Yes | Yes (Own events only) |
+| Delete Event | No | No | No | Yes | Yes (Own events only) |
+| Register for Event | Yes | Yes | Yes | Yes | Yes |
+| Cancel Registration | Yes | Yes | Yes | Yes | Yes |
+| View Registration Status | Yes | Yes | Yes | Yes | Yes |
+| View Registrations List | Yes | Yes | Yes | Yes | Yes |
+
+> [!NOTE]
+> * **Event Organizer**: Any authenticated user who creates an event becomes its organizer. They are authorized to update and delete their own events.
+> * **Super Admin**: Has global override access and can update or delete any event in the system.
+> * **Register/Cancel**: Any authenticated user can register or cancel their registration for any active, non-cancelled, and upcoming event.
 
 ---
 

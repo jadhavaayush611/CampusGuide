@@ -150,69 +150,27 @@ Events and Hackathons
 
 Fields:
 
-* _id
-* title
-* description
-* councilId
-* eventType
-* bannerUrl
-* venue
-* startDate
-* endDate
-* registrationDeadline
-* maxParticipants
-* status
-* createdBy
-* createdAt
-* updatedAt
-
-Status Values:
-
-* UPCOMING
-* ONGOING
-* COMPLETED
-* CANCELLED
+* _id (String, required): Unique identifier of the event.
+* title (String, required): Title of the event.
+* description (String, required): Detailed description of the event.
+* councilId (String, required): ID of the council organizing the event.
+* organizerId (String, required): ID of the user who created the event.
+* location (String, required): Venue/location of the event.
+* startTime (Date/Time, required): Start time of the event.
+* endTime (Date/Time, required): End time of the event.
+* registrationDeadline (Date/Time, required): Deadline to register for the event.
+* maxParticipants (Integer, optional): Maximum number of participants.
+* attendeeCount (Integer, required): Current count of registered users (defaults to 0).
+* registeredUserIds (Array of Strings, optional): List of User IDs registered for this event.
+* imageUrl (String, optional): URL for the event image/banner.
+* isCancelled (Boolean, required): Flag indicating if the event is cancelled (defaults to false).
+* isDeleted (Boolean, required): Flag indicating if the event has been soft-deleted (defaults to false).
+* createdAt (Date/Time, required): Timestamp when the event was created.
+* updatedAt (Date/Time, required): Timestamp when the event was last updated.
 
 ---
 
-# 8. event_registrations
-
-Purpose:
-Participant Tracking
-
-Fields:
-
-* _id
-* eventId
-* userId
-* registrationStatus
-* registeredAt
-
-Registration Status Values:
-
-* REGISTERED
-* ATTENDED
-* DISQUALIFIED
-
----
-
-# 9. event_results
-
-Purpose:
-Event Result Publishing
-
-Fields:
-
-* _id
-* eventId
-* position
-* userId
-* remarks
-* publishedAt
-
----
-
-# 10. announcements
+# 8. announcements
 
 Purpose:
 Council Announcements
@@ -228,7 +186,7 @@ Fields:
 
 ---
 
-# 11. notices
+# 9. notices
 
 Purpose:
 Official Academic Notices
@@ -245,7 +203,7 @@ Fields:
 
 ---
 
-# 12. resources
+# 10. resources
 
 Purpose:
 Notes, Assignments, Study Material
@@ -272,7 +230,7 @@ Visibility Values:
 
 ---
 
-# 13. resource_requests
+# 11. resource_requests
 
 Purpose:
 Faculty Controlled Resource Access
@@ -295,7 +253,7 @@ Status Values:
 
 ---
 
-# 14. notifications
+# 12. notifications
 
 Purpose:
 System Notifications
@@ -312,7 +270,7 @@ Fields:
 
 ---
 
-# 15. vault_files
+# 13. vault_files
 
 Purpose:
 Personal Document Vault
@@ -328,7 +286,7 @@ Fields:
 
 ---
 
-# 16. roadmaps
+# 14. roadmaps
 
 Purpose:
 Career and Academic Roadmaps
@@ -344,7 +302,7 @@ Fields:
 
 ---
 
-# 17. resumes
+# 15. resumes
 
 Purpose:
 Resume Builder
@@ -359,7 +317,7 @@ Fields:
 
 ---
 
-# 18. notification_preferences
+# 16. notification_preferences
 
 Purpose:
 User Notification Settings
@@ -407,14 +365,12 @@ Premium Subscription System
 5. posts
 6. comments
 7. events
-8. event_registrations
-9. event_results
-10. announcements
-11. notices
-12. resources
-13. resource_requests
-14. notifications
-15. vault_files
-16. roadmaps
-17. resumes
-18. notification_preferences
+8. announcements
+9. notices
+10. resources
+11. resource_requests
+12. notifications
+13. vault_files
+14. roadmaps
+15. resumes
+16. notification_preferences
