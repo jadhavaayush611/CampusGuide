@@ -1,5 +1,6 @@
 package com.campusguide.modules.event.service;
 
+import com.campusguide.exception.BadRequestException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import com.campusguide.modules.council.repository.CouncilRepository;
@@ -180,7 +181,7 @@ class EventServiceTest {
     }
 
     @Test
-    void createEvent_ThrowsIllegalArgumentException_WhenInvalidEndTime() {
+    void createEvent_ThrowsBadRequestException_WhenInvalidEndTime() {
         when(councilRepository.existsById("council-123")).thenReturn(true);
         when(userRepository.findByEmail("organizer@campusguide.com")).thenReturn(Optional.of(organizerUser));
 
@@ -188,7 +189,7 @@ class EventServiceTest {
         createRequest.setStartTime(now.plusDays(2));
         createRequest.setEndTime(now.plusDays(1)); // end before start
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+        BadRequestException exception = assertThrows(BadRequestException.class, 
                 () -> eventService.createEvent(organizerUserDetails, createRequest));
         assertEquals("End time must be after start time.", exception.getMessage());
 
@@ -196,7 +197,7 @@ class EventServiceTest {
     }
 
     @Test
-    void createEvent_ThrowsIllegalArgumentException_WhenInvalidRegistrationDeadline() {
+    void createEvent_ThrowsBadRequestException_WhenInvalidRegistrationDeadline() {
         when(councilRepository.existsById("council-123")).thenReturn(true);
         when(userRepository.findByEmail("organizer@campusguide.com")).thenReturn(Optional.of(organizerUser));
 
@@ -205,7 +206,7 @@ class EventServiceTest {
         createRequest.setEndTime(now.plusDays(3));
         createRequest.setRegistrationDeadline(now.plusDays(4)); // deadline after start
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+        BadRequestException exception = assertThrows(BadRequestException.class, 
                 () -> eventService.createEvent(organizerUserDetails, createRequest));
         assertEquals("Registration deadline must be before event start time.", exception.getMessage());
 
@@ -299,7 +300,7 @@ class EventServiceTest {
         when(eventRepository.findById("event-789")).thenReturn(Optional.of(activeEvent));
         when(userRepository.findByEmail("organizer@campusguide.com")).thenReturn(Optional.of(organizerUser));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, 
+        BadRequestException exception = assertThrows(BadRequestException.class, 
                 () -> eventService.updateEvent(organizerUserDetails, "event-789", updateRequest));
         assertEquals("End time must be after start time.", exception.getMessage());
 

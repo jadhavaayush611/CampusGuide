@@ -1,6 +1,5 @@
 package com.campusguide.modules.event.controller;
 
-import com.campusguide.modules.auth.service.AuthService;
 import com.campusguide.modules.event.dto.EventResponse;
 import com.campusguide.modules.event.service.EventRegistrationService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,6 @@ import java.util.Map;
 public class EventRegistrationController {
 
     private final EventRegistrationService eventRegistrationService;
-    private final AuthService authService;
 
     @PostMapping("/{eventId}/register")
     @PreAuthorize("isAuthenticated()")
@@ -44,9 +42,7 @@ public class EventRegistrationController {
     public ResponseEntity<Map<String, Boolean>> getRegistrationStatus(
             @PathVariable String eventId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        String userId = authService.getCurrentUser(email).getId();
-        boolean registered = eventRegistrationService.isUserRegistered(eventId, userId);
+        boolean registered = eventRegistrationService.isUserRegistered(eventId, userDetails);
         return ResponseEntity.ok(Map.of("registered", registered));
     }
 

@@ -136,6 +136,22 @@ public class EventRegistrationService {
     }
 
     /**
+     * Checks if a user is registered for a specific event.
+     *
+     * @param eventId      the ID of the event
+     * @param userDetails  the authenticated user details
+     * @return true if the user is registered, false otherwise
+     */
+    public boolean isUserRegistered(String eventId, UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new UnauthorisedException("User is not authenticated");
+        }
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        return isUserRegistered(eventId, user.getId());
+    }
+
+    /**
      * Retrieves the IDs of all registered users for a specific event.
      *
      * @param eventId the ID of the event

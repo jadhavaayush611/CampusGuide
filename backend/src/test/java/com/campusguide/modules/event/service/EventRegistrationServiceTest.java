@@ -312,6 +312,34 @@ class EventRegistrationServiceTest {
         verify(eventRepository).findById("event-123");
     }
 
+    @Test
+    void isUserRegistered_WithUserDetails_UserRegistered() {
+        activeEvent.getRegisteredUserIds().add("user-student");
+
+        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
+        when(eventRepository.findById("event-123")).thenReturn(Optional.of(activeEvent));
+
+        assertTrue(eventRegistrationService.isUserRegistered("event-123", studentUserDetails));
+        verify(userRepository).findByEmail("student@campusguide.com");
+        verify(eventRepository).findById("event-123");
+    }
+
+    @Test
+    void isUserRegistered_WithUserDetails_UserNotRegistered() {
+        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
+        when(eventRepository.findById("event-123")).thenReturn(Optional.of(activeEvent));
+
+        assertFalse(eventRegistrationService.isUserRegistered("event-123", studentUserDetails));
+        verify(userRepository).findByEmail("student@campusguide.com");
+        verify(eventRepository).findById("event-123");
+    }
+
+    @Test
+    void isUserRegistered_WithUserDetails_Unauthenticated() {
+        assertThrows(UnauthorisedException.class,
+                () -> eventRegistrationService.isUserRegistered("event-123", (UserDetails) null));
+    }
+
     // --- Registered Users Tests ---
 
     @Test

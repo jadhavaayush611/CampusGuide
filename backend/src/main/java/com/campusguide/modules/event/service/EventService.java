@@ -1,5 +1,6 @@
 package com.campusguide.modules.event.service;
 
+import com.campusguide.exception.BadRequestException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import com.campusguide.modules.council.repository.CouncilRepository;
@@ -278,10 +279,10 @@ public class EventService {
 
     private void validateEventTimes(LocalDateTime startTime, LocalDateTime endTime, LocalDateTime registrationDeadline) {
         if (startTime != null && endTime != null && !endTime.isAfter(startTime)) {
-            throw new IllegalArgumentException("End time must be after start time.");
+            throw new BadRequestException("End time must be after start time.");
         }
         if (registrationDeadline != null && startTime != null && registrationDeadline.isAfter(startTime)) {
-            throw new IllegalArgumentException("Registration deadline must be before event start time.");
+            throw new BadRequestException("Registration deadline must be before event start time.");
         }
     }
 
