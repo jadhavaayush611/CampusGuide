@@ -7,6 +7,7 @@ import com.campusguide.modules.event.dto.UpdateEventRequest;
 import com.campusguide.modules.event.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -62,6 +64,36 @@ public class EventController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<EventSummaryResponse>> getUpcomingEvents() {
         List<EventSummaryResponse> response = eventService.getUpcomingEvents();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/past")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventSummaryResponse>> getPastEvents() {
+        List<EventSummaryResponse> response = eventService.getPastEvents();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/organizer/{organizerId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventSummaryResponse>> getEventsByOrganizer(@PathVariable String organizerId) {
+        List<EventSummaryResponse> response = eventService.getEventsByOrganizer(organizerId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventSummaryResponse>> searchEvents(@RequestParam String query) {
+        List<EventSummaryResponse> response = eventService.searchEvents(query);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/range")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventSummaryResponse>> getEventsBetween(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        List<EventSummaryResponse> response = eventService.getEventsBetween(start, end);
         return ResponseEntity.ok(response);
     }
 
