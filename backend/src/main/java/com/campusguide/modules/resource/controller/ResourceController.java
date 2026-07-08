@@ -4,9 +4,11 @@ import com.campusguide.modules.resource.dto.CreateResourceRequest;
 import com.campusguide.modules.resource.dto.ResourceResponse;
 import com.campusguide.modules.resource.dto.ResourceSummaryResponse;
 import com.campusguide.modules.resource.dto.UpdateResourceRequest;
+import com.campusguide.modules.resource.service.ResourceDownloadService;
 import com.campusguide.modules.resource.service.ResourceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +24,7 @@ import java.util.List;
 public class ResourceController {
 
     private final ResourceService resourceService;
+    private final ResourceDownloadService resourceDownloadService;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -98,5 +101,11 @@ public class ResourceController {
     public ResponseEntity<ResourceResponse> getResourceById(@PathVariable String resourceId) {
         ResourceResponse response = resourceService.getResourceById(resourceId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/download/{resourceId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Resource> downloadResource(@PathVariable String resourceId) {
+        return resourceDownloadService.downloadResource(resourceId);
     }
 }

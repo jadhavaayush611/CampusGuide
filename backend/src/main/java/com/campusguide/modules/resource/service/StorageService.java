@@ -1,5 +1,6 @@
 package com.campusguide.modules.resource.service;
 
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
@@ -27,6 +28,15 @@ public interface StorageService {
      * @return true if the file exists, false otherwise
      */
     boolean exists(String storedFileName);
+
+    /**
+     * Loads the stored file as a Resource.
+     *
+     * @param storedFileName the name of the file to load
+     * @return the Resource representing the file
+     * @throws IOException if the file cannot be loaded
+     */
+    Resource loadAsResource(String storedFileName) throws IOException;
 
     /**
      * Generates a unique stored filename preserving the original file extension.

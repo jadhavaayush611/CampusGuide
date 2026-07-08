@@ -55,6 +55,10 @@ pnpm-debug.log*
 # MongoDB
 mongodb_data/**
 
+# Uploaded Files
+uploads/
+backend/uploads/
+
 # Agent & Architecture Metadata
 .agents/
 TESTING_STRATEGY.md
