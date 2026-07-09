@@ -136,7 +136,7 @@ class ResourceDownloadServiceTest {
     }
 
     @Test
-    void downloadResource_Failure_MissingPhysicalFile() {
+    void downloadResource_Failure_MissingPhysicalFile() throws Exception {
         String resourceId = "pdf-123";
         when(resourceService.getResourceById(resourceId)).thenReturn(pdfMetadata);
         when(storageService.exists(pdfMetadata.getFileName())).thenReturn(false);
@@ -187,7 +187,9 @@ class ResourceDownloadServiceTest {
         assertNotNull(resource);
         assertTrue(resource.exists());
         assertTrue(resource.isReadable());
-        assertEquals("pdf content", new String(resource.getInputStream().readAllBytes()));
+        try (var is = resource.getInputStream()) {
+            assertEquals("pdf content", new String(is.readAllBytes()));
+        }
 
         // Cleanup
         localStorageService.delete(storedName);

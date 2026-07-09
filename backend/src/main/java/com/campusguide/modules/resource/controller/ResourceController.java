@@ -1,22 +1,29 @@
 package com.campusguide.modules.resource.controller;
 
+import com.campusguide.exception.BadRequestException;
 import com.campusguide.modules.resource.dto.CreateResourceRequest;
 import com.campusguide.modules.resource.dto.ResourceResponse;
 import com.campusguide.modules.resource.dto.ResourceSummaryResponse;
 import com.campusguide.modules.resource.dto.UpdateResourceRequest;
 import com.campusguide.modules.resource.service.ResourceDownloadService;
 import com.campusguide.modules.resource.service.ResourceService;
+import com.campusguide.modules.resource.service.ResourceUploadService;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/resources")
@@ -25,13 +32,28 @@ public class ResourceController {
 
     private final ResourceService resourceService;
     private final ResourceDownloadService resourceDownloadService;
+    private final ResourceUploadService resourceUploadService;
+    private final Validator validator;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ResourceResponse> createResource(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody CreateResourceRequest request) {
-        ResourceResponse response = resourceService.createResource(userDetails, request);
+            @RequestParam("file") MultipartFile file,
+            @ModelAttribute CreateResourceRequest request) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("File is empty or not provided");
+        }
+
+        Set<ConstraintViolation<CreateResourceRequest>> violations = validator.validate(request);
+        for (ConstraintViolation<CreateResourceRequest> violation : violations) {
+            String propertyPath = violation.getPropertyPath().toString();
+            if (!Set.of("fileName", "originalFileName", "fileType", "fileSize").contains(propertyPath)) {
+                throw new BadRequestException(violation.getMessage());
+            }
+        }
+
+        ResourceResponse response = resourceUploadService.uploadResource(userDetails, file, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

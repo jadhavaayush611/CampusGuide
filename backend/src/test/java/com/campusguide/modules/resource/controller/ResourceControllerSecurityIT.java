@@ -24,6 +24,8 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.mock.web.MockMultipartFile;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -159,22 +161,25 @@ class ResourceControllerSecurityIT {
 
     @Test
     void createResource_Student_ReturnsCreated() throws Exception {
-        CreateResourceRequest request = CreateResourceRequest.builder()
-                .title("Lecture Notes")
-                .description("Math lecture notes")
-                .councilId(testCouncil.getId())
-                .communityId(testCommunity.getId())
-                .tags(List.of("math", "notes"))
-                .fileName("math_notes.pdf")
-                .originalFileName("math_notes_v1.pdf")
-                .fileType("application/pdf")
-                .fileSize(1024L)
-                .build();
 
-        mockMvc.perform(post("/api/resources")
-                        .with(user(studentDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "math_notes.pdf",
+                "application/pdf",
+                "Dummy PDF Content".getBytes()
+        );
+
+        mockMvc.perform(
+                        multipart("/api/resources")
+                                .file(file)
+                                .param("title", "Lecture Notes")
+                                .param("description", "Math lecture notes")
+                                .param("councilId", testCouncil.getId())
+                                .param("communityId", testCommunity.getId())
+                                .param("tags", "math")
+                                .param("tags", "notes")
+                                .with(user(studentDetails))
+                )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value("Lecture Notes"))
@@ -185,22 +190,25 @@ class ResourceControllerSecurityIT {
 
     @Test
     void createResource_SuperAdmin_ReturnsCreated() throws Exception {
-        CreateResourceRequest request = CreateResourceRequest.builder()
-                .title("Lecture Notes")
-                .description("Math lecture notes")
-                .councilId(testCouncil.getId())
-                .communityId(testCommunity.getId())
-                .tags(List.of("math", "notes"))
-                .fileName("math_notes.pdf")
-                .originalFileName("math_notes_v1.pdf")
-                .fileType("application/pdf")
-                .fileSize(1024L)
-                .build();
 
-        mockMvc.perform(post("/api/resources")
-                        .with(user(adminDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "math_notes.pdf",
+                "application/pdf",
+                "Dummy PDF Content".getBytes()
+        );
+
+        mockMvc.perform(
+                        multipart("/api/resources")
+                                .file(file)
+                                .param("title", "Lecture Notes")
+                                .param("description", "Math lecture notes")
+                                .param("councilId", testCouncil.getId())
+                                .param("communityId", testCommunity.getId())
+                                .param("tags", "math")
+                                .param("tags", "notes")
+                                .with(user(adminDetails))
+                )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value("Lecture Notes"))
@@ -208,7 +216,6 @@ class ResourceControllerSecurityIT {
                 .andExpect(jsonPath("$.councilId").value(testCouncil.getId()))
                 .andExpect(jsonPath("$.communityId").value(testCommunity.getId()));
     }
-
     @Test
     void createResource_NoJwt_ReturnsUnauthorized() throws Exception {
         CreateResourceRequest request = CreateResourceRequest.builder()
