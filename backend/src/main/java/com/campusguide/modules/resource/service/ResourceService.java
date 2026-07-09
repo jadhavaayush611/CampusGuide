@@ -1,5 +1,6 @@
 package com.campusguide.modules.resource.service;
 
+import com.campusguide.exception.BadRequestException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import com.campusguide.modules.community.repository.CommunityRepository;
@@ -198,7 +199,7 @@ public class ResourceService {
         if (!userRepository.existsById(uploaderId)) {
             throw new ResourceNotFoundException("User not found with id: " + uploaderId);
         }
-        return resourceRepository.findByUploaderIdAndIsDeletedFalse(uploaderId).stream()
+        return resourceRepository.findByUploaderIdAndIsDeletedFalseOrderByCreatedAtDesc(uploaderId).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
@@ -213,7 +214,7 @@ public class ResourceService {
         if (!councilRepository.existsById(councilId)) {
             throw new ResourceNotFoundException("Council not found with id: " + councilId);
         }
-        return resourceRepository.findByCouncilIdAndIsDeletedFalse(councilId).stream()
+        return resourceRepository.findByCouncilIdAndIsDeletedFalseOrderByCreatedAtDesc(councilId).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
@@ -228,20 +229,23 @@ public class ResourceService {
         if (!communityRepository.existsById(communityId)) {
             throw new ResourceNotFoundException("Community not found with id: " + communityId);
         }
-        return resourceRepository.findByCommunityIdAndIsDeletedFalse(communityId).stream()
+        return resourceRepository.findByCommunityIdAndIsDeletedFalseOrderByCreatedAtDesc(communityId).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
 
     /**
-     * Searches for active resources by title (case-insensitive, partial match).
+     * Searches for active resources by title and description (case-insensitive, partial match).
      *
-     * @param title the keyword to search in titles
+     * @param query the keyword to search
      * @return list of matching resource summaries
      */
-    public List<ResourceSummaryResponse> searchResources(String title) {
-        String searchKeyword = title != null ? title : "";
-        return resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalse(searchKeyword).stream()
+    public List<ResourceSummaryResponse> searchResources(String query) {
+        if (query == null || query.isBlank()) {
+            return getAllResources();
+        }
+        String trimmedQuery = query.trim();
+        return resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse(trimmedQuery, trimmedQuery).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
@@ -253,7 +257,21 @@ public class ResourceService {
      * @return list of resource summaries
      */
     public List<ResourceSummaryResponse> getResourcesByTag(String tag) {
-        return resourceRepository.findByTagsContainingAndIsDeletedFalse(tag).stream()
+        if (tag == null || tag.trim().isEmpty()) {
+            throw new BadRequestException("Tag cannot be blank");
+        }
+        return resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse(tag.trim()).stream()
+                .map(this::toResourceSummaryResponse)
+                .toList();
+    }
+
+    /**
+     * Retrieves the latest active resources, newest first.
+     *
+     * @return list of resource summaries
+     */
+    public List<ResourceSummaryResponse> getRecentResources() {
+        return resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc().stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }

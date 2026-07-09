@@ -90,6 +90,13 @@ public class ResourceController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/recent")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ResourceSummaryResponse>> getRecentResources() {
+        List<ResourceSummaryResponse> response = resourceService.getRecentResources();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/uploader/{uploaderId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ResourceSummaryResponse>> getResourcesByUploader(@PathVariable String uploaderId) {

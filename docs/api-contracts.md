@@ -305,6 +305,8 @@ GET /api/comments/author/{authorId}
 
 GET /api/resources
 
+GET /api/resources/recent
+
 GET /api/resources/{id}
 
 POST /api/resources

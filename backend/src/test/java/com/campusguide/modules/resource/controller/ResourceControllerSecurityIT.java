@@ -471,12 +471,22 @@ class ResourceControllerSecurityIT {
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+
+        // GET /api/resources/recent (Recent resources)
+        mockMvc.perform(get("/api/resources/recent")
+                        .with(user(studentDetails)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
     }
 
     @Test
     void retrievalEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
         // GET /api/resources
         mockMvc.perform(get("/api/resources"))
+                .andExpect(status().isUnauthorized());
+
+        // GET /api/resources/recent
+        mockMvc.perform(get("/api/resources/recent"))
                 .andExpect(status().isUnauthorized());
 
         // GET /api/resources/{resourceId}

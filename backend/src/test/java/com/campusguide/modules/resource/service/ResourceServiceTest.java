@@ -1,5 +1,6 @@
 package com.campusguide.modules.resource.service;
 
+import com.campusguide.exception.BadRequestException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.exception.UnauthorisedException;
 import com.campusguide.modules.community.repository.CommunityRepository;
@@ -434,7 +435,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByUploader_Success() {
         when(userRepository.existsById("user-uploader")).thenReturn(true);
-        when(resourceRepository.findByUploaderIdAndIsDeletedFalse("user-uploader")).thenReturn(List.of(activeResource));
+        when(resourceRepository.findByUploaderIdAndIsDeletedFalseOrderByCreatedAtDesc("user-uploader")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByUploader("user-uploader");
 
@@ -454,7 +455,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByUploader_Empty() {
         when(userRepository.existsById("user-uploader")).thenReturn(true);
-        when(resourceRepository.findByUploaderIdAndIsDeletedFalse("user-uploader")).thenReturn(Collections.emptyList());
+        when(resourceRepository.findByUploaderIdAndIsDeletedFalseOrderByCreatedAtDesc("user-uploader")).thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByUploader("user-uploader");
 
@@ -465,7 +466,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByCouncil_Success() {
         when(councilRepository.existsById("council-abc")).thenReturn(true);
-        when(resourceRepository.findByCouncilIdAndIsDeletedFalse("council-abc")).thenReturn(List.of(activeResource));
+        when(resourceRepository.findByCouncilIdAndIsDeletedFalseOrderByCreatedAtDesc("council-abc")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByCouncil("council-abc");
 
@@ -484,7 +485,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByCouncil_Empty() {
         when(councilRepository.existsById("council-abc")).thenReturn(true);
-        when(resourceRepository.findByCouncilIdAndIsDeletedFalse("council-abc")).thenReturn(Collections.emptyList());
+        when(resourceRepository.findByCouncilIdAndIsDeletedFalseOrderByCreatedAtDesc("council-abc")).thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByCouncil("council-abc");
 
@@ -495,7 +496,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByCommunity_Success() {
         when(communityRepository.existsById("community-xyz")).thenReturn(true);
-        when(resourceRepository.findByCommunityIdAndIsDeletedFalse("community-xyz")).thenReturn(List.of(activeResource));
+        when(resourceRepository.findByCommunityIdAndIsDeletedFalseOrderByCreatedAtDesc("community-xyz")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByCommunity("community-xyz");
 
@@ -514,7 +515,7 @@ class ResourceServiceTest {
     @Test
     void getResourcesByCommunity_Empty() {
         when(communityRepository.existsById("community-xyz")).thenReturn(true);
-        when(resourceRepository.findByCommunityIdAndIsDeletedFalse("community-xyz")).thenReturn(Collections.emptyList());
+        when(resourceRepository.findByCommunityIdAndIsDeletedFalseOrderByCreatedAtDesc("community-xyz")).thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByCommunity("community-xyz");
 
@@ -522,9 +523,14 @@ class ResourceServiceTest {
         assertTrue(responses.isEmpty());
     }
 
+    // ==========================================
+    // SEARCH TESTS
+    // ==========================================
+
     @Test
-    void searchResources_Success() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalse("lecture")).thenReturn(List.of(activeResource));
+    void searchResources_TitleMatch() {
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("lecture", "lecture"))
+                .thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("lecture");
 
@@ -534,8 +540,62 @@ class ResourceServiceTest {
     }
 
     @Test
-    void searchResources_Empty() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalse("none")).thenReturn(Collections.emptyList());
+    void searchResources_DescriptionMatch() {
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("slides", "slides"))
+                .thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.searchResources("slides");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void searchResources_CaseInsensitive() {
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("LECTURE", "LECTURE"))
+                .thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.searchResources("LECTURE");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void searchResources_PartialSearch() {
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("Notes", "Notes"))
+                .thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.searchResources("Notes");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void searchResources_BlankSearchReturnsAll() {
+        when(resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.searchResources("   ");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void searchResources_NullSearchReturnsAll() {
+        when(resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.searchResources(null);
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void searchResources_EmptyResult() {
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("none", "none"))
+                .thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("none");
 
@@ -543,9 +603,13 @@ class ResourceServiceTest {
         assertTrue(responses.isEmpty());
     }
 
+    // ==========================================
+    // TAG TESTS
+    // ==========================================
+
     @Test
-    void getResourcesByTag_Success() {
-        when(resourceRepository.findByTagsContainingAndIsDeletedFalse("java")).thenReturn(List.of(activeResource));
+    void getResourcesByTag_Success_ValidTag() {
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("java")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("java");
 
@@ -555,12 +619,51 @@ class ResourceServiceTest {
     }
 
     @Test
-    void getResourcesByTag_Empty() {
-        when(resourceRepository.findByTagsContainingAndIsDeletedFalse("python")).thenReturn(Collections.emptyList());
+    void getResourcesByTag_Success_WhitespaceTrimming() {
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("java")).thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("  java  ");
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+    }
+
+    @Test
+    void getResourcesByTag_BlankTag_ThrowsBadRequestException() {
+        assertThrows(BadRequestException.class, () -> resourceService.getResourcesByTag(""));
+    }
+
+    @Test
+    void getResourcesByTag_WhitespaceTag_ThrowsBadRequestException() {
+        assertThrows(BadRequestException.class, () -> resourceService.getResourcesByTag("    "));
+    }
+
+    @Test
+    void getResourcesByTag_NullTag_ThrowsBadRequestException() {
+        assertThrows(BadRequestException.class, () -> resourceService.getResourcesByTag(null));
+    }
+
+    @Test
+    void getResourcesByTag_UnknownTag_ReturnsEmpty() {
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("python")).thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("python");
 
         assertNotNull(responses);
         assertTrue(responses.isEmpty());
+    }
+
+    // ==========================================
+    // RECENT RESOURCES TESTS
+    // ==========================================
+
+    @Test
+    void getRecentResources_Success_NewestFirst() {
+        when(resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(List.of(activeResource));
+
+        List<ResourceSummaryResponse> responses = resourceService.getRecentResources();
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
     }
 }
