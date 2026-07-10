@@ -210,27 +210,28 @@ Notes, Assignments, Study Material
 
 Fields:
 
-* _id
-* title
-* description
-* facultyId
-* department
-* year
-* subject
-* fileUrl
-* resourceType
-* visibility
-* createdAt
+* _id (String / ObjectId, required): Unique identifier of the resource.
+* title (String, required): Title of the academic resource.
+* description (String, optional): Detailed description of the resource.
+* uploaderId (String, required): ID of the user who uploaded the resource. (Indexed)
+* councilId (String, optional): ID of the council associated with this resource. (Indexed)
+* communityId (String, optional): ID of the community associated with this resource. (Indexed)
+* tags (Array of Strings, optional): List of tags/keywords for searching and categorizing.
+* fileName (String, required): Unique stored filename on the physical storage system (UUID-based).
+* originalFileName (String, required): Original filename uploaded by the client.
+* fileType (String, required): MIME type of the file.
+* fileSize (Int64/Long, required): Size of the file in bytes.
+* downloadUrl (String, required): Relative API download path (`/api/resources/download/{resourceId}`).
+* isDeleted (Boolean, required): Soft delete flag (defaults to false).
+* createdAt (Date/Time, required): Timestamp when the resource was created.
+* updatedAt (Date/Time, required): Timestamp when the resource was last updated.
 
-Visibility Values:
-
-* PUBLIC
-* APPROVAL_REQUIRED
-* PRIVATE_CLASS
+Note:
+* Physical files are stored separately on the local filesystem (in `uploads/resources` directory during the MVP via LocalStorageService) rather than inside MongoDB (GridFS or cloud storage is not implemented in the current MVP phase).
 
 ---
 
-# 11. resource_requests
+# 11. resource_requests (Planned / Future Phase)
 
 Purpose:
 Faculty Controlled Resource Access
@@ -337,7 +338,7 @@ Fields:
 
 AWS S3
 
-* resources.fileUrl
+* resources.fileName / resources.downloadUrl
 * vault_files.fileUrl
 * resumes.generatedPdfUrl
 

@@ -78,8 +78,6 @@ CampusGuide solves these issues by centralizing campus activities into a single 
 * Notes Repository
 * Assignments Repository
 * Study Material Sharing
-* Faculty Approval Workflow
-* Access Request System
 
 ---
 
@@ -109,7 +107,7 @@ Can:
 
 * Join communities
 * Register for events
-* Access approved resources
+* Upload and download academic resources
 * Apply for council memberships
 * Build resumes
 * Store personal documents
@@ -121,7 +119,7 @@ Can:
 Can:
 
 * Upload resources
-* Approve resource requests
+* Download academic resources
 * Manage academic content
 * Track event participation
 

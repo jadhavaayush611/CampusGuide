@@ -65,14 +65,21 @@
 
 # Resources
 
-| Feature                 | Student | Faculty | Council Admin | Super Admin |
-| ----------------------- | ------- | ------- | ------------- | ----------- |
-| View Public Resources   | Yes     | Yes     | Yes           | Yes         |
-| Request Resource Access | Yes     | No      | No            | No          |
-| Upload Resource         | No      | Yes     | Yes           | Yes         |
-| Review Access Requests  | No      | Yes     | Yes           | Yes         |
-| Approve Access Requests | No      | Yes     | Yes           | Yes         |
-| Delete Resource         | No      | Yes     | Yes           | Yes         |
+| Feature | Student | Faculty | Council Admin | Super Admin | Resource Owner (Uploader) | Unauthenticated |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Browse Resources (Get All/Recent/By Council/By Community/By Tag/By Uploader) | Yes | Yes | Yes | Yes | Yes | No |
+| Search Resources | Yes | Yes | Yes | Yes | Yes | No |
+| Download Resources | Yes | Yes | Yes | Yes | Yes | No |
+| Upload Resource | Yes | Yes | Yes | Yes | N/A (Creator becomes owner) | No |
+| Update Own Resource | No | No | No | Yes | Yes | No |
+| Update Any Resource | No | No | No | Yes | N/A | No |
+| Delete Own Resource | No | No | No | Yes | Yes | No |
+| Delete Any Resource | No | No | No | Yes | N/A | No |
+
+> [!NOTE]
+> * **Resource Owner (Uploader)**: Any authenticated user who uploads a resource metadata record becomes its owner. They are authorized to update and delete their own resources.
+> * **Super Admin**: Has global override access and can update or delete any resource in the system.
+> * **Unauthenticated**: Has no access to any resource endpoint. All Resource API routes require authentication (`@PreAuthorize("isAuthenticated()")`).
 
 ---
 

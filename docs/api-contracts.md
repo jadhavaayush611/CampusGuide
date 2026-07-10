@@ -303,19 +303,213 @@ GET /api/comments/author/{authorId}
 
 ## Resources
 
-GET /api/resources
+### POST /api/resources
+* **Purpose**: Upload a new resource and its metadata.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user (including `STUDENT`, `FACULTY`, `COUNCIL_ADMIN`, `SUPER_ADMIN`).
+* **Request Format**: `multipart/form-data`
+* **Multipart Parameters**:
+  - `file`: MultipartFile (required). Must be a non-empty file. Supported MIME types:
+    - `application/pdf`
+    - `application/msword`
+    - `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+    - `application/vnd.ms-powerpoint`
+    - `application/vnd.openxmlformats-officedocument.presentationml.presentation`
+    - `application/vnd.ms-excel`
+    - `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+    - `image/jpeg`
+    - `image/png`
+    - *Maximum file size: 20MB.*
+  - `title`: String (1-200 characters, required).
+  - `description`: String (max 2000 characters, optional).
+  - `councilId`: String (optional, must exist if provided).
+  - `communityId`: String (optional, must exist if provided).
+  - `tags`: List of Strings (max 20 tags, optional).
+* **Response Body** (application/json):
+  ```json
+  {
+    "id": "String",
+    "title": "String",
+    "description": "String or null",
+    "uploaderId": "String",
+    "councilId": "String or null",
+    "communityId": "String or null",
+    "tags": ["String"],
+    "fileName": "String (UUID-based unique stored filename)",
+    "originalFileName": "String",
+    "fileType": "String (MIME type)",
+    "fileSize": 1024,
+    "downloadUrl": "String (relative path /api/resources/download/{resourceId})",
+    "createdAt": "String (ISO-8601 DateTime)",
+    "updatedAt": "String (ISO-8601 DateTime)"
+  }
+  ```
+* **Success Status Codes**: `201 Created`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (missing/empty file, file size > 20MB, unsupported MIME type, missing title, title > 200 characters, description > 2000 characters, or > 20 tags).
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Council or community not found for the provided IDs.
 
-GET /api/resources/recent
+### PUT /api/resources/{resourceId}
+* **Purpose**: Update metadata of an existing resource.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: The uploader (owner) of the resource or `SUPER_ADMIN`.
+* **Request Body** (application/json):
+  ```json
+  {
+    "title": "String (max 200 characters, optional)",
+    "description": "String (max 2000 characters, optional)",
+    "tags": ["String"] (max 20 items, optional)
+  }
+  ```
+* **Response Body** (application/json):
+  Same format as `POST /api/resources`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (title > 200 characters, description > 2000 characters, or > 20 tags).
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not the uploader/owner of the resource or `SUPER_ADMIN`.
+  - `404 Not Found`: Resource not found or soft-deleted.
 
-GET /api/resources/{id}
+### DELETE /api/resources/{resourceId}
+* **Purpose**: Soft delete an existing resource (sets `isDeleted` to true).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: The uploader (owner) of the resource or `SUPER_ADMIN`.
+* **Request Body**: None
+* **Response Body**: None
+* **Success Status Codes**: `204 No Content`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not the uploader/owner of the resource or `SUPER_ADMIN`.
+  - `404 Not Found`: Resource not found or already soft-deleted.
 
-POST /api/resources
+### GET /api/resources
+* **Purpose**: Retrieve all active (non-deleted) resources, sorted by creation date descending.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  [
+    {
+      "id": "String",
+      "title": "String",
+      "fileType": "String",
+      "fileSize": 1024,
+      "uploaderId": "String",
+      "createdAt": "String (ISO-8601 DateTime)"
+    }
+  ]
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
 
-DELETE /api/resources/{id}
+### GET /api/resources/{resourceId}
+* **Purpose**: Retrieve detailed metadata of a specific resource.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  Same format as `POST /api/resources`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Resource not found or soft-deleted.
+
+### GET /api/resources/search
+* **Purpose**: Search active resources by matching query string case-insensitively with title or description.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Parameters**:
+  - `query`: String (required).
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/resources/recent
+* **Purpose**: Retrieve the latest active resources, sorted by creation date descending.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/resources/tag/{tag}
+* **Purpose**: Retrieve active resources filtered by tag (case-insensitive).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Path Parameters**:
+  - `tag`: String (required).
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Tag parameter is blank.
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/resources/uploader/{uploaderId}
+* **Purpose**: Retrieve active resources uploaded by a specific user.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Path Parameters**:
+  - `uploaderId`: String (required).
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Uploader user not found.
+
+### GET /api/resources/council/{councilId}
+* **Purpose**: Retrieve active resources associated with a specific council.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Path Parameters**:
+  - `councilId`: String (required).
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Council not found.
+
+### GET /api/resources/community/{communityId}
+* **Purpose**: Retrieve active resources associated with a specific community.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Path Parameters**:
+  - `communityId`: String (required).
+* **Response Body** (application/json):
+  List of resource summaries (same format as `GET /api/resources`).
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Community not found.
+
+### GET /api/resources/download/{resourceId}
+* **Purpose**: Download the physical file associated with the resource.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Path Parameters**:
+  - `resourceId`: String (required).
+* **Response Headers**:
+  - `Content-Type`: Set to the stored resource's MIME type (e.g. `application/pdf`, `image/png`, etc.).
+  - `Content-Disposition`: `attachment; filename="original_filename.ext"`
+* **Response Body**: Binary file stream.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Resource not found, soft-deleted, or physical file missing in storage.
 
 ---
 
-## Resource Requests
+## Resource Requests (Planned / Future Phase)
 
 POST /api/resources/{id}/request
 
