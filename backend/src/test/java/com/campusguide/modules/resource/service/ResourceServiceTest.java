@@ -172,7 +172,16 @@ class ResourceServiceTest {
         assertEquals("user-uploader", response.getUploaderId());
         assertEquals("/api/resources/download/resource-123", response.getDownloadUrl());
 
-        verify(resourceRepository).save(any(Resource.class));
+        org.mockito.ArgumentCaptor<Resource> resourceCaptor = org.mockito.ArgumentCaptor.forClass(Resource.class);
+        verify(resourceRepository, times(2)).save(resourceCaptor.capture());
+        
+        List<Resource> savedResources = resourceCaptor.getAllValues();
+        assertEquals(2, savedResources.size());
+        
+        Resource secondSaved = savedResources.get(1);
+        assertNotNull(secondSaved.getDownloadUrl());
+        assertTrue(secondSaved.getDownloadUrl().endsWith(secondSaved.getId()));
+        assertFalse(secondSaved.getDownloadUrl().contains(secondSaved.getFileName()));
     }
 
     @Test
@@ -207,7 +216,19 @@ class ResourceServiceTest {
         assertNotNull(response);
         assertNull(response.getCouncilId());
         assertNull(response.getCommunityId());
-        verify(resourceRepository).save(any(Resource.class));
+        assertEquals("/api/resources/download/resource-123", response.getDownloadUrl());
+
+        org.mockito.ArgumentCaptor<Resource> resourceCaptor = org.mockito.ArgumentCaptor.forClass(Resource.class);
+        verify(resourceRepository, times(2)).save(resourceCaptor.capture());
+        
+        List<Resource> savedResources = resourceCaptor.getAllValues();
+        assertEquals(2, savedResources.size());
+        
+        Resource secondSaved = savedResources.get(1);
+        assertNotNull(secondSaved.getDownloadUrl());
+        assertTrue(secondSaved.getDownloadUrl().endsWith(secondSaved.getId()));
+        assertFalse(secondSaved.getDownloadUrl().contains(secondSaved.getFileName()));
+
         verify(councilRepository, never()).existsById(anyString());
         verify(communityRepository, never()).existsById(anyString());
     }

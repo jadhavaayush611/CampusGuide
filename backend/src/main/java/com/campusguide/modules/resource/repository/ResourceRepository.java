@@ -18,7 +18,7 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
 
     List<Resource> findByCommunityIdAndIsDeletedFalseOrderByCreatedAtDesc(String communityId);
 
-    List<Resource> findByTagsContainingAndIsDeletedFalse(String tag);
+    List<Resource> findByTagsContainingAndIsDeletedFalseOrderByCreatedAtDesc(String tag);
 
-    List<Resource> findByTitleContainingIgnoreCaseAndIsDeletedFalse(String title);
+    List<Resource> findByTitleContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String title);
 }
