@@ -8,9 +8,9 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
 
     List<Resource> findByIsDeletedFalseOrderByCreatedAtDesc();
 
-    List<Resource> findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse(String title, String description);
+    List<Resource> findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String title, String description);
 
-    List<Resource> findByTagsIgnoreCaseAndIsDeletedFalse(String tag);
+    List<Resource> findByTagsIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String tag);
 
     List<Resource> findByUploaderIdAndIsDeletedFalseOrderByCreatedAtDesc(String uploaderId);
 

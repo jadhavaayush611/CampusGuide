@@ -128,7 +128,7 @@ class ResourceServiceTest {
                 .originalFileName("lecture_notes.pdf")
                 .fileType("application/pdf")
                 .fileSize(1024L)
-                .downloadUrl("/api/resources/download/notes.pdf")
+                .downloadUrl("/api/resources/download/resource-123")
                 .isDeleted(false)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -146,7 +146,7 @@ class ResourceServiceTest {
                 .originalFileName("old_lecture_notes.pdf")
                 .fileType("application/pdf")
                 .fileSize(512L)
-                .downloadUrl("/api/resources/download/old_notes.pdf")
+                .downloadUrl("/api/resources/download/resource-deleted")
                 .isDeleted(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -170,7 +170,7 @@ class ResourceServiceTest {
         assertEquals("resource-123", response.getId());
         assertEquals("Lecture Notes", response.getTitle());
         assertEquals("user-uploader", response.getUploaderId());
-        assertEquals("/api/resources/download/notes.pdf", response.getDownloadUrl());
+        assertEquals("/api/resources/download/resource-123", response.getDownloadUrl());
 
         verify(resourceRepository).save(any(Resource.class));
     }
@@ -529,7 +529,7 @@ class ResourceServiceTest {
 
     @Test
     void searchResources_TitleMatch() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("lecture", "lecture"))
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("lecture", "lecture"))
                 .thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("lecture");
@@ -541,7 +541,7 @@ class ResourceServiceTest {
 
     @Test
     void searchResources_DescriptionMatch() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("slides", "slides"))
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("slides", "slides"))
                 .thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("slides");
@@ -552,7 +552,7 @@ class ResourceServiceTest {
 
     @Test
     void searchResources_CaseInsensitive() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("LECTURE", "LECTURE"))
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("LECTURE", "LECTURE"))
                 .thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("LECTURE");
@@ -563,7 +563,7 @@ class ResourceServiceTest {
 
     @Test
     void searchResources_PartialSearch() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("Notes", "Notes"))
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("Notes", "Notes"))
                 .thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("Notes");
@@ -594,7 +594,7 @@ class ResourceServiceTest {
 
     @Test
     void searchResources_EmptyResult() {
-        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse("none", "none"))
+        when(resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("none", "none"))
                 .thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.searchResources("none");
@@ -609,7 +609,7 @@ class ResourceServiceTest {
 
     @Test
     void getResourcesByTag_Success_ValidTag() {
-        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("java")).thenReturn(List.of(activeResource));
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("java")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("java");
 
@@ -620,7 +620,7 @@ class ResourceServiceTest {
 
     @Test
     void getResourcesByTag_Success_WhitespaceTrimming() {
-        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("java")).thenReturn(List.of(activeResource));
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("java")).thenReturn(List.of(activeResource));
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("  java  ");
 
@@ -645,7 +645,7 @@ class ResourceServiceTest {
 
     @Test
     void getResourcesByTag_UnknownTag_ReturnsEmpty() {
-        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse("python")).thenReturn(Collections.emptyList());
+        when(resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc("python")).thenReturn(Collections.emptyList());
 
         List<ResourceSummaryResponse> responses = resourceService.getResourcesByTag("python");
 

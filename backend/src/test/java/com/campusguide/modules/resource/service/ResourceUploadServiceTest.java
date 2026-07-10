@@ -80,7 +80,7 @@ class ResourceUploadServiceTest {
                 .originalFileName("lecture_notes.pdf")
                 .fileType("application/pdf")
                 .fileSize(file.getSize())
-                .downloadUrl("/api/resources/download/" + generatedFilename)
+                .downloadUrl("/api/resources/download/resource-123")
                 .build();
 
         when(resourceService.createResource(eq(userDetails), any(CreateResourceRequest.class)))
@@ -92,7 +92,7 @@ class ResourceUploadServiceTest {
         assertEquals(generatedFilename, response.getFileName());
         assertEquals("lecture_notes.pdf", response.getOriginalFileName());
         assertEquals("application/pdf", response.getFileType());
-        assertEquals("/api/resources/download/" + generatedFilename, response.getDownloadUrl());
+        assertEquals("/api/resources/download/resource-123", response.getDownloadUrl());
 
         verify(storageService, times(1)).store(file);
         verify(resourceService, times(1)).createResource(eq(userDetails), any(CreateResourceRequest.class));
@@ -117,7 +117,7 @@ class ResourceUploadServiceTest {
                 .originalFileName("assignment.docx")
                 .fileType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
                 .fileSize(file.getSize())
-                .downloadUrl("/api/resources/download/" + generatedFilename)
+                .downloadUrl("/api/resources/download/resource-124")
                 .build();
 
         when(resourceService.createResource(eq(userDetails), any(CreateResourceRequest.class)))
@@ -153,7 +153,7 @@ class ResourceUploadServiceTest {
                 .originalFileName("diagram.png")
                 .fileType("image/png")
                 .fileSize(file.getSize())
-                .downloadUrl("/api/resources/download/" + generatedFilename)
+                .downloadUrl("/api/resources/download/resource-125")
                 .build();
 
         when(resourceService.createResource(eq(userDetails), any(CreateResourceRequest.class)))

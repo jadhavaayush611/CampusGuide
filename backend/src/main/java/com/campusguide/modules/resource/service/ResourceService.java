@@ -73,12 +73,13 @@ public class ResourceService {
                 .originalFileName(request.getOriginalFileName())
                 .fileType(request.getFileType())
                 .fileSize(request.getFileSize())
-                .downloadUrl("/api/resources/download/" + request.getFileName())
                 .isDeleted(false)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
+        resource = resourceRepository.save(resource);
+        resource.setDownloadUrl("/api/resources/download/" + resource.getId());
         resource = resourceRepository.save(resource);
         return toResourceResponse(resource);
     }
@@ -245,7 +246,7 @@ public class ResourceService {
             return getAllResources();
         }
         String trimmedQuery = query.trim();
-        return resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalse(trimmedQuery, trimmedQuery).stream()
+        return resourceRepository.findByTitleContainingIgnoreCaseAndIsDeletedFalseOrDescriptionContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(trimmedQuery, trimmedQuery).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
@@ -260,7 +261,7 @@ public class ResourceService {
         if (tag == null || tag.trim().isEmpty()) {
             throw new BadRequestException("Tag cannot be blank");
         }
-        return resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalse(tag.trim()).stream()
+        return resourceRepository.findByTagsIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(tag.trim()).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
     }
