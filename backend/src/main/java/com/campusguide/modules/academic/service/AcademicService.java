@@ -70,7 +70,7 @@ public class AcademicService {
         // Calculations
         int requiredCredits = roadmap.getTotalCredits() != null ? roadmap.getTotalCredits() : 0;
         int earnedCredits = progress.getTotalCreditsEarned() != null ? progress.getTotalCreditsEarned() : 0;
-        int remainingCredits = requiredCredits - earnedCredits;
+        int remainingCredits = Math.max(0, requiredCredits - earnedCredits);
         double completionPercentage = calculateCompletionPercentage(earnedCredits, requiredCredits);
 
         int plannedCredits = plans.stream()
@@ -167,7 +167,7 @@ public class AcademicService {
 
         int requiredCredits = roadmap.getTotalCredits() != null ? roadmap.getTotalCredits() : 0;
         int earnedCredits = progress.getTotalCreditsEarned() != null ? progress.getTotalCreditsEarned() : 0;
-        int creditsRemaining = requiredCredits - earnedCredits;
+        int creditsRemaining = Math.max(0, requiredCredits - earnedCredits);
         double completionPercentage = calculateCompletionPercentage(earnedCredits, requiredCredits);
 
         return AcademicProgressResponse.builder()
@@ -220,6 +220,23 @@ public class AcademicService {
                 .toList();
 
         List<String> completedCourseIds = progress.getCompletedCourseIds() != null ? progress.getCompletedCourseIds() : new ArrayList<>();
+
+        // Performance Optimization: Batch fetch missing prerequisite courses to avoid N+1 database queries
+        List<String> missingPrereqIdsToFetch = candidateCourses.stream()
+                .filter(c -> !completedCourseIds.contains(c.getId()))
+                .flatMap(c -> c.getPrerequisiteCourseIds() != null ? c.getPrerequisiteCourseIds().stream() : java.util.stream.Stream.empty())
+                .filter(prereqId -> !completedCourseIds.contains(prereqId))
+                .distinct()
+                .toList();
+
+        java.util.Map<String, String> prereqIdToCodeMap = new java.util.HashMap<>();
+        if (!missingPrereqIdsToFetch.isEmpty()) {
+            List<Course> prereqCourses = courseRepository.findAllById(missingPrereqIdsToFetch);
+            for (Course c : prereqCourses) {
+                prereqIdToCodeMap.put(c.getId(), c.getCourseCode());
+            }
+        }
+
         List<String> recommendedCourseIds = new ArrayList<>();
         List<String> prerequisiteWarnings = new ArrayList<>();
         int totalCredits = 0;
@@ -234,9 +251,7 @@ public class AcademicService {
 
             for (String prereqId : prereqs) {
                 if (!completedCourseIds.contains(prereqId)) {
-                    String prereqCode = courseRepository.findById(prereqId)
-                            .map(Course::getCourseCode)
-                            .orElse(prereqId);
+                    String prereqCode = prereqIdToCodeMap.getOrDefault(prereqId, prereqId);
                     missingPrereqs.add(prereqCode);
                 }
             }

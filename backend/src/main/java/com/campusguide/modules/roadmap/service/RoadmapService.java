@@ -42,12 +42,24 @@ public class RoadmapService {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
+        if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
+            throw new BadRequestException("Title cannot be blank");
+        }
+
         if (request.getDegreeProgram() == null || request.getDegreeProgram().isBlank()) {
             throw new BadRequestException("Degree program cannot be blank");
         }
 
         if (request.getDepartment() == null || request.getDepartment().isBlank()) {
             throw new BadRequestException("Department cannot be blank");
+        }
+
+        if (request.getTotalCredits() == null || request.getTotalCredits() < 1) {
+            throw new BadRequestException("Total credits must be at least 1");
+        }
+
+        if (request.getExpectedGraduationYear() == null || request.getExpectedGraduationYear() < 2000) {
+            throw new BadRequestException("Expected graduation year must be at least 2000");
         }
 
         Roadmap roadmap = Roadmap.builder()
@@ -98,7 +110,10 @@ public class RoadmapService {
         }
 
         if (request.getTitle() != null) {
-            roadmap.setTitle(request.getTitle());
+            if (request.getTitle().trim().isBlank()) {
+                throw new BadRequestException("Title cannot be blank");
+            }
+            roadmap.setTitle(request.getTitle().trim());
         }
         if (request.getDescription() != null) {
             roadmap.setDescription(request.getDescription());
@@ -116,9 +131,15 @@ public class RoadmapService {
             roadmap.setDepartment(request.getDepartment().trim());
         }
         if (request.getTotalCredits() != null) {
+            if (request.getTotalCredits() < 1) {
+                throw new BadRequestException("Total credits must be at least 1");
+            }
             roadmap.setTotalCredits(request.getTotalCredits());
         }
         if (request.getExpectedGraduationYear() != null) {
+            if (request.getExpectedGraduationYear() < 2000) {
+                throw new BadRequestException("Expected graduation year must be at least 2000");
+            }
             roadmap.setExpectedGraduationYear(request.getExpectedGraduationYear());
         }
 

@@ -127,12 +127,29 @@ public class SemesterPlanService {
 
         if (request.getPlannedCourseIds() != null) {
             List<String> courseIds = request.getPlannedCourseIds().stream().distinct().toList();
+            
+            StudentProgress progress = studentProgressRepository.findByStudentId(plan.getStudentId())
+                    .orElseThrow(() -> new BadRequestException("Student progress record not found"));
+            List<String> completedCourseIds = progress.getCompletedCourseIds() != null
+                    ? progress.getCompletedCourseIds()
+                    : new ArrayList<>();
+
             int totalCredits = 0;
             for (String courseId : courseIds) {
                 CourseResponse course = courseService.getCourseById(courseId);
                 if (course == null || Boolean.FALSE.equals(course.getActive())) {
                     throw new BadRequestException("Course with ID " + courseId + " is inactive or not found");
                 }
+                
+                List<String> prerequisites = course.getPrerequisiteCourseIds();
+                if (prerequisites != null) {
+                    for (String prereqId : prerequisites) {
+                        if (!completedCourseIds.contains(prereqId)) {
+                            throw new BadRequestException("Prerequisite course with ID " + prereqId + " has not been completed");
+                        }
+                    }
+                }
+                
                 totalCredits += course.getCredits();
             }
             plan.setPlannedCourseIds(new ArrayList<>(courseIds));

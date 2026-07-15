@@ -239,7 +239,7 @@ class AcademicServiceTest {
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2)).thenReturn(List.of(recommendedCourse));
-        when(courseRepository.findById("CS101")).thenReturn(Optional.of(prerequisiteCourse));
+        when(courseRepository.findAllById(List.of("CS101"))).thenReturn(List.of(prerequisiteCourse));
 
         RecommendedSemesterResponse response = academicService.getRecommendedSemester(userDetails, 2);
 

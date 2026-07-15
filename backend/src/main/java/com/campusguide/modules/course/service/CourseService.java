@@ -47,11 +47,20 @@ public class CourseService {
                 ? request.getPrerequisiteCourseIds().stream().distinct().toList()
                 : new ArrayList<>();
 
-        for (String prereqId : prereqIds) {
-            Course prereq = courseRepository.findById(prereqId)
-                    .orElseThrow(() -> new BadRequestException("Prerequisite course with ID " + prereqId + " does not exist"));
-            if (Boolean.FALSE.equals(prereq.getActive())) {
-                throw new BadRequestException("Prerequisite course with ID " + prereqId + " is inactive");
+        if (!prereqIds.isEmpty()) {
+            List<Course> prereqs = courseRepository.findAllById(prereqIds);
+            if (prereqs.size() != prereqIds.size()) {
+                List<String> foundIds = prereqs.stream().map(Course::getId).toList();
+                for (String prereqId : prereqIds) {
+                    if (!foundIds.contains(prereqId)) {
+                        throw new BadRequestException("Prerequisite course with ID " + prereqId + " does not exist");
+                    }
+                }
+            }
+            for (Course prereq : prereqs) {
+                if (Boolean.FALSE.equals(prereq.getActive())) {
+                    throw new BadRequestException("Prerequisite course with ID " + prereq.getId() + " is inactive");
+                }
             }
         }
 
@@ -129,11 +138,20 @@ public class CourseService {
             if (prereqIds.contains(courseId)) {
                 throw new BadRequestException("A course cannot have itself as a prerequisite");
             }
-            for (String prereqId : prereqIds) {
-                Course prereq = courseRepository.findById(prereqId)
-                        .orElseThrow(() -> new BadRequestException("Prerequisite course with ID " + prereqId + " does not exist"));
-                if (Boolean.FALSE.equals(prereq.getActive())) {
-                    throw new BadRequestException("Prerequisite course with ID " + prereqId + " is inactive");
+            if (!prereqIds.isEmpty()) {
+                List<Course> prereqs = courseRepository.findAllById(prereqIds);
+                if (prereqs.size() != prereqIds.size()) {
+                    List<String> foundIds = prereqs.stream().map(Course::getId).toList();
+                    for (String prereqId : prereqIds) {
+                        if (!foundIds.contains(prereqId)) {
+                            throw new BadRequestException("Prerequisite course with ID " + prereqId + " does not exist");
+                        }
+                    }
+                }
+                for (Course prereq : prereqs) {
+                    if (Boolean.FALSE.equals(prereq.getActive())) {
+                        throw new BadRequestException("Prerequisite course with ID " + prereq.getId() + " is inactive");
+                    }
                 }
             }
             course.setPrerequisiteCourseIds(prereqIds);
