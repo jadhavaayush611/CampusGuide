@@ -114,12 +114,36 @@
 
 ---
 
-# Roadmaps
+# Academic Planning (Roadmaps, Courses, Student Progress & Semester Plans)
 
-| Feature                | Student      | Faculty      | Council Admin | Super Admin |
-| ---------------------- | ------------ | ------------ | ------------- | ----------- |
-| View Pre-made Roadmaps | Yes          | Yes          | Yes           | Yes         |
-| View AI Roadmaps       | Premium Only | Premium Only | Premium Only  | Yes         |
+| Feature | Student | Faculty | Council Admin | Super Admin | Owner (Creator/Student) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| View/Search Roadmaps | Yes | Yes | Yes | Yes | Yes |
+| Create Roadmap | Yes | Yes | Yes | Yes | N/A (Creator becomes owner) |
+| Update Roadmap | No | No | No | Yes | Yes (Own roadmaps only) |
+| Delete Roadmap | No | No | No | Yes | Yes (Own roadmaps only) |
+| Browse/Search Courses | Yes | Yes | Yes | Yes | Yes |
+| Create Course | No | No | No | Yes | No |
+| Update Course | No | No | No | Yes | No |
+| Delete Course | No | No | No | Yes | No |
+| Initialize Progress | Yes | Yes | Yes | Yes | N/A (Self progress only) |
+| Update Progress | No | No | No | Yes | Yes (Own progress only) |
+| View Progress (Own) | Yes | Yes | Yes | Yes | Yes |
+| View Progress (Others)| No | No | No | Yes | No |
+| Complete/Remove Course| No | No | No | Yes | Yes (Own progress only) |
+| Create Semester Plan | Yes | Yes | Yes | Yes | N/A (Self plans only) |
+| Update Semester Plan | No | No | No | Yes | Yes (Own plans only) |
+| View Semester Plans (Own)| Yes | Yes | Yes | Yes | Yes |
+| View Semester Plans (Others)| No | No | No | Yes | No |
+| Add/Remove Plan Course| No | No | No | Yes | Yes (Own plans only) |
+| Finalize Semester Plan| No | No | No | Yes | Yes (Own plans only) |
+| Access Academic Dashboard| Yes | Yes | Yes | Yes | Yes (Own metrics only) |
+| Get Course Recommendations| Yes | Yes | Yes | Yes | Yes (Own recommendations) |
+
+> [!NOTE]
+> * **Student Permissions**: Students are allowed to view roadmaps, browse/search courses, initialize/manage their own progress records (including marking courses completed or removing completed courses), manage their own semester plans (creating, updating, adding/removing courses, and finalizing), and access their personalized academic dashboard and course recommendations. They are strictly not allowed to manage the course catalog, modify roadmaps created by others, or view/manage progress or semester plans of other students.
+> * **Super Admin**: Has unrestricted full control including creating and managing the entire course catalog, creating and updating roadmaps, viewing/managing all students' progress records and semester plans, and accessing dashboard statistics.
+> * **Owner (Creator/Student)**: The creator of a roadmap is permitted to update and delete it. A student is considered the owner of their own student progress and semester plans, granting them full management rights over those records.
 
 ---
 

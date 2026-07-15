@@ -290,20 +290,105 @@ Fields:
 # 14. roadmaps
 
 Purpose:
-Career and Academic Roadmaps
+Career and Academic Roadmaps (Academic path mapping per degree/department)
 
 Fields:
 
-* _id
-* title
-* description
-* isPremium
-* steps
-* createdAt
+* _id (String, required): Unique identifier of the roadmap.
+* title (String, required): Title of the roadmap.
+* description (String, optional): Description of the roadmap.
+* degreeProgram (String, required): Target degree program. (Indexed)
+* department (String, required): Department hosting the program. (Indexed)
+* totalCredits (Integer, required): Total credits required to complete the roadmap.
+* expectedGraduationYear (Integer, required): Target graduation year.
+* createdBy (String, required): User ID of the roadmap creator. (Indexed)
+* isDeleted (Boolean, required): Flag indicating if the roadmap has been soft-deleted (defaults to false).
+* createdAt (Date/Time, required): Timestamp when the roadmap was created.
+* updatedAt (Date/Time, required): Timestamp when the roadmap was last updated.
+
+Indexes:
+* createdBy
+* degreeProgram
+* department
 
 ---
 
-# 15. resumes
+# 15. courses
+
+Purpose:
+Mandatory and elective course catalog management.
+
+Fields:
+
+* _id (String, required): Unique identifier of the course.
+* courseCode (String, required): Unique code of the course (e.g. CS101). (Unique Index)
+* courseName (String, required): Name of the course.
+* description (String, optional): Course details and syllabus outline.
+* department (String, required): Department offering the course. (Indexed)
+* credits (Integer, required): Academic credit value of the course.
+* semester (Integer, required): Target semester number in which the course is offered. (Indexed)
+* prerequisiteCourseIds (Array of Strings, optional): IDs of prerequisite courses that must be completed first.
+* elective (Boolean, required): Flag indicating if the course is an elective (true) or mandatory (false).
+* active (Boolean, required): Flag indicating if the course is active/enabled in the catalog.
+* createdAt (Date/Time, required): Timestamp when the course was created.
+* updatedAt (Date/Time, required): Timestamp when the course was last updated.
+
+Indexes:
+* unique courseCode
+* department
+* semester
+
+---
+
+# 16. student_progress
+
+Purpose:
+Tracks completed courses, credits earned, and GPA for individual students.
+
+Fields:
+
+* _id (String, required): Unique identifier of the progress record.
+* studentId (String, required): User ID of the student. (Unique Index)
+* roadmapId (String, required): Associated academic roadmap ID. (Indexed)
+* completedCourseIds (Array of Strings, optional): List of Course IDs that the student has marked completed.
+* currentSemester (Integer, required): Current semester level of the student.
+* totalCreditsEarned (Integer, required): Cumulative credits earned by completing courses.
+* currentGpa (Double, required): Cumulative GPA of the student (0.0 to 10.0 scale).
+* graduationEligible (Boolean, required): Evaluated flag indicating if graduation criteria are met.
+* createdAt (Date/Time, required): Timestamp when the progress record was created.
+* updatedAt (Date/Time, required): Timestamp when the progress record was last updated.
+
+Indexes:
+* unique studentId
+* roadmapId
+
+---
+
+# 17. semester_plans
+
+Purpose:
+Tracks student planned courses and credits for individual semesters.
+
+Fields:
+
+* _id (String, required): Unique identifier of the semester plan.
+* studentId (String, required): User ID of the student. (Indexed)
+* roadmapId (String, required): Associated academic roadmap ID. (Indexed)
+* semesterNumber (Integer, required): The target semester number. (Indexed)
+* plannedCourseIds (Array of Strings, optional): List of Course IDs planned for this semester.
+* totalPlannedCredits (Integer, required): Total credits of all planned courses.
+* finalized (Boolean, required): Flag indicating if the plan is finalized (read-only).
+* createdAt (Date/Time, required): Timestamp when the semester plan was created.
+* updatedAt (Date/Time, required): Timestamp when the semester plan was last updated.
+
+Indexes:
+* studentId
+* roadmapId
+* semesterNumber
+
+---
+
+# 18. resumes
 
 Purpose:
 Resume Builder
@@ -318,7 +403,7 @@ Fields:
 
 ---
 
-# 16. notification_preferences
+# 19. notification_preferences
 
 Purpose:
 User Notification Settings
@@ -331,6 +416,11 @@ Fields:
 * announcementNotifications
 * resourceNotifications
 * communityNotifications
+
+---
+
+# Note on Academic Dashboard
+The **Academic Dashboard** does not persist any data. It dynamically aggregates metrics, statistics, and course status listings by query-combining information from existing collections (`student_progress`, `semester_plans`, `courses`, and `roadmaps`).
 
 ---
 
@@ -347,7 +437,7 @@ Firebase Cloud Messaging
 * notifications
 * notification_preferences
 
-AI Roadmaps
+AI Roadmaps (Planned / Future Phase)
 
 * roadmaps
 
@@ -373,5 +463,8 @@ Premium Subscription System
 12. notifications
 13. vault_files
 14. roadmaps
-15. resumes
-16. notification_preferences
+15. courses
+16. student_progress
+17. semester_plans
+18. resumes
+19. notification_preferences

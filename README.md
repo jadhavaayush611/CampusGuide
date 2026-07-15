@@ -81,6 +81,17 @@ CampusGuide solves these issues by centralizing campus activities into a single 
 
 ---
 
+## Academic Planning & Progress
+
+* Academic Roadmaps: Degree pathway structures defined by degree program and department.
+* Course Catalog: Fully searchable catalog of mandatory and elective courses with credit tracking, prerequisite mapping, and target semester levels.
+* Student Progress: Track completed courses, credits earned, current GPA, and graduation eligibility.
+* Semester Planning: Build, update, modify, and finalize semester-by-semester planned courses with automatic prerequisite verification.
+* Academic Dashboard: Aggregated progress visualizer detailing graduation eligibility, completion percentage, remaining credits, and plans.
+* Course Recommendations: Automated semester recommendations suggesting courses based on department, target semester, and completed prerequisites with validation warnings.
+
+---
+
 ## Notifications
 
 * Event Notifications
@@ -94,7 +105,7 @@ CampusGuide solves these issues by centralizing campus activities into a single 
 
 * Personal Vault Storage
 * Resume Builder
-* Custom AI Roadmaps
+* Custom AI Roadmaps (Planned / Future Phase)
 * Additional Storage Capacity
 
 ---
@@ -111,6 +122,10 @@ Can:
 * Apply for council memberships
 * Build resumes
 * Store personal documents
+* View academic roadmaps and browse courses
+* Manage personal student progress and completed courses
+* Build, modify, and finalize semester plans
+* Access academic dashboard and receive recommended courses
 
 ---
 
@@ -145,6 +160,9 @@ Can:
 * Manage councils
 * Moderate content
 * Access administrative tools
+* Manage full course catalog (create, update, delete courses)
+* Manage roadmaps (create, update, delete roadmaps)
+* View/manage all student progress records and semester plans
 
 ---
 
@@ -380,14 +398,15 @@ Week 5
 
 Week 6
 
-* Premium Features & Deployment
+* Premium Features, Academic Planning (Roadmaps, Courses, Student Progress, Semester Plans, Dashboard, Recommendations) & Deployment
 
 ---
 
 # Future Scope
 
 * Native Mobile Application
-* AI Recommendation Engine
+* AI Advisor & AI Recommendation Engine (Planned / Future Phase)
+* Advanced Curriculum Planning (Planned / Future Phase)
 * Placement Tracking
 * Internship Portal
 * Academic Analytics
