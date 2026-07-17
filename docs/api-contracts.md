@@ -1427,3 +1427,65 @@ GET /api/resume/pdf
   - `502 Bad Gateway`: Gateway failure (though usually intercepted to return a graceful fallback response).
 
 
+### GET /api/ai/recommendations
+* **Purpose**: Retrieve all recommendation categories (Academic, Events, Communities, Resources) for the authenticated user, sorted by relevance score.
+* **Authentication**: Required (JWT Token).
+* **Request Parameters**:
+  - `page`: Integer (optional, 0-based page index)
+  - `size`: Integer (optional, page size)
+* **Response Body** (application/json):
+  ```json
+  [
+    {
+      "id": "course-123",
+      "title": "CS102 - Data Structures",
+      "description": "Study of fundamental data structures.",
+      "recommendationType": "ACADEMIC",
+      "recommendationSource": "ROADMAP",
+      "reasonCode": "PREREQUISITE_MATCH",
+      "score": 0.90,
+      "explanation": "This course is the next prerequisite in your roadmap.",
+      "metadata": {
+        "courseCode": "CS102",
+        "semester": 2,
+        "credits": 4
+      }
+    },
+    {
+      "id": "event-456",
+      "title": "Computer Science Hackathon",
+      "description": "CS Department programming challenge.",
+      "recommendationType": "EVENT",
+      "recommendationSource": "EVENT",
+      "reasonCode": "DEPARTMENT_MATCH",
+      "score": 0.85,
+      "explanation": "This workshop matches your Computer Science department.",
+      "metadata": {
+        "councilId": "council-111",
+        "startTime": "2026-10-15T10:00:00",
+        "location": "Lobby A"
+      }
+    }
+  ]
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/ai/recommendations/{type}
+* **Purpose**: Retrieve recommendations of a specific category (academic, events, communities, resources) for the authenticated user, sorted by relevance score.
+* **Authentication**: Required (JWT Token).
+* **Path Parameters**:
+  - `type`: String (required, one of `academic`, `events`, `communities`, `resources`)
+* **Request Parameters**:
+  - `page`: Integer (optional, 0-based page index)
+  - `size`: Integer (optional, page size)
+* **Response Body** (application/json):
+  Same format as `GET /api/ai/recommendations`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Invalid/Unsupported recommendation type.
+  - `401 Unauthorized`: Unauthenticated.
+
+
+
