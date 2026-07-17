@@ -1,12 +1,15 @@
 package com.campusguide.modules.ai.controller;
 
+import com.campusguide.modules.ai.dto.request.ChatRequest;
 import com.campusguide.modules.ai.dto.request.CreateConversationRequest;
 import com.campusguide.modules.ai.dto.request.SendMessageRequest;
 import com.campusguide.modules.ai.dto.request.UpdateConversationRequest;
+import com.campusguide.modules.ai.dto.response.ChatResponse;
 import com.campusguide.modules.ai.dto.response.ConversationHistoryResponse;
 import com.campusguide.modules.ai.dto.response.ConversationResponse;
 import com.campusguide.modules.ai.dto.response.ConversationSummaryResponse;
 import com.campusguide.modules.ai.dto.response.MessageResponse;
+import com.campusguide.modules.ai.service.interfaces.AiService;
 import com.campusguide.modules.ai.service.interfaces.ConversationService;
 import com.campusguide.modules.ai.service.interfaces.MessageService;
 import jakarta.validation.Valid;
@@ -29,6 +32,7 @@ public class ConversationController {
 
     private final ConversationService conversationService;
     private final MessageService messageService;
+    private final AiService aiService;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -83,5 +87,15 @@ public class ConversationController {
             @Valid @RequestBody SendMessageRequest request) {
         MessageResponse response = messageService.saveMessage(userDetails, conversationId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/{id}/chat")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ChatResponse> chat(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable("id") String conversationId,
+            @Valid @RequestBody ChatRequest request) {
+        ChatResponse response = aiService.chat(userDetails, conversationId, request);
+        return ResponseEntity.ok(response);
     }
 }

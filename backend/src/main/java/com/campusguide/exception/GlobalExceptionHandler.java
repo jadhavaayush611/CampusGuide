@@ -91,6 +91,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.modules.ai.exception.AiGatewayException.class)
+    public ResponseEntity<Map<String, String>> handleAiGatewayException(com.campusguide.modules.ai.exception.AiGatewayException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.modules.ai.exception.PromptBuildException.class)
+    public ResponseEntity<Map<String, String>> handlePromptBuildException(com.campusguide.modules.ai.exception.PromptBuildException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.modules.ai.exception.ConversationContextException.class)
+    public ResponseEntity<Map<String, String>> handleConversationContextException(com.campusguide.modules.ai.exception.ConversationContextException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
         Map<String, String> error = new HashMap<>();

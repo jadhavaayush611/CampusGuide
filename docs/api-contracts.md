@@ -1399,3 +1399,31 @@ GET /api/resume/pdf
   - `401 Unauthorized`: Unauthenticated.
   - `404 Not Found`: Conversation not found, is inactive, or belongs to another user.
 
+### POST /api/ai/conversations/{id}/chat
+* **Purpose**: Send a message to the AI Gateway and retrieve the assistant response. Both the user message and assistant response are persisted to the conversation history.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Conversation owner only.
+* **Request Body** (application/json):
+  ```json
+  {
+    "message": "String (required, cannot be blank)"
+  }
+  ```
+* **Response Body** (application/json):
+  ```json
+  {
+    "assistantMessage": "String",
+    "conversationId": "String",
+    "model": "String",
+    "provider": "String",
+    "processingTime": 0.0
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Conversation not found, is inactive, or belongs to another user.
+  - `502 Bad Gateway`: Gateway failure (though usually intercepted to return a graceful fallback response).
+
+
