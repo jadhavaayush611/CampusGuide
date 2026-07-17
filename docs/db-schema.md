@@ -419,6 +419,41 @@ Fields:
 
 ---
 
+# 20. conversations
+
+Purpose:
+AI Assistant conversations configuration and metadata
+
+Fields:
+
+* _id
+* userId (indexed)
+* title
+* type (ConversationType)
+* metadata (Map<String, Object>)
+* status (ConversationStatus: ACTIVE, ARCHIVED, DELETED)
+* createdAt
+* updatedAt
+
+---
+
+# 21. messages
+
+Purpose:
+AI Assistant message logs for conversations
+
+Fields:
+
+* _id
+* conversationId (indexed)
+* role (MessageRole)
+* content
+* metadata (Map<String, Object>)
+* timestamp
+
+---
+
+
 # Note on Academic Dashboard
 The **Academic Dashboard** does not persist any data. It dynamically aggregates metrics, statistics, and course status listings by query-combining information from existing collections (`student_progress`, `semester_plans`, `courses`, and `roadmaps`).
 
@@ -468,3 +503,6 @@ Premium Subscription System
 17. semester_plans
 18. resumes
 19. notification_preferences
+20. conversations
+21. messages
+

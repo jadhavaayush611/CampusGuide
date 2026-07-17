@@ -323,6 +323,7 @@ class SemesterPlanServiceTest {
     void updateSemesterPlan_CreditCalculations_Success() {
         when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
+        when(studentProgressRepository.findByStudentId(semesterPlan.getStudentId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseById("course-prereq")).thenReturn(prereqCourse);
         when(semesterPlanRepository.save(any(SemesterPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 

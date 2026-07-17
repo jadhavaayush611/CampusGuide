@@ -1249,3 +1249,153 @@ POST /api/resume
 GET /api/resume
 
 GET /api/resume/pdf
+
+---
+
+## AI Assistant
+
+### POST /api/ai/conversations
+* **Purpose**: Create a new AI assistant conversation.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body** (application/json):
+  ```json
+  {
+    "title": "String (1-100 characters, required)",
+    "type": "ConversationType (GENERAL_CHAT, ACADEMIC_ADVISOR, CAREER_GUIDANCE, CAMPUS_ASSISTANT, required)",
+    "metadata": "Map of key-value pairs (optional)"
+  }
+  ```
+* **Response Body** (application/json):
+  ```json
+  {
+    "id": "String",
+    "userId": "String",
+    "title": "String",
+    "type": "ConversationType",
+    "metadata": {},
+    "active": true,
+    "createdAt": "String (ISO-8601 DateTime)",
+    "updatedAt": "String (ISO-8601 DateTime)"
+  }
+  ```
+* **Success Status Codes**: `201 Created`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (title blank/too long, type missing/invalid).
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/ai/conversations
+* **Purpose**: Retrieve the list of active conversations for the authenticated user.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  [
+    {
+      "id": "String",
+      "title": "String",
+      "type": "ConversationType",
+      "active": true,
+      "createdAt": "String (ISO-8601 DateTime)",
+      "updatedAt": "String (ISO-8601 DateTime)"
+    }
+  ]
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/ai/conversations/{id}
+* **Purpose**: Retrieve conversation details along with its chronological message history.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Conversation owner only.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  {
+    "conversation": {
+      "id": "String",
+      "userId": "String",
+      "title": "String",
+      "type": "ConversationType",
+      "metadata": {},
+      "active": true,
+      "createdAt": "String (ISO-8601 DateTime)",
+      "updatedAt": "String (ISO-8601 DateTime)"
+    },
+    "messages": [
+      {
+        "id": "String",
+        "conversationId": "String",
+        "role": "MessageRole (USER, ASSISTANT, SYSTEM)",
+        "content": "String",
+        "metadata": {},
+        "timestamp": "String (ISO-8601 DateTime)"
+      }
+    ]
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Conversation not found or belongs to another user.
+
+### PUT /api/ai/conversations/{id}
+* **Purpose**: Rename/update conversation title.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Conversation owner only.
+* **Request Body** (application/json):
+  ```json
+  {
+    "title": "String (1-100 characters, required)"
+  }
+  ```
+* **Response Body** (application/json):
+  Same format as `POST /api/ai/conversations`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Conversation not found or belongs to another user.
+
+### DELETE /api/ai/conversations/{id}
+* **Purpose**: Soft delete a conversation (sets active to false).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Conversation owner only.
+* **Request Body**: None
+* **Response Body**: None
+* **Success Status Codes**: `204 No Content`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Conversation not found or belongs to another user.
+
+### POST /api/ai/conversations/{id}/messages
+* **Purpose**: Store a message in a conversation. Does not call any AI model.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Conversation owner only.
+* **Request Body** (application/json):
+  ```json
+  {
+    "role": "MessageRole (USER, ASSISTANT, SYSTEM, required)",
+    "content": "String (required)",
+    "metadata": "Map of key-value pairs (optional)"
+  }
+  ```
+* **Response Body** (application/json):
+  ```json
+  {
+    "id": "String",
+    "conversationId": "String",
+    "role": "MessageRole",
+    "content": "String",
+    "metadata": {},
+    "timestamp": "String (ISO-8601 DateTime)"
+  }
+  ```
+* **Success Status Codes**: `201 Created`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Unauthenticated.
+  - `404 Not Found`: Conversation not found, is inactive, or belongs to another user.
+

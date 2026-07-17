@@ -116,7 +116,7 @@ class CourseServiceTest {
         course.setPrerequisiteCourseIds(List.of("prereq-456"));
 
         when(courseRepository.existsByCourseCode("CS101")).thenReturn(false);
-        when(courseRepository.findById("prereq-456")).thenReturn(Optional.of(prereqCourse));
+        when(courseRepository.findAllById(List.of("prereq-456"))).thenReturn(List.of(prereqCourse));
         when(courseRepository.save(any(Course.class))).thenReturn(course);
 
         CourseResponse response = courseService.createCourse(createRequest);
@@ -126,7 +126,7 @@ class CourseServiceTest {
         assertEquals("prereq-456", response.getPrerequisiteCourseIds().get(0));
 
         verify(courseRepository).existsByCourseCode("CS101");
-        verify(courseRepository).findById("prereq-456");
+        verify(courseRepository).findAllById(List.of("prereq-456"));
         verify(courseRepository).save(any(Course.class));
     }
 
@@ -144,12 +144,12 @@ class CourseServiceTest {
     void createCourse_InvalidPrerequisite_ThrowsBadRequestException() {
         createRequest.setPrerequisiteCourseIds(List.of("invalid-id"));
         when(courseRepository.existsByCourseCode("CS101")).thenReturn(false);
-        when(courseRepository.findById("invalid-id")).thenReturn(Optional.empty());
+        when(courseRepository.findAllById(List.of("invalid-id"))).thenReturn(List.of());
 
         assertThrows(BadRequestException.class, () -> courseService.createCourse(createRequest));
 
         verify(courseRepository).existsByCourseCode("CS101");
-        verify(courseRepository).findById("invalid-id");
+        verify(courseRepository).findAllById(List.of("invalid-id"));
         verify(courseRepository, never()).save(any(Course.class));
     }
 
@@ -159,12 +159,12 @@ class CourseServiceTest {
         createRequest.setPrerequisiteCourseIds(List.of("prereq-456"));
 
         when(courseRepository.existsByCourseCode("CS101")).thenReturn(false);
-        when(courseRepository.findById("prereq-456")).thenReturn(Optional.of(prereqCourse));
+        when(courseRepository.findAllById(List.of("prereq-456"))).thenReturn(List.of(prereqCourse));
 
         assertThrows(BadRequestException.class, () -> courseService.createCourse(createRequest));
 
         verify(courseRepository).existsByCourseCode("CS101");
-        verify(courseRepository).findById("prereq-456");
+        verify(courseRepository).findAllById(List.of("prereq-456"));
         verify(courseRepository, never()).save(any(Course.class));
     }
 
@@ -207,7 +207,7 @@ class CourseServiceTest {
     void updateCourse_WithValidPrerequisites_Successful() {
         updateRequest.setPrerequisiteCourseIds(List.of("prereq-456"));
         when(courseRepository.findById("course-123")).thenReturn(Optional.of(course));
-        when(courseRepository.findById("prereq-456")).thenReturn(Optional.of(prereqCourse));
+        when(courseRepository.findAllById(List.of("prereq-456"))).thenReturn(List.of(prereqCourse));
         when(courseRepository.save(any(Course.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CourseResponse response = courseService.updateCourse("course-123", updateRequest);
@@ -217,7 +217,7 @@ class CourseServiceTest {
         assertEquals("prereq-456", response.getPrerequisiteCourseIds().get(0));
 
         verify(courseRepository).findById("course-123");
-        verify(courseRepository).findById("prereq-456");
+        verify(courseRepository).findAllById(List.of("prereq-456"));
         verify(courseRepository).save(any(Course.class));
     }
 
