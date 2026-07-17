@@ -257,17 +257,21 @@ Status Values:
 # 12. notifications
 
 Purpose:
-System Notifications
+Modular, event-driven in-app notifications
 
 Fields:
 
 * _id
-* userId
+* userId (indexed)
 * title
 * message
-* notificationType
-* isRead
+* type (NotificationType)
+* priority (NotificationPriority)
+* read (boolean)
+* metadata (Map<String, Object>)
 * createdAt
+* readAt
+
 
 ---
 

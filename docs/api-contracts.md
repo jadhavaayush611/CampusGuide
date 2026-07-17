@@ -537,11 +537,117 @@ POST /api/notices
 
 ## Notifications
 
-GET /api/notifications
+Every endpoint in this section operates only on the authenticated user's notifications.
 
-PUT /api/notifications/{id}/read
+### GET /api/notifications
+* **Purpose**: Retrieve all notifications for the authenticated user, paginated.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Query Parameters**:
+  - `page` (optional): Page number (0-based, default: 0).
+  - `size` (optional): Page size (default: 20).
+  - `sort` (optional): Fields to sort by (default: `createdAt,desc`).
+* **Request Body**: None
+* **Response Body** (application/json):
+  A standard Spring Page structure containing a list of notification responses:
+  ```json
+  {
+    "content": [
+      {
+        "id": "60c72b2f9b1d8a2a4c8e9b01",
+        "title": "Roadmap Published",
+        "message": "Your academic roadmap 'CS Roadmap' has been successfully published.",
+        "type": "ACADEMIC",
+        "priority": "NORMAL",
+        "read": false,
+        "createdAt": "2026-07-17T19:20:00"
+      }
+    ],
+    "page": {
+      "size": 20,
+      "number": 0,
+      "totalElements": 1,
+      "totalPages": 1
+    }
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/notifications/unread
+* **Purpose**: Retrieve all unread notifications for the authenticated user, paginated.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Query Parameters**: Same as `GET /api/notifications`.
+* **Request Body**: None
+* **Response Body** (application/json): Same as `GET /api/notifications`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### GET /api/notifications/unread/count
+* **Purpose**: Retrieve the count of unread notifications for the authenticated user.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  {
+    "count": 1
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### PATCH /api/notifications/{id}/read
+* **Purpose**: Mark a specific notification as read.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Owner of the notification.
+* **Request Body**: None
+* **Response Body** (application/json):
+  ```json
+  {
+    "id": "60c72b2f9b1d8a2a4c8e9b01",
+    "title": "Roadmap Published",
+    "message": "Your academic roadmap 'CS Roadmap' has been successfully published.",
+    "type": "ACADEMIC",
+    "priority": "NORMAL",
+    "read": true,
+    "createdAt": "2026-07-17T19:20:00"
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Mismatched ownership.
+  - `404 Not Found`: Notification not found.
+
+### PATCH /api/notifications/read-all
+* **Purpose**: Mark all unread notifications for the authenticated user as read.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body**: None
+* **Response Body**: None
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+
+### DELETE /api/notifications/{id}
+* **Purpose**: Delete a specific notification.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Owner of the notification.
+* **Request Body**: None
+* **Response Body**: None
+* **Success Status Codes**: `204 No Content`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Mismatched ownership.
+  - `404 Not Found`: Notification not found.
 
 ---
+
 
 ## Vault
 

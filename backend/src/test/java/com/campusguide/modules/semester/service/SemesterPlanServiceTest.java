@@ -53,6 +53,10 @@ class SemesterPlanServiceTest {
     @Mock
     private StudentProgressRepository studentProgressRepository;
 
+    @Mock
+    private com.campusguide.modules.notification.service.interfaces.NotificationService notificationService;
+
+
     @InjectMocks
     private SemesterPlanService semesterPlanService;
 

@@ -45,6 +45,8 @@ class RecommendationServiceTest {
     @Mock private CommunityRepository communityRepository;
     @Mock private ResourceRepository resourceRepository;
     @Mock private RecommendationEngine recommendationEngine;
+    @Mock private com.campusguide.modules.notification.service.interfaces.NotificationService notificationService;
+
 
     @InjectMocks
     private RecommendationService recommendationService;

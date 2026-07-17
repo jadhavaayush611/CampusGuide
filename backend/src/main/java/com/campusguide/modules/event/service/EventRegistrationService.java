@@ -9,6 +9,9 @@ import com.campusguide.modules.event.entity.Event;
 import com.campusguide.modules.event.repository.EventRepository;
 import com.campusguide.modules.user.entity.User;
 import com.campusguide.modules.user.repository.UserRepository;
+import com.campusguide.modules.notification.service.interfaces.NotificationService;
+import com.campusguide.modules.notification.enums.NotificationType;
+import com.campusguide.modules.notification.enums.NotificationPriority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,8 @@ public class EventRegistrationService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
+
 
     /**
      * Registers the authenticated user for an event.
@@ -80,8 +85,17 @@ public class EventRegistrationService {
         event.setUpdatedAt(now);
 
         event = eventRepository.save(event);
+        notificationService.createNotification(
+                user.getId(),
+                "Event Registration Confirmed",
+                "You have successfully registered for the event: " + event.getTitle(),
+                NotificationType.EVENT,
+                NotificationPriority.NORMAL,
+                null
+        );
         return toEventResponse(event);
     }
+
 
     /**
      * Cancels the authenticated user's registration for an event.

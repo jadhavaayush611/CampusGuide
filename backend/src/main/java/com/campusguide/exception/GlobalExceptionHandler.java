@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.modules.notification.exception.NotificationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotificationNotFoundException(com.campusguide.modules.notification.exception.NotificationNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(UnauthorisedException.class)
     public ResponseEntity<Map<String, String>> handleUnauthorisedException(UnauthorisedException ex) {
         Map<String, String> error = new HashMap<>();

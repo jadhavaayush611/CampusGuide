@@ -24,6 +24,9 @@ import com.campusguide.modules.semester.entity.SemesterPlan;
 import com.campusguide.modules.semester.repository.SemesterPlanRepository;
 import com.campusguide.modules.user.entity.User;
 import com.campusguide.modules.user.repository.UserRepository;
+import com.campusguide.modules.notification.service.interfaces.NotificationService;
+import com.campusguide.modules.notification.enums.NotificationType;
+import com.campusguide.modules.notification.enums.NotificationPriority;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +46,7 @@ public class RecommendationService {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
 
     private final UserRepository userRepository;
+
     private final StudentProgressRepository studentProgressRepository;
     private final CourseRepository courseRepository;
     private final RoadmapRepository roadmapRepository;
@@ -52,6 +56,8 @@ public class RecommendationService {
     private final CommunityRepository communityRepository;
     private final ResourceRepository resourceRepository;
     private final RecommendationEngine recommendationEngine;
+    private final NotificationService notificationService;
+
 
     /**
      * Generates personalized recommendations for the authenticated user.
@@ -83,6 +89,18 @@ public class RecommendationService {
         } else {
             recommendations = recommendationEngine.generateAllRecommendations(context);
         }
+
+        if (!recommendations.isEmpty() && !notificationService.hasUnreadNotificationOfType(user.getId(), NotificationType.AI)) {
+            notificationService.createNotification(
+                    user.getId(),
+                    "New Recommendations Available",
+                    "We have generated new personalized recommendations for you. Explore them in the AI dashboard!",
+                    NotificationType.AI,
+                    NotificationPriority.NORMAL,
+                    null
+            );
+        }
+
 
         long endTime = System.nanoTime();
         double executionTimeMs = (endTime - startTime) / 1_000_000.0;

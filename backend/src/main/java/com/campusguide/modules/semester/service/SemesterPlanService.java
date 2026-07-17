@@ -15,6 +15,9 @@ import com.campusguide.modules.semester.repository.SemesterPlanRepository;
 import com.campusguide.modules.user.entity.Role;
 import com.campusguide.modules.user.entity.User;
 import com.campusguide.modules.user.repository.UserRepository;
+import com.campusguide.modules.notification.service.interfaces.NotificationService;
+import com.campusguide.modules.notification.enums.NotificationType;
+import com.campusguide.modules.notification.enums.NotificationPriority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +36,8 @@ public class SemesterPlanService {
     private final CourseService courseService;
     private final RoadmapService roadmapService;
     private final StudentProgressRepository studentProgressRepository;
+    private final NotificationService notificationService;
+
 
     /**
      * Creates a semester plan for the authenticated student.
@@ -319,8 +324,17 @@ public class SemesterPlanService {
 
         plan.setUpdatedAt(LocalDateTime.now());
         plan = semesterPlanRepository.save(plan);
+        notificationService.createNotification(
+                user.getId(),
+                "Semester Plan Finalized",
+                "Your plan for Semester " + plan.getSemesterNumber() + " has been successfully finalized.",
+                NotificationType.ACADEMIC,
+                NotificationPriority.HIGH,
+                null
+        );
         return toSemesterPlanResponse(plan);
     }
+
 
     /**
      * Gets all semester plans for the authenticated student.

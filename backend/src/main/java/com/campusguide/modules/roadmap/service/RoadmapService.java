@@ -12,10 +12,14 @@ import com.campusguide.modules.roadmap.repository.RoadmapRepository;
 import com.campusguide.modules.user.entity.Role;
 import com.campusguide.modules.user.entity.User;
 import com.campusguide.modules.user.repository.UserRepository;
+import com.campusguide.modules.notification.service.interfaces.NotificationService;
+import com.campusguide.modules.notification.enums.NotificationType;
+import com.campusguide.modules.notification.enums.NotificationPriority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +30,7 @@ public class RoadmapService {
 
     private final RoadmapRepository roadmapRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * Creates a new academic roadmap.
@@ -76,8 +81,17 @@ public class RoadmapService {
                 .build();
 
         roadmap = roadmapRepository.save(roadmap);
+        notificationService.createNotification(
+                user.getId(),
+                "Roadmap Published",
+                "Your academic roadmap '" + roadmap.getTitle() + "' has been successfully published.",
+                NotificationType.ACADEMIC,
+                NotificationPriority.NORMAL,
+                null
+        );
         return toRoadmapResponse(roadmap);
     }
+
 
     /**
      * Updates an existing roadmap.

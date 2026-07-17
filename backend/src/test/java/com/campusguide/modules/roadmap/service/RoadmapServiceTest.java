@@ -39,6 +39,10 @@ class RoadmapServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private com.campusguide.modules.notification.service.interfaces.NotificationService notificationService;
+
+
     @InjectMocks
     private RoadmapService roadmapService;
 
