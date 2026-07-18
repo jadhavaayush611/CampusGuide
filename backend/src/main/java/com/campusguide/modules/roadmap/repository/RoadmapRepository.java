@@ -16,4 +16,6 @@ public interface RoadmapRepository extends MongoRepository<Roadmap, String> {
     List<Roadmap> findByDegreeProgramIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String degreeProgram);
 
     List<Roadmap> findByDepartmentIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String department);
+
+    long countByIsDeletedFalse();
 }

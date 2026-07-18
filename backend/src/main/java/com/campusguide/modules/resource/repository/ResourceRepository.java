@@ -21,4 +21,6 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     List<Resource> findByTagsContainingAndIsDeletedFalseOrderByCreatedAtDesc(String tag);
 
     List<Resource> findByTitleContainingIgnoreCaseAndIsDeletedFalseOrderByCreatedAtDesc(String title);
+
+    long countByIsDeletedFalse();
 }

@@ -14,4 +14,6 @@ public interface CommunityRepository extends MongoRepository<Community, String> 
     List<Community> findByCouncilId(String councilId);
 
     List<Community> findByIsActiveTrue();
+
+    long countByIsActiveTrue();
 }

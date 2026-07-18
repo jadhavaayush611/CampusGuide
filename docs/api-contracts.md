@@ -1593,5 +1593,86 @@ GET /api/resume/pdf
   - `400 Bad Request`: Invalid/Unsupported recommendation type.
   - `401 Unauthorized`: Unauthenticated.
 
+---
+
+## Admin Analytics
+
+### GET /api/admin/analytics/dashboard
+* **Purpose**: Retrieve high-level operational metrics of the platform.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: `SUPER_ADMIN` role only.
+* **Response Body** (application/json):
+  ```json
+  {
+    "totalUsers": 100,
+    "activeUsers": 80,
+    "totalRoadmaps": 50,
+    "publishedRoadmaps": 45,
+    "totalCommunities": 20,
+    "activeCommunities": 18,
+    "totalEvents": 30,
+    "upcomingEvents": 5,
+    "totalAiConversations": 200,
+    "totalNotifications": 1000,
+    "totalResources": 150,
+    "generatedAt": "2026-07-18T09:46:14.123"
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not an administrator.
+
+### GET /api/admin/analytics/users
+* **Purpose**: Retrieve user-specific counts (total and active).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: `SUPER_ADMIN` role only.
+* **Response Body** (application/json):
+  ```json
+  {
+    "total": 100,
+    "active": 80,
+    "archived": 0
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not an administrator.
+
+### GET /api/admin/analytics/events
+* **Purpose**: Retrieve event-specific counts (total active and upcoming).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: `SUPER_ADMIN` role only.
+* **Response Body** (application/json):
+  ```json
+  {
+    "total": 30,
+    "active": 5,
+    "archived": 0
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not an administrator.
+
+### GET /api/admin/analytics/communities
+* **Purpose**: Retrieve community-specific counts (total and active).
+* **Authentication**: Required (JWT Token).
+* **Authorization**: `SUPER_ADMIN` role only.
+* **Response Body** (application/json):
+  ```json
+  {
+    "total": 20,
+    "active": 18,
+    "archived": 0
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: Authenticated user is not an administrator.
+
 
 

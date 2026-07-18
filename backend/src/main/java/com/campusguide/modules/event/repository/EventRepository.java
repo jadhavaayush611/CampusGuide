@@ -21,5 +21,9 @@ public interface EventRepository extends MongoRepository<Event, String> {
             String title, String description, String location);
 
     List<Event> findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(LocalDateTime startDate, LocalDateTime endDate);
+
+    long countByIsDeletedFalse();
+
+    long countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(LocalDateTime now);
 }
 
