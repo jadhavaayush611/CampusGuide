@@ -219,6 +219,19 @@ public class CourseService {
     }
 
     /**
+     * Retrieves a course by its ID internally, regardless of whether it is active.
+     *
+     * @param courseId the ID of the course to retrieve
+     * @return the course details
+     * @throws ResourceNotFoundException if the course does not exist
+     */
+    public CourseResponse getCourseByIdInternal(String courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+        return toCourseResponse(course);
+    }
+
+    /**
      * Retrieves active courses in a specific department ordered by courseCode ascending.
      *
      * @param department the department to filter by

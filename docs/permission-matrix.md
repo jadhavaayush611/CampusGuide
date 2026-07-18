@@ -127,7 +127,8 @@
 | Update Course | No | No | No | Yes | No |
 | Delete Course | No | No | No | Yes | No |
 | Initialize Progress | Yes | Yes | Yes | Yes | N/A (Self progress only) |
-| Update Progress | No | No | No | Yes | Yes (Own progress only) |
+| Update Progress (Permitted fields only) | No | No | No | Yes | Yes (Own progress only) |
+| Update Progress (Academic records: GPA, credits, graduation eligibility) | No | No | No | Yes | No |
 | View Progress (Own) | Yes | Yes | Yes | Yes | Yes |
 | View Progress (Others)| No | No | No | Yes | No |
 | Complete/Remove Course| No | No | No | Yes | Yes (Own progress only) |
@@ -141,9 +142,9 @@
 | Get Course Recommendations| Yes | Yes | Yes | Yes | Yes (Own recommendations) |
 
 > [!NOTE]
-> * **Student Permissions**: Students are allowed to view roadmaps, browse/search courses, initialize/manage their own progress records (including marking courses completed or removing completed courses), manage their own semester plans (creating, updating, adding/removing courses, and finalizing), and access their personalized academic dashboard and course recommendations. They are strictly not allowed to manage the course catalog, modify roadmaps created by others, or view/manage progress or semester plans of other students.
-> * **Super Admin**: Has unrestricted full control including creating and managing the entire course catalog, creating and updating roadmaps, viewing/managing all students' progress records and semester plans, and accessing dashboard statistics.
-> * **Owner (Creator/Student)**: The creator of a roadmap is permitted to update and delete it. A student is considered the owner of their own student progress and semester plans, granting them full management rights over those records.
+> * **Student Permissions**: Students are allowed to view roadmaps, browse/search courses, initialize/manage permitted fields on their own progress records (currentSemester, roadmapId, and completing/removing courses), manage their own semester plans (creating, updating, adding/removing courses, and finalizing), and access their personalized academic dashboard and course recommendations. They are strictly not allowed to directly modify restricted academic records (GPA, total credits, graduation eligibility) which are server-controlled, manage the course catalog, modify roadmaps created by others, or view/manage progress or semester plans of other students.
+> * **Super Admin**: Has unrestricted full control including creating and managing the entire course catalog, creating and updating roadmaps, viewing/managing all students' progress records and semester plans, performing administrative academic updates (GPA), and accessing dashboard statistics.
+> * **Owner (Creator/Student)**: The creator of a roadmap is permitted to update and delete it. A student is considered the owner of their own student progress and semester plans, granting them management rights over permitted fields on those records.
 
 ---
 

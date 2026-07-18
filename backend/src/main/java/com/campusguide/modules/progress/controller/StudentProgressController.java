@@ -1,5 +1,6 @@
 package com.campusguide.modules.progress.controller;
 
+import com.campusguide.modules.progress.dto.AdminUpdateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.CreateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.StudentProgressResponse;
 import com.campusguide.modules.progress.dto.UpdateStudentProgressRequest;
@@ -37,6 +38,15 @@ public class StudentProgressController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody UpdateStudentProgressRequest request) {
         StudentProgressResponse response = studentProgressService.updateProgress(userDetails, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/admin")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<StudentProgressResponse> adminUpdateProgress(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody AdminUpdateStudentProgressRequest request) {
+        StudentProgressResponse response = studentProgressService.adminUpdateProgress(userDetails, request);
         return ResponseEntity.ok(response);
     }
 

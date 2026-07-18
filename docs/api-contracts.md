@@ -1008,7 +1008,7 @@ DELETE /api/vault/{id}
   - `409 Conflict`: Progress record already exists for the student.
 
 ### PUT /api/progress
-* **Purpose**: Update student progress metrics. Students can update their own progress. `SUPER_ADMIN` can specify `studentId` to update other students.
+* **Purpose**: Update student progress metrics (permitted fields only). Students can update their own progress. `SUPER_ADMIN` can specify `studentId` to update other students. Restricted academic record fields (`currentGpa`, `totalCreditsEarned`, `graduationEligible`) are server-controlled and cannot be edited via this endpoint.
 * **Authentication**: Required (JWT Token).
 * **Authorization**: Owner or `SUPER_ADMIN`.
 * **Request Body** (application/json):
@@ -1016,20 +1016,41 @@ DELETE /api/vault/{id}
   {
     "studentId": "String (optional, for SUPER_ADMIN use only)",
     "roadmapId": "String (optional)",
-    "currentSemester": "Integer (minimum 1, optional)",
-    "currentGpa": "Double (0.0 to 10.0, optional)",
-    "totalCreditsEarned": "Integer (minimum 0, optional)",
-    "graduationEligible": "Boolean (optional)"
+    "currentSemester": "Integer (minimum 1, optional)"
   }
   ```
 * **Response Body** (application/json):
   Same format as `POST /api/progress`.
 * **Success Status Codes**: `200 OK`
 * **Error Status Codes**:
-  - `400 Bad Request`: Validation failure (GPA out of range, semester < 1, etc.).
+  - `400 Bad Request`: Validation failure (semester < 1, etc.).
   - `401 Unauthorized`: Unauthenticated.
   - `403 Forbidden`: User is not owner and not `SUPER_ADMIN`.
   - `404 Not Found`: Progress record not found.
+
+### PUT /api/progress/admin
+* **Purpose**: Perform administrative academic record updates on student progress records (e.g. GPA). Only accessible by `SUPER_ADMIN`.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: `SUPER_ADMIN` only.
+* **Request Body** (application/json):
+  ```json
+  {
+    "studentId": "String (required)",
+    "roadmapId": "String (optional)",
+    "currentSemester": "Integer (minimum 1, optional)",
+    "currentGpa": "Double (0.0 to 10.0, optional)",
+    "totalCreditsEarned": "Integer (minimum 0, optional, server-calculated and derived)",
+    "graduationEligible": "Boolean (optional, server-calculated and derived)"
+  }
+  ```
+* **Response Body** (application/json):
+  Same format as `POST /api/progress`.
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (GPA out of range, semester < 1, missing studentId, etc.).
+  - `401 Unauthorized`: Unauthenticated.
+  - `403 Forbidden`: User does not have `SUPER_ADMIN` role.
+  - `404 Not Found`: Student progress record not found.
 
 ### GET /api/progress
 * **Purpose**: Retrieve the progress record of the authenticated student.

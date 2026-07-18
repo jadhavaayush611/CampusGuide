@@ -5,6 +5,7 @@ import com.campusguide.exception.ConflictException;
 import com.campusguide.exception.ResourceNotFoundException;
 import com.campusguide.modules.course.dto.CourseResponse;
 import com.campusguide.modules.course.service.CourseService;
+import com.campusguide.modules.progress.dto.AdminUpdateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.CreateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.StudentProgressResponse;
 import com.campusguide.modules.progress.dto.UpdateStudentProgressRequest;
@@ -63,6 +64,7 @@ class StudentProgressServiceTest {
 
     private CreateStudentProgressRequest createRequest;
     private UpdateStudentProgressRequest updateRequest;
+    private AdminUpdateStudentProgressRequest adminUpdateRequest;
     private StudentProgress studentProgress;
 
     @BeforeEach
@@ -105,6 +107,11 @@ class StudentProgressServiceTest {
                 .build();
 
         updateRequest = UpdateStudentProgressRequest.builder()
+                .currentSemester(2)
+                .build();
+
+        adminUpdateRequest = AdminUpdateStudentProgressRequest.builder()
+                .studentId("student-123")
                 .currentSemester(2)
                 .currentGpa(8.5)
                 .totalCreditsEarned(30)
@@ -181,26 +188,30 @@ class StudentProgressServiceTest {
 
         assertNotNull(response);
         assertEquals(2, response.getCurrentSemester());
-        assertEquals(8.5, response.getCurrentGpa());
-        assertEquals(30, response.getTotalCreditsEarned());
-        assertFalse(response.getGraduationEligible());
+        assertEquals(0.0, response.getCurrentGpa());
+        assertEquals(0, response.getTotalCreditsEarned());
     }
 
     @Test
-    void updateProgress_SuperAdmin_Successful() {
-        // Admin updates student's progress by providing studentId in request
-        updateRequest.setStudentId("student-123");
+    void adminUpdateProgress_SuperAdmin_Successful() {
         when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        StudentProgressResponse response = studentProgressService.updateProgress(adminUserDetails, updateRequest);
+        StudentProgressResponse response = studentProgressService.adminUpdateProgress(adminUserDetails, adminUpdateRequest);
 
         assertNotNull(response);
         assertEquals(2, response.getCurrentSemester());
         assertEquals(8.5, response.getCurrentGpa());
-        assertEquals(30, response.getTotalCreditsEarned());
-        assertFalse(response.getGraduationEligible());
+        assertEquals(0, response.getTotalCreditsEarned());
+    }
+
+    @Test
+    void adminUpdateProgress_Student_ThrowsAccessDeniedException() {
+        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
+        assertThrows(AccessDeniedException.class, () -> studentProgressService.adminUpdateProgress(studentUserDetails, adminUpdateRequest));
+        verify(studentProgressRepository, never()).save(any(StudentProgress.class));
     }
 
     @Test
@@ -216,17 +227,17 @@ class StudentProgressServiceTest {
     }
 
     @Test
-    void updateProgress_InvalidGpa_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
-        when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
+    void adminUpdateProgress_InvalidGpa_ThrowsBadRequestException() {
+        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
+        when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
 
         // GPA too high
-        updateRequest.setCurrentGpa(11.0);
-        assertThrows(BadRequestException.class, () -> studentProgressService.updateProgress(studentUserDetails, updateRequest));
+        adminUpdateRequest.setCurrentGpa(11.0);
+        assertThrows(BadRequestException.class, () -> studentProgressService.adminUpdateProgress(adminUserDetails, adminUpdateRequest));
 
         // GPA too low
-        updateRequest.setCurrentGpa(-1.0);
-        assertThrows(BadRequestException.class, () -> studentProgressService.updateProgress(studentUserDetails, updateRequest));
+        adminUpdateRequest.setCurrentGpa(-1.0);
+        assertThrows(BadRequestException.class, () -> studentProgressService.adminUpdateProgress(adminUserDetails, adminUpdateRequest));
 
         verify(studentProgressRepository, never()).save(any(StudentProgress.class));
     }
@@ -259,6 +270,7 @@ class StudentProgressServiceTest {
         when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseById("course-456")).thenReturn(courseResponse);
+        when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse);
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         StudentProgressResponse response = studentProgressService.markCourseCompleted(studentUserDetails, "course-456", null);
@@ -287,23 +299,30 @@ class StudentProgressServiceTest {
     @Test
     void removeCompletedCourse_Successful() {
         studentProgress.getCompletedCourseIds().add("course-456");
-        studentProgress.setTotalCreditsEarned(10);
+        studentProgress.getCompletedCourseIds().add("course-789");
 
-        CourseResponse courseResponse = CourseResponse.builder()
+        CourseResponse courseResponse456 = CourseResponse.builder()
                 .id("course-456")
                 .credits(4)
                 .build();
 
+        CourseResponse courseResponse789 = CourseResponse.builder()
+                .id("course-789")
+                .credits(6)
+                .build();
+
         when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
-        when(courseService.getCourseById("course-456")).thenReturn(courseResponse);
+        when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse456);
+        when(courseService.getCourseByIdInternal("course-789")).thenReturn(courseResponse789);
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         StudentProgressResponse response = studentProgressService.removeCompletedCourse(studentUserDetails, "course-456", null);
 
         assertNotNull(response);
-        assertTrue(response.getCompletedCourseIds().isEmpty());
-        assertEquals(6, response.getTotalCreditsEarned()); // Credit deduction calculations
+        assertEquals(1, response.getCompletedCourseIds().size());
+        assertTrue(response.getCompletedCourseIds().contains("course-789"));
+        assertEquals(6, response.getTotalCreditsEarned()); // Derived from remaining course-789
     }
 
     @Test
@@ -318,7 +337,7 @@ class StudentProgressServiceTest {
 
         when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
-        when(courseService.getCourseById("course-456")).thenReturn(courseResponse);
+        when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse);
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         StudentProgressResponse response = studentProgressService.removeCompletedCourse(studentUserDetails, "course-456", null);

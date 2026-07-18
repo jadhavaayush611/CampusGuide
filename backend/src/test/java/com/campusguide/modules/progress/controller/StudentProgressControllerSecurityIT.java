@@ -2,6 +2,7 @@ package com.campusguide.modules.progress.controller;
 
 import com.campusguide.modules.course.entity.Course;
 import com.campusguide.modules.course.repository.CourseRepository;
+import com.campusguide.modules.progress.dto.AdminUpdateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.CreateStudentProgressRequest;
 import com.campusguide.modules.progress.dto.UpdateStudentProgressRequest;
 import com.campusguide.modules.progress.entity.StudentProgress;
@@ -215,7 +216,6 @@ class StudentProgressControllerSecurityIT {
     void updateProgress_Student_OwnProgress_ReturnsOk() throws Exception {
         UpdateStudentProgressRequest request = UpdateStudentProgressRequest.builder()
                 .currentSemester(3)
-                .currentGpa(9.2)
                 .build();
 
         mockMvc.perform(put("/api/progress")
@@ -223,24 +223,66 @@ class StudentProgressControllerSecurityIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.currentSemester").value(3))
-                .andExpect(jsonPath("$.currentGpa").value(9.2));
+                .andExpect(jsonPath("$.currentSemester").value(3));
     }
 
     @Test
-    void updateProgress_SuperAdmin_AnyProgress_ReturnsOk() throws Exception {
-        // Admin updates the student progress by supplying studentId in the body
-        UpdateStudentProgressRequest request = UpdateStudentProgressRequest.builder()
+    void updateProgress_Student_UpdatingGpa_ReturnsForbidden() throws Exception {
+        AdminUpdateStudentProgressRequest request = AdminUpdateStudentProgressRequest.builder()
                 .studentId(studentUser.getId())
+                .currentGpa(9.2)
+                .build();
+
+        mockMvc.perform(put("/api/progress/admin")
+                        .with(user(studentDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateProgress_Student_UpdatingEarnedCredits_ReturnsForbidden() throws Exception {
+        AdminUpdateStudentProgressRequest request = AdminUpdateStudentProgressRequest.builder()
+                .studentId(studentUser.getId())
+                .totalCreditsEarned(30)
+                .build();
+
+        mockMvc.perform(put("/api/progress/admin")
+                        .with(user(studentDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateProgress_Student_UpdatingGraduationEligibility_ReturnsForbidden() throws Exception {
+        AdminUpdateStudentProgressRequest request = AdminUpdateStudentProgressRequest.builder()
+                .studentId(studentUser.getId())
+                .graduationEligible(true)
+                .build();
+
+        mockMvc.perform(put("/api/progress/admin")
+                        .with(user(studentDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateProgress_SuperAdmin_UpdatingAcademicRecord_ReturnsOk() throws Exception {
+        AdminUpdateStudentProgressRequest request = AdminUpdateStudentProgressRequest.builder()
+                .studentId(studentUser.getId())
+                .currentGpa(8.8)
                 .currentSemester(4)
                 .build();
 
-        mockMvc.perform(put("/api/progress")
+        mockMvc.perform(put("/api/progress/admin")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.studentId").value(studentUser.getId()))
+                .andExpect(jsonPath("$.currentGpa").value(8.8))
                 .andExpect(jsonPath("$.currentSemester").value(4));
     }
 
@@ -255,6 +297,7 @@ class StudentProgressControllerSecurityIT {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
     }
+
 
     // --- GET PROGRESS SECURITY TESTS ---
 

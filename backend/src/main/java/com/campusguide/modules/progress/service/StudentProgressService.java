@@ -99,7 +99,7 @@ public class StudentProgressService {
             throw new AccessDeniedException("You are not authorized to update this student progress");
         }
 
-        // Partial updates
+        // Partial updates for permitted fields
         if (request.getRoadmapId() != null) {
             roadmapService.getRoadmapById(request.getRoadmapId());
             progress.setRoadmapId(request.getRoadmapId());
@@ -112,6 +112,57 @@ public class StudentProgressService {
             progress.setCurrentSemester(request.getCurrentSemester());
         }
 
+        // Recalculate server-derived values (total credits and graduation eligibility)
+        progress.setTotalCreditsEarned(calculateTotalCredits(progress));
+        recalculateGraduationEligibility(progress);
+
+        progress.setUpdatedAt(LocalDateTime.now());
+        progress = studentProgressRepository.save(progress);
+        return toStudentProgressResponse(progress);
+    }
+
+    /**
+     * Performs administrative academic updates on a student progress record.
+     * Accessible by SUPER_ADMIN only.
+     *
+     * @param userDetails the authenticated user details
+     * @param request the admin update progress request
+     * @return the updated StudentProgressResponse
+     */
+    public StudentProgressResponse adminUpdateProgress(UserDetails userDetails, AdminUpdateStudentProgressRequest request) {
+        if (userDetails == null) {
+            throw new UnauthorisedException("User is not authenticated");
+        }
+
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+
+        if (user.getRole() != Role.SUPER_ADMIN) {
+            throw new AccessDeniedException("Only SUPER_ADMIN is authorized to perform administrative academic updates");
+        }
+
+        String targetStudentId = request.getStudentId();
+        if (targetStudentId == null) {
+            throw new BadRequestException("Student ID must be specified for administrative updates");
+        }
+
+        StudentProgress progress = studentProgressRepository.findByStudentId(targetStudentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + targetStudentId));
+
+        if (request.getRoadmapId() != null) {
+            roadmapService.getRoadmapById(request.getRoadmapId());
+            progress.setRoadmapId(request.getRoadmapId());
+        }
+
+        if (request.getCurrentSemester() != null) {
+            if (request.getCurrentSemester() <= 0) {
+                throw new BadRequestException("Semester must be greater than 0");
+            }
+            progress.setCurrentSemester(request.getCurrentSemester());
+        }
+
+        // MVP: SUPER_ADMIN updates GPA until grading system exists.
+        // Future migration path: GPA will be calculated directly from course grades.
         if (request.getCurrentGpa() != null) {
             if (request.getCurrentGpa() < 0.0 || request.getCurrentGpa() > 10.0) {
                 throw new BadRequestException("GPA must be between 0.0 and 10.0");
@@ -119,20 +170,37 @@ public class StudentProgressService {
             progress.setCurrentGpa(request.getCurrentGpa());
         }
 
-        if (request.getTotalCreditsEarned() != null) {
-            if (request.getTotalCreditsEarned() < 0) {
-                throw new BadRequestException("Total credits earned must be at least 0");
-            }
-            progress.setTotalCreditsEarned(request.getTotalCreditsEarned());
-        }
-
-        if (request.getGraduationEligible() != null) {
-            progress.setGraduationEligible(request.getGraduationEligible());
-        }
+        // Recalculate server-derived values (total credits and graduation eligibility)
+        progress.setTotalCreditsEarned(calculateTotalCredits(progress));
+        recalculateGraduationEligibility(progress);
 
         progress.setUpdatedAt(LocalDateTime.now());
         progress = studentProgressRepository.save(progress);
         return toStudentProgressResponse(progress);
+    }
+
+    /**
+     * Calculates the total credits earned by a student based on completed courses.
+     *
+     * @param progress the student progress record
+     * @return the total sum of credits for all completed courses
+     */
+    private int calculateTotalCredits(StudentProgress progress) {
+        if (progress.getCompletedCourseIds() == null || progress.getCompletedCourseIds().isEmpty()) {
+            return 0;
+        }
+        int totalCredits = 0;
+        for (String courseId : progress.getCompletedCourseIds()) {
+            try {
+                CourseResponse course = courseService.getCourseByIdInternal(courseId);
+                if (course != null && course.getCredits() != null) {
+                    totalCredits += course.getCredits();
+                }
+            } catch (Exception e) {
+                // Ignore if course not found
+            }
+        }
+        return totalCredits;
     }
 
     /**
@@ -176,9 +244,9 @@ public class StudentProgressService {
 
         progress.getCompletedCourseIds().add(courseId);
 
-        // Add course credits
-        int creditsToAdd = course.getCredits() != null ? course.getCredits() : 0;
-        progress.setTotalCreditsEarned(progress.getTotalCreditsEarned() + creditsToAdd);
+        // Recalculate total credits and graduation eligibility
+        progress.setTotalCreditsEarned(calculateTotalCredits(progress));
+        recalculateGraduationEligibility(progress);
         progress.setUpdatedAt(LocalDateTime.now());
 
         progress = studentProgressRepository.save(progress);
@@ -218,14 +286,13 @@ public class StudentProgressService {
         }
 
         // Validate course exists to get its credits
-        CourseResponse course = courseService.getCourseById(courseId);
+        CourseResponse course = courseService.getCourseByIdInternal(courseId);
 
         progress.getCompletedCourseIds().remove(courseId);
 
-        // Deduct credits and prevent negative values
-        int creditsToDeduct = course.getCredits() != null ? course.getCredits() : 0;
-        int newCredits = progress.getTotalCreditsEarned() - creditsToDeduct;
-        progress.setTotalCreditsEarned(Math.max(0, newCredits));
+        // Recalculate total credits and graduation eligibility
+        progress.setTotalCreditsEarned(calculateTotalCredits(progress));
+        recalculateGraduationEligibility(progress);
         progress.setUpdatedAt(LocalDateTime.now());
 
         progress = studentProgressRepository.save(progress);
@@ -298,6 +365,19 @@ public class StudentProgressService {
         return studentProgressRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::toStudentProgressResponse)
                 .toList();
+    }
+
+    private void recalculateGraduationEligibility(StudentProgress progress) {
+        if (progress.getRoadmapId() != null) {
+            try {
+                com.campusguide.modules.roadmap.dto.RoadmapResponse roadmap = roadmapService.getRoadmapById(progress.getRoadmapId());
+                if (roadmap != null && roadmap.getTotalCredits() != null) {
+                    progress.setGraduationEligible(progress.getTotalCreditsEarned() >= roadmap.getTotalCredits());
+                }
+            } catch (Exception e) {
+                // Ignore if roadmap not found or other errors
+            }
+        }
     }
 
     // --- PRIVATE MAPPER METHODS ---
