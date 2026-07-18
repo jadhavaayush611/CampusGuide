@@ -27,4 +27,9 @@ public interface CourseRepository extends MongoRepository<Course, String> {
     List<Course> findByElectiveTrueAndActiveTrueOrderByCourseCodeAsc();
 
     List<Course> findByElectiveFalseAndActiveTrueOrderByCourseCodeAsc();
+
+    List<Course> findByActiveTrueAndCourseNameContainingIgnoreCaseOrActiveTrueAndCourseCodeContainingIgnoreCaseOrActiveTrueAndDescriptionContainingIgnoreCase(
+            String courseName, String courseCode, String description
+    );
 }
+

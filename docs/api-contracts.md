@@ -92,6 +92,12 @@ GET /api/comments/author/{authorId}
 
 ---
 
+## Global Search
+
+POST /api/search
+
+---
+
 ## Events
 
 ### POST /api/events
@@ -1673,6 +1679,45 @@ GET /api/resume/pdf
 * **Error Status Codes**:
   - `401 Unauthorized`: Unauthenticated.
   - `403 Forbidden`: Authenticated user is not an administrator.
+
+### POST /api/search
+* **Purpose**: Perform a unified search across multiple modules (Courses, Roadmaps, Communities, Events, Resources) with relevance scoring and in-memory pagination.
+* **Authentication**: Required (JWT Token).
+* **Authorization**: Any authenticated user.
+* **Request Body** (application/json):
+  ```json
+  {
+    "query": "String (required, cannot be blank)",
+    "types": [
+      "COURSE"
+    ]
+  }
+  ```
+* **Response Body** (application/json):
+  ```json
+  {
+    "query": "String",
+    "totalResults": 15,
+    "results": [
+      {
+        "id": "String",
+        "title": "String",
+        "description": "String",
+        "searchType": "String (COURSE, ROADMAP, COMMUNITY, EVENT, RESOURCE)",
+        "relevanceScore": 0.9,
+        "metadata": {
+          "courseCode": "CS101",
+          "department": "Computer Science"
+        }
+      }
+    ]
+  }
+  ```
+* **Success Status Codes**: `200 OK`
+* **Error Status Codes**:
+  - `400 Bad Request`: Validation failure (blank query).
+  - `401 Unauthorized`: Unauthenticated.
+
 
 
 

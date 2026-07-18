@@ -16,4 +16,8 @@ public interface CommunityRepository extends MongoRepository<Community, String> 
     List<Community> findByIsActiveTrue();
 
     long countByIsActiveTrue();
+
+    List<Community> findByIsActiveTrueAndNameContainingIgnoreCaseOrIsActiveTrueAndDescriptionContainingIgnoreCase(
+            String name, String description
+    );
 }
