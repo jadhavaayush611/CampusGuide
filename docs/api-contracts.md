@@ -10,7 +10,7 @@ GET /api/auth/me
 
 ---
 
-## Users
+## Users (Planned / Future Phase)
 
 GET /api/users/{id}
 
@@ -525,7 +525,7 @@ PUT /api/resource-requests/{id}/reject
 
 ---
 
-## Announcements
+## Announcements (Planned / Future Phase)
 
 GET /api/announcements
 
@@ -533,7 +533,7 @@ POST /api/announcements
 
 ---
 
-## Notices
+## Notices (Planned / Future Phase)
 
 GET /api/notices
 
@@ -654,8 +654,7 @@ Every endpoint in this section operates only on the authenticated user's notific
 
 ---
 
-
-## Vault
+## Vault (Planned / Future Phase)
 
 GET /api/vault
 

@@ -488,25 +488,30 @@ Premium Subscription System
 
 # Total Collections
 
-1. users
-2. councils
-3. membership_applications
-4. communities
-5. posts
-6. comments
-7. events
-8. announcements
-9. notices
-10. resources
-11. resource_requests
-12. notifications
-13. vault_files
-14. roadmaps
-15. courses
-16. student_progress
-17. semester_plans
-18. resumes
-19. notification_preferences
-20. conversations
-21. messages
+### Implemented Collections (14)
+1. **users**: System user details, profiles, and roles.
+2. **councils**: Campus student councils metadata.
+3. **communities**: Council-linked discussion forum categories.
+4. **posts**: Topic discussion threads inside communities.
+5. **comments**: Nested comments on posts.
+6. **events**: Campus events, hackathons, and scheduling.
+7. **resources**: Academic study materials metadata.
+8. **notifications**: In-app notification alerts.
+9. **roadmaps**: Degree program planning templates.
+10. **courses**: Catalog of courses, prerequisites, and credits.
+11. **student_progress**: Individual student transcripts/GPA/completed courses.
+12. **semester_plans**: Term-based planning configurations.
+13. **conversations**: AI chatbot discussion metadata.
+14. **messages**: AI chat history records.
+
+### Planned / Future Phase (Deferred) Collections (7)
+1. **membership_applications**: Council membership applications.
+2. **announcements**: Council announcement boards.
+3. **notices**: Official academic notices.
+4. **resource_requests**: Access restrictions/approvals on files.
+5. **vault_files**: Individual personal file vault.
+6. **resumes**: Personal resume builder JSON.
+7. **notification_preferences**: Toggle options for push notification categories.
+
+
 

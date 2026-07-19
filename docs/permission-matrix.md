@@ -83,37 +83,6 @@
 
 ---
 
-# Notices & Announcements
-
-| Feature              | Student | Faculty | Council Admin | Super Admin |
-| -------------------- | ------- | ------- | ------------- | ----------- |
-| View Notices         | Yes     | Yes     | Yes           | Yes         |
-| Publish Notice       | No      | Yes     | No            | Yes         |
-| View Announcements   | Yes     | Yes     | Yes           | Yes         |
-| Publish Announcement | No      | No      | Yes           | Yes         |
-
----
-
-# Vault
-
-| Feature            | Student | Faculty | Council Admin | Super Admin |
-| ------------------ | ------- | ------- | ------------- | ----------- |
-| Upload Files       | Yes     | Yes     | Yes           | Yes         |
-| View Own Files     | Yes     | Yes     | Yes           | Yes         |
-| Delete Own Files   | Yes     | Yes     | Yes           | Yes         |
-| View Others' Files | No      | No      | No            | Yes         |
-
----
-
-# Resume Builder
-
-| Feature      | Student | Faculty | Council Admin | Super Admin |
-| ------------ | ------- | ------- | ------------- | ----------- |
-| Build Resume | Yes     | Yes     | Yes           | Yes         |
-| Export PDF   | Yes     | Yes     | Yes           | Yes         |
-
----
-
 # Academic Planning (Roadmaps, Courses, Student Progress & Semester Plans)
 
 | Feature | Student | Faculty | Council Admin | Super Admin | Owner (Creator/Student) |
@@ -142,9 +111,60 @@
 | Get Course Recommendations| Yes | Yes | Yes | Yes | Yes (Own recommendations) |
 
 > [!NOTE]
-> * **Student Permissions**: Students are allowed to view roadmaps, browse/search courses, initialize/manage permitted fields on their own progress records (currentSemester, roadmapId, and completing/removing courses), manage their own semester plans (creating, updating, adding/removing courses, and finalizing), and access their personalized academic dashboard and course recommendations. They are strictly not allowed to directly modify restricted academic records (GPA, total credits, graduation eligibility) which are server-controlled, manage the course catalog, modify roadmaps created by others, or view/manage progress or semester plans of other students.
-> * **Super Admin**: Has unrestricted full control including creating and managing the entire course catalog, creating and updating roadmaps, viewing/managing all students' progress records and semester plans, performing administrative academic updates (GPA), and accessing dashboard statistics.
-> * **Owner (Creator/Student)**: The creator of a roadmap is permitted to update and delete it. A student is considered the owner of their own student progress and semester plans, granting them management rights over permitted fields on those records.
+> * **Student Progress Permissions**: Students can modify only `roadmapId`, `currentSemester`, and complete/remove courses in their progress records. Restricted fields (`currentGpa`, `totalCreditsEarned`, `graduationEligible`) are computed server-side. `SUPER_ADMIN` manages GPA manually as a Faculty placeholder.
+
+---
+
+# Global Search
+
+| Feature | Student | Faculty | Council Admin | Super Admin |
+| :--- | :--- | :--- | :--- | :--- |
+| Execute Global Search (`POST /api/search`) | Yes | Yes | Yes | Yes |
+
+---
+
+# AI Conversations
+
+| Feature | Student | Faculty | Council Admin | Super Admin | Owner (Creator) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Create Conversation | Yes | Yes | Yes | Yes | N/A |
+| List Own Conversations | Yes | Yes | Yes | Yes | Yes |
+| Get Conversation History | No | No | No | No | Yes |
+| Rename Conversation | No | No | No | No | Yes |
+| Delete Conversation | No | No | No | No | Yes |
+| Send Message / Chat | No | No | No | No | Yes |
+
+---
+
+# Personalized Recommendations
+
+| Feature | Student | Faculty | Council Admin | Super Admin |
+| :--- | :--- | :--- | :--- | :--- |
+| Get All Recommendations | Yes | Yes | Yes | Yes |
+| Get Recommendations by Type | Yes | Yes | Yes | Yes |
+
+---
+
+# Notifications
+
+| Feature | Student | Faculty | Council Admin | Super Admin | Owner |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| List Notifications (All/Unread) | Yes | Yes | Yes | Yes | Yes (Own only) |
+| Get Unread Count | Yes | Yes | Yes | Yes | Yes (Own only) |
+| Mark Notification as Read | No | No | No | No | Yes (Own only) |
+| Mark All Notifications as Read | Yes | Yes | Yes | Yes | Yes (Own only) |
+| Delete Notification | No | No | No | No | Yes (Own only) |
+
+---
+
+# Platform Analytics
+
+| Feature | Student | Faculty | Council Admin | Super Admin |
+| :--- | :--- | :--- | :--- | :--- |
+| View Consolidated Dashboard | No | No | No | Yes |
+| View User Statistics | No | No | No | Yes |
+| View Event Statistics | No | No | No | Yes |
+| View Community Statistics | No | No | No | Yes |
 
 ---
 
@@ -155,3 +175,25 @@
 | Manage Users       | No      | No      | No            | Yes         |
 | Manage Roles       | No      | No      | No            | Yes         |
 | Platform Analytics | No      | No      | No            | Yes         |
+
+---
+
+# Planned / Future Phase (Deferred)
+
+The following features were specified in initial mock plans but are **deferred** to future phases and are **not** present in the current backend implementation:
+
+### 1. Notices & Announcements
+* **Stale Reference**: `Publish Notice` (Faculty/Admin), `Publish Announcement` (Council/Admin), and corresponding view endpoints.
+* **Status**: Not implemented.
+
+### 2. Vault
+* **Stale Reference**: `Upload Files`, `View/Delete Own Files`, `View Others' Files`.
+* **Status**: Not implemented.
+
+### 3. Resume Builder
+* **Stale Reference**: `Build Resume`, `Export PDF`.
+* **Status**: Not implemented.
+
+### 4. Council Membership Applications & Resource Requests
+* **Stale Reference**: `Apply for Membership`, `Approve/Reject Applications`, `Request Resource Access`.
+* **Status**: Not implemented.
