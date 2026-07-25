@@ -1,18 +1,18 @@
-# Backend (Spring Boot/Maven)
+# Backend (Java / Spring Boot / Maven)
+target/
 backend/target/
-backend/.idea/
-backend/*.iml
-backend/.mvn/wrapper/maven-wrapper.jar
-backend/.classpath
-backend/.project
-backend/.settings/
 backend/bin/
 backend/build/
-backend/*.log
-backend/*.log.*
-docs/mvp-backend-technical-debts.md
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.log.*
+backend/.mvn/wrapper/maven-wrapper.jar
 
-# Frontend (Vite/React)
+# Frontend (Node / Vite / React)
+node_modules/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
@@ -21,26 +21,35 @@ frontend/coverage/
 frontend/*.local
 frontend/.eslintcache
 
-# Environment
-.env
-.env.*
-*.env
-
-# IDE
+# IDE & Editor Files
 .idea/
+backend/.idea/
 *.iml
+backend/*.iml
 .vscode/
 *.swp
 *.swo
 *~
+.classpath
+backend/.classpath
+.project
+backend/.project
+.settings/
+backend/.settings/
 
-# OS
+# Operating System Artifacts
 .DS_Store
+._*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Logs
+# Environment & Secrets
+.env
+.env.*
+*.env
+
+# Runtime Logs
 *.log
 logs/
 npm-debug.log*
@@ -48,23 +57,14 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Misc
+# Temporary Files & Local Data
 *.tmp
 *.temp
 .cache/
-
-# MongoDB
-mongodb_data/**
-
-# Uploaded Files
+mongodb_data/
 uploads/
 backend/uploads/
 
-# Agent & Architecture Metadata
+# Agent Internal Runtime Metadata
 .agents/
-TESTING_STRATEGY.md
 skills-lock.json
-PROJECT_VISION.md
-INSTRUCTIONS.md
-FRONTEND_ARCHITECTURE.md
-BACKEND_ARCHITECTURE.md

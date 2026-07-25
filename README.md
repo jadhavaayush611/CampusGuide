@@ -2,420 +2,148 @@
 
 CampusGuide is a centralized campus management platform designed to streamline communication, event management, academic resource sharing, and student engagement within educational institutions.
 
-The platform provides a single ecosystem where students, faculty members, councils, and administrators can interact, share resources, manage events, and stay informed through a unified interface.
+---
+
+## Project Overview
+
+Most higher education ecosystems currently rely on fragmented tools such as WhatsApp groups, email chains, Google Forms, and separate event portals. This results in missed announcements, low event participation, scattered academic resources, and high administrative overhead. 
+
+CampusGuide unifies these activities into a single platform structured around four core domains: Platform, Academic, Campus, and Personal.
 
 ---
 
-# Problem Statement
+## Features
 
-Most colleges currently rely on fragmented systems such as:
+### Platform Domain
+- **Authentication & User Management**: User registration, login, JWT token issuance, and Spring Security authorization.
+- **Role-Based Access Control**: Granular permissions across `STUDENT`, `FACULTY`, `COUNCIL_ADMIN`, and `SUPER_ADMIN` roles.
+- **Unified Global Search**: Multi-module search engine spanning courses, roadmaps, events, communities, and resources.
+- **Admin Analytics**: Centralized administrative dashboard reporting platform metrics and entity activity counts.
 
-* WhatsApp Groups
-* Email Chains
-* Google Forms
-* Shared Drives
-* Separate Event Portals
+### Academic Domain
+- **Course Catalog**: Searchable repository of mandatory and elective courses with credit values and prerequisite chains.
+- **Degree Roadmaps**: Structured degree pathway requirements mapped by department and target semester levels.
+- **Student Progress**: Academic record tracking completed courses, accumulated credits, GPA, and graduation eligibility.
+- **Semester Planner**: Interactive semester scheduling tool with automated prerequisite validation.
 
-This often results in:
+### Campus Domain
+- **Councils Directory**: Council profiles, membership drives, and application tracking.
+- **Community Forums**: Discussion channels, post feeds, threaded comments, and engagement tracking.
+- **Events Center**: Campus event creation, RSVP registration, participant management, and competition results.
+- **Resource Center**: Academic study material repository with notes, assignment guides, and approval workflows.
 
-* Missed announcements
-* Low event participation
-* Scattered academic resources
-* Poor communication
-* Administrative overhead
-
-CampusGuide solves these issues by centralizing campus activities into a single platform.
-
----
-
-# Project Goals
-
-* Reduce missed announcements by 70%
-* Increase event participation by 40%
-* Centralize academic resources
-* Improve communication efficiency
-* Simplify event management
-* Improve student engagement
+### Personal Domain
+- **Notification Engine**: Event-driven in-app notifications and Firebase Cloud Messaging (FCM) alerts.
+- **Personal Vault**: Encrypted file storage for personal academic documents.
+- **Resume Builder**: Exportable resume generator populated from student profile data and achievements.
+- **Atlas AI & Recommendations**: Strategy-based recommendation engine and AI student advisor.
 
 ---
 
-# Core Features
+## Tech Stack
 
-## Authentication & User Management
+### Backend
+- **Java**: Version 25
+- **Framework**: Spring Boot 4.0.6
+- **Security**: Spring Security & JWT (JJWT)
+- **Database**: MongoDB Atlas
+- **Build Tool**: Apache Maven
 
-* User Registration
-* User Login
-* JWT Authentication
-* Role-Based Access Control
-* Faculty Verification
-* Premium Membership Support
+### Frontend
+- **Framework**: React (JSX) with Vite
+- **Styling**: Tailwind CSS
+- **Routing**: React Router
+- **State Management**: TanStack Query & React Context API
+- **HTTP Client**: Axios
 
----
-
-## Councils & Communities
-
-* Council Profiles
-* Council Membership Applications
-* Community Discussions
-* Posts & Comments
-* Activity Feeds
-
----
-
-## Events Management
-
-* Event Creation
-* Event Registration
-* Event Tracking
-* Event Results Publishing
-* Participation Management
-* Membership Drive Support
+### Cloud & Third-Party
+- **Storage**: AWS S3
+- **Push Notifications**: Firebase Cloud Messaging (FCM)
 
 ---
 
-## Resource Center
+## Architecture
 
-* Notes Repository
-* Assignments Repository
-* Study Material Sharing
+CampusGuide follows a clean 4-domain monolith architecture. For full architectural details, see [`ARCHITECTURE.md`](file:///D:/CampusGuide/ARCHITECTURE.md).
 
----
-
-## Academic Planning & Progress
-
-* Academic Roadmaps: Degree pathway structures defined by degree program and department.
-* Course Catalog: Fully searchable catalog of mandatory and elective courses with credit tracking, prerequisite mapping, and target semester levels.
-* Student Progress: Track completed courses, credits earned, current GPA, and graduation eligibility.
-* Semester Planning: Build, update, modify, and finalize semester-by-semester planned courses with automatic prerequisite verification.
-* Academic Dashboard: Aggregated progress visualizer detailing graduation eligibility, completion percentage, remaining credits, and plans.
-* Course Recommendations: Automated semester recommendations suggesting courses based on department, target semester, and completed prerequisites with validation warnings.
-
----
-
-## Notifications
-
-* Event Notifications
-* Resource Updates
-* Membership Updates
-* Reminder Notifications
-
----
-
-## Premium Features
-
-* Personal Vault Storage
-* Resume Builder
-* Custom AI Roadmaps (Planned / Future Phase)
-* Additional Storage Capacity
-
----
-
-# User Roles
-
-## Student
-
-Can:
-
-* Join communities
-* Register for events
-* Upload and download academic resources
-* Apply for council memberships
-* Build resumes
-* Store personal documents
-* View academic roadmaps and browse courses
-* Manage personal student progress and completed courses
-* Build, modify, and finalize semester plans
-* Access academic dashboard and receive recommended courses
-
----
-
-## Faculty
-
-Can:
-
-* Upload resources
-* Download academic resources
-* Manage academic content
-* Track event participation
-
----
-
-## Council Admin
-
-Can:
-
-* Create and manage events
-* Review membership applications
-* Publish event results
-* Manage council content
-
----
-
-## Super Admin
-
-Can:
-
-* Manage platform settings
-* Manage users
-* Manage councils
-* Moderate content
-* Access administrative tools
-* Manage full course catalog (create, update, delete courses)
-* Manage roadmaps (create, update, delete roadmaps)
-* View/manage all student progress records and semester plans
-
----
-
-# Technology Stack
-
-## Backend
-
-* Java 25
-* Spring Boot 4.0.6
-* Spring Security
-* JWT Authentication
-* MongoDB Atlas
-* Maven
-
----
-
-## Frontend
-
-* React
-* Vite
-* JavaScript (JSX)
-* Tailwind CSS
-* React Router
-* Axios
-* TanStack Query
-
----
-
-## Cloud Services
-
-* AWS S3 (File Storage)
-* Firebase Cloud Messaging (Notifications)
-
----
-
-## Development Tools
-
-* Git
-* GitHub
-* Postman
-* IntelliJ IDEA
-* VS Code
-
----
-
-# Project Architecture
-
-Backend follows a layered architecture:
-
-Controller
-→ Service
-→ Repository
-→ Database
-
-Frontend follows a component-based architecture:
-
-Pages
-→ Layouts
-→ Components
-→ Services
-→ APIs
-
----
-
-# Repository Structure
-
-```text
+```
 CampusGuide
-
-├── backend
-│   └── Spring Boot Application
-│
-├── frontend
-│   └── React Application
-│
-├── docs
-│   ├── api-contracts
-│   ├── db-schema
-│   ├── permission-matrix
-│   ├── frontend-routes
-│   ├── deployment
-│   └── testing
-│
-├── INSTRUCTIONS.md
-├── PROJECT_VISION.md
-├── BACKEND_ARCHITECTURE.md
-├── FRONTEND_ARCHITECTURE.md
-├── TESTING_STRATEGY.md
-│
-└── README.md
+├── backend/                  # Spring Boot 4.0.6 Application
+├── frontend/                 # React + Vite Client Application
+├── docs/                     # Detailed Module Documentation & Specifications
+├── design/                   # UI/UX Wireframes & Design Assets
+├── scripts/                  # Build & Maintenance Helper Scripts
+└── .github/                  # GitHub Governance Templates & Workflows
 ```
 
 ---
 
-# Development Workflow
+## Screenshots
 
-Branches:
-
-```text
-main
-develop
-```
-
-Rules:
-
-* All development occurs on develop
-* main contains stable milestone releases
-* Every feature must compile before commit
-* Documentation must remain updated
+> [!NOTE]
+> *UI screenshots and visual assets will be added during Batch 0.3 documentation phase.*
 
 ---
 
-# Running Backend
+## Getting Started
 
-Navigate to backend:
+### Prerequisites
+- Java 25 JDK
+- Apache Maven 3.9+
+- Node.js 20+ & npm 10+
+- MongoDB Atlas instance or local MongoDB server
 
-```bash
-cd backend
-```
+### Quick Start
 
-Compile:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/jadhavaayush611/CampusGuide.git
+   cd CampusGuide
+   ```
 
-```bash
-mvn clean compile
-```
+2. **Run Backend**:
+   ```bash
+   cd backend
+   mvn clean spring-boot:run
+   ```
+   *Backend runs on `http://localhost:8080`.*
 
-Run:
-
-```bash
-mvn spring-boot:run
-```
-
-Default:
-
-```text
-http://localhost:8080
-```
-
----
-
-# Running Frontend
-
-Navigate to frontend:
-
-```bash
-cd frontend
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start development server:
-
-```bash
-npm run dev
-```
-
-Default:
-
-```text
-http://localhost:5173
-```
+3. **Run Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   *Frontend dev server runs on `http://localhost:5173`.*
 
 ---
 
-# Environment Variables
+## API Documentation
 
-Required variables:
-
-```text
-JWT_SECRET
-
-MONGODB_URI
-
-AWS_ACCESS_KEY
-
-AWS_SECRET_KEY
-
-FIREBASE_PROJECT_ID
-```
-
-These should never be committed to source control.
+> [!NOTE]
+> *Full OpenAPI specifications and Postman collections are maintained in [`docs/api-contracts.md`](file:///D:/CampusGuide/docs/api-contracts.md).*
 
 ---
 
-# Testing
+## Atlas AI
 
-Backend:
-
-```bash
-mvn clean compile
-```
-
-Frontend:
-
-```bash
-npm run build
-```
-
-Authentication Testing:
-
-* Register
-* Login
-* JWT Validation
-* Protected Endpoints
+> [!NOTE]
+> *Atlas AI integration details and recommendation strategy configurations are documented in [`docs/ai-module.md`](file:///D:/CampusGuide/docs/ai-module.md).*
 
 ---
 
-# MVP Roadmap
+## Roadmap
 
-Week 1
-
-* Authentication
-
-Week 2
-
-* Councils & Communities
-
-Week 3
-
-* Events System
-
-Week 4
-
-* Resource Center
-
-Week 5
-
-* Integrations & Notifications
-
-Week 6
-
-* Premium Features, Academic Planning (Roadmaps, Courses, Student Progress, Semester Plans, Dashboard, Recommendations) & Deployment
+Check our locked product roadmap in [`ROADMAP.md`](file:///D:/CampusGuide/ROADMAP.md) to view upcoming phases and features.
 
 ---
 
-# Future Scope
+## Contributing
 
-* Native Mobile Application
-* AI Advisor & AI Recommendation Engine (Planned / Future Phase)
-* Advanced Curriculum Planning (Planned / Future Phase)
-* Placement Tracking
-* Internship Portal
-* Academic Analytics
-* Campus Marketplace
+We welcome community contributions! Please read [`CONTRIBUTING.md`](file:///D:/CampusGuide/CONTRIBUTING.md) for guidelines on branching strategies, commit conventions, and pull request expectations. All contributors must adhere to our [`CODE_OF_CONDUCT.md`](file:///D:/CampusGuide/CODE_OF_CONDUCT.md).
 
 ---
 
-# License
+## License
 
-This project is currently developed as an academic and portfolio project by the CampusGuide development team.
-
-All rights reserved.
+This project is licensed under the MIT License - see the [`LICENSE`](file:///D:/CampusGuide/LICENSE) file for details.
