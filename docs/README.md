@@ -33,10 +33,11 @@ docs/
 │   ├── notifications.md
 │   └── achievements.md
 ├── development/               # Developer setup, conventions, branching, and testing
+│   ├── git-workflow.md
+│   ├── commit-convention.md
+│   ├── code-style.md
+│   ├── architecture-principles.md
 │   ├── development-setup.md
-│   ├── coding-standards.md
-│   ├── commit-conventions.md
-│   ├── branching-strategy.md
 │   └── testing-strategy.md
 ├── deployment/                # Environment, infrastructure, and deployment standards
 │   ├── local-setup.md

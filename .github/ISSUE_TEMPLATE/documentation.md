@@ -1,21 +1,16 @@
 ---
-name: Documentation Request
+name: Documentation
 about: Report missing, outdated, or unclear documentation
 title: '[DOCS] '
 labels: 'documentation'
 assignees: ''
 ---
 
-## Affected Documentation
-- [ ] README.md
-- [ ] API Contracts (`docs/api-contracts.md`)
-- [ ] Database Schema (`docs/db-schema.md`)
-- [ ] Permission Matrix (`docs/permission-matrix.md`)
-- [ ] Module Specification (`docs/*-module.md`)
-- [ ] Architecture / Contributing Guides
+## Target Documentation
+Specify the file(s) or section(s) requiring update (e.g., `docs/api/`, `README.md`).
 
-## Description of Issue
-What documentation is missing, inaccurate, or needs clarification?
+## Issue Description
+What documentation is missing, incorrect, or unclear?
 
-## Suggested Changes
-Provide the text or structure you suggest adding or updating.
+## Proposed Content / Changes
+Outline or provide the text/structure you suggest adding or updating.

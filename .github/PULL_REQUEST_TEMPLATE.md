@@ -1,29 +1,26 @@
-## Description
-Provide a concise summary of the changes introduced in this Pull Request and the issue or feature it addresses.
+## Summary
 
-## Type of Change
-- [ ] Bug fix (non-breaking change fixing an issue)
-- [ ] New feature (non-breaking change adding functionality)
-- [ ] Breaking change (fix or feature causing existing functionality to change)
-- [ ] Documentation update
-- [ ] Code refactoring or architectural improvement
-- [ ] Maintenance / CI / Dependency bump
+Provide a concise high-level summary of the purpose and goals of this pull request.
 
-## Domain / Modules Affected
-- [ ] Platform Domain (`com.campusguide.platform`)
-- [ ] Academic Domain (`com.campusguide.academic`)
-- [ ] Campus Domain (`com.campusguide.campus`)
-- [ ] Personal Domain (`com.campusguide.personal`)
-- [ ] Frontend (`frontend/`)
-- [ ] Documentation (`docs/`)
+## Changes
 
-## Verification Checklist
-- [ ] Local backend build passes: `mvn clean verify`
-- [ ] Local frontend build passes: `npm run build` (if frontend modified)
-- [ ] Unit & Integration tests pass
-- [ ] Followed package & domain architecture guidelines
-- [ ] No hardcoded secrets or credentials committed
-- [ ] Relevant documentation updated (`README.md`, `docs/`, etc.)
+- High-level list of changes introduced in this PR
+- Add details on new components, endpoints, or documentation
 
-## Related Issues
-Closes #
+## Testing
+
+Describe the steps performed to verify these changes:
+- Executed backend verification (`mvn clean verify`)
+- Executed frontend verification (`npm run build`)
+- Added / updated relevant automated tests
+
+## Screenshots (if applicable)
+
+Attach UI screenshots, API response payloads, or visual representations if applicable.
+
+## Checklist
+
+- [ ] Tests pass
+- [ ] Documentation updated
+- [ ] No breaking changes
+- [ ] Reviewed locally

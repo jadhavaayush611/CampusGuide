@@ -1,12 +1,2 @@
-# Global owners
+# Global repository code owners
 * @jadhavaayush611
-
-# Domain Owners
-/backend/src/main/java/com/campusguide/platform/ @jadhavaayush611
-/backend/src/main/java/com/campusguide/academic/ @jadhavaayush611
-/backend/src/main/java/com/campusguide/campus/ @jadhavaayush611
-/backend/src/main/java/com/campusguide/personal/ @jadhavaayush611
-
-# Infrastructure & Docs
-/.github/ @jadhavaayush611
-/docs/ @jadhavaayush611

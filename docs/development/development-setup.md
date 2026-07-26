@@ -75,5 +75,5 @@ Ensure your workstation has the following tools installed:
 ---
 
 ## Cross-References
-- [Coding Standards](file:///D:/CampusGuide/docs/development/coding-standards.md)
-- [Testing Strategy](file:///D:/CampusGuide/docs/development/testing-strategy.md)
+- [Coding Standards](./code-style.md)
+- [Testing Strategy](./testing-strategy.md)

@@ -43,5 +43,5 @@ This executes both Unit Tests (`maven-surefire-plugin`) and Integration Tests (`
 ---
 
 ## Cross-References
-- [Coding Standards](file:///D:/CampusGuide/docs/development/coding-standards.md)
-- [Branching Strategy](file:///D:/CampusGuide/docs/development/branching-strategy.md)
+- [Code Style Guide](./code-style.md)
+- [Git Workflow](./git-workflow.md)
