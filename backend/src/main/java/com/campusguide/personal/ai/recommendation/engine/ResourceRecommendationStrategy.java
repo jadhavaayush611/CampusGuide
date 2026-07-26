@@ -6,7 +6,7 @@ import com.campusguide.personal.ai.recommendation.dto.RecommendationSource;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationReason;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationType;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationUserContext;
-import com.campusguide.academic.course.entity.Course;
+import com.campusguide.campus.academic.course.entity.Course;
 import com.campusguide.campus.resource.entity.Resource;
 import com.campusguide.platform.user.entity.User;
 import lombok.RequiredArgsConstructor;

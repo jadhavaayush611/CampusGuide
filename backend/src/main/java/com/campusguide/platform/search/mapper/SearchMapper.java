@@ -1,7 +1,7 @@
 package com.campusguide.platform.search.mapper;
 
-import com.campusguide.academic.course.entity.Course;
-import com.campusguide.academic.roadmap.entity.Roadmap;
+import com.campusguide.campus.academic.course.entity.Course;
+import com.campusguide.campus.academic.roadmap.entity.Roadmap;
 import com.campusguide.campus.community.entity.Community;
 import com.campusguide.campus.event.entity.Event;
 import com.campusguide.campus.resource.entity.Resource;

@@ -1,9 +1,9 @@
 package com.campusguide.platform.search.repository;
 
-import com.campusguide.academic.course.entity.Course;
-import com.campusguide.academic.course.repository.CourseRepository;
-import com.campusguide.academic.roadmap.entity.Roadmap;
-import com.campusguide.academic.roadmap.repository.RoadmapRepository;
+import com.campusguide.campus.academic.course.entity.Course;
+import com.campusguide.campus.academic.course.repository.CourseRepository;
+import com.campusguide.campus.academic.roadmap.entity.Roadmap;
+import com.campusguide.campus.academic.roadmap.repository.RoadmapRepository;
 import com.campusguide.campus.community.entity.Community;
 import com.campusguide.campus.community.repository.CommunityRepository;
 import com.campusguide.campus.resource.entity.Resource;

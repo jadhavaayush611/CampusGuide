@@ -4,7 +4,7 @@ import com.campusguide.platform.analytics.dto.response.DashboardSummaryResponse;
 import com.campusguide.platform.analytics.dto.response.ModuleStatisticsResponse;
 import com.campusguide.platform.analytics.service.interfaces.AnalyticsService;
 import com.campusguide.platform.user.repository.UserRepository;
-import com.campusguide.academic.roadmap.repository.RoadmapRepository;
+import com.campusguide.campus.academic.roadmap.repository.RoadmapRepository;
 import com.campusguide.campus.community.repository.CommunityRepository;
 import com.campusguide.campus.event.repository.EventRepository;
 import com.campusguide.personal.ai.repository.ConversationRepository;

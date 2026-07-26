@@ -1,13 +1,13 @@
 package com.campusguide.personal.ai.recommendation.dto;
 
 import com.campusguide.campus.community.entity.Community;
-import com.campusguide.academic.course.entity.Course;
+import com.campusguide.campus.academic.course.entity.Course;
 import com.campusguide.campus.event.entity.Event;
 import com.campusguide.campus.post.entity.Post;
-import com.campusguide.academic.progress.entity.StudentProgress;
+import com.campusguide.campus.academic.progress.entity.StudentProgress;
 import com.campusguide.campus.resource.entity.Resource;
-import com.campusguide.academic.roadmap.entity.Roadmap;
-import com.campusguide.academic.semesterplanner.entity.SemesterPlan;
+import com.campusguide.campus.academic.roadmap.entity.Roadmap;
+import com.campusguide.campus.academic.semesterplanner.entity.SemesterPlan;
 import com.campusguide.platform.user.entity.User;
 import lombok.Builder;
 import lombok.Data;
