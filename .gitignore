@@ -1,3 +1,7 @@
+# =============================================================================
+# CampusGuide - Shared Repository .gitignore
+# =============================================================================
+
 # Backend (Java / Spring Boot / Maven)
 target/
 backend/target/
@@ -21,12 +25,20 @@ frontend/coverage/
 frontend/*.local
 frontend/.eslintcache
 
-# IDE & Editor Files
-.idea/
-backend/.idea/
-*.iml
-backend/*.iml
-.vscode/
+# Portable IDE & Editor Configuration
+# Shared configs in .idea/ and .vscode/ are committed. Ignore only user/machine state.
+.idea/**/workspace.xml
+.idea/**/usage.statistics.xml
+.idea/**/tasks.xml
+.idea/**/shelf/
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.local.xml
+.idea/**/httpRequests/
+.idea/**/dictionaries/
+backend/.idea/**/workspace.xml
+.vscode/*.log
+.vscode/.react*
 *.swp
 *.swo
 *~
@@ -44,10 +56,13 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Environment & Secrets
+# Environment & Secrets (NEVER COMMIT SECRETS)
 .env
 .env.*
 *.env
+*.pem
+*.key
+*.p12
 
 # Runtime Logs
 *.log
@@ -66,5 +81,8 @@ uploads/
 backend/uploads/
 
 # Agent Internal Runtime Metadata
-.agents/
-skills-lock.json
+# Shared skills, prompts, workflows, and instructions in .agents/ are committed.
+.agents/cache/
+.agents/logs/
+.agents/tmp/
+.agents/runtime/

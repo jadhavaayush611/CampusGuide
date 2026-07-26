@@ -1,0 +1,32 @@
+package com.campusguide.domain.feature.controller;
+
+import com.campusguide.domain.feature.dto.SampleRequest;
+import com.campusguide.domain.feature.dto.SampleResponse;
+import com.campusguide.domain.feature.service.SampleService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/sample")
+@RequiredArgsConstructor
+public class SampleController {
+
+    private final SampleService sampleService;
+
+    @GetMapping
+    public ResponseEntity<List<SampleResponse>> getAll() {
+        return ResponseEntity.ok(sampleService.getAll());
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<SampleResponse> create(@Valid @RequestBody SampleRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(sampleService.create(request));
+    }
+}

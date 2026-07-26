@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch CampusGuide Backend",
+      "request": "launch",
+      "mainClass": "com.campusguide.CampusguideApplication",
+      "projectName": "backend",
+      "cwd": "${workspaceFolder}/backend"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vite Dev Server (Frontend)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/frontend"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Maven Verify",
+      "type": "shell",
+      "command": "mvn clean verify",
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Frontend: Build",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Full Repository Verification",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/build.sh",
+      "windows": {
+        "command": "${workspaceFolder}/scripts/build.bat"
+      },
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

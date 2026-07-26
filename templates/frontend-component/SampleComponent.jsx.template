@@ -1,0 +1,23 @@
+import React, { useState, useEffect } from 'react';
+import styles from './SampleComponent.module.css';
+
+export const SampleComponent = ({ title, items = [] }) => {
+  const [loading, setLoading] = useState(false);
+
+  return (
+    <div className={styles.container}>
+      <h2 className={styles.title}>{title}</h2>
+      {loading ? (
+        <p className={styles.loading}>Loading items...</p>
+      ) : (
+        <ul className={styles.itemList}>
+          {items.map((item, idx) => (
+            <li key={idx} className={styles.itemCard}>
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};

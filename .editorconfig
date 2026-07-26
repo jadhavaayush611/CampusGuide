@@ -1,24 +1,42 @@
+# =============================================================================
+# CampusGuide - Repository EditorConfig
+# Single source of truth for editor behavior and formatting rules.
+# =============================================================================
+
 root = true
 
+# Global defaults for all files
 [*]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
+indent_style = space
 
-[*.{java,xml,json,yml,yaml,properties,md,txt}]
+# 4-space indentation for Java, Kotlin, XML, Properties, YAML, SQL
+[*.{java,kt,xml,properties,yml,yaml,sql}]
 indent_style = space
 indent_size = 4
 
-[*.{js,jsx,ts,tsx,html,css,scss}]
+# 2-space indentation for JavaScript, TypeScript, JSX, TSX, JSON, CSS, SCSS, HTML
+[*.{js,jsx,ts,tsx,json,css,scss,html}]
 indent_style = space
 indent_size = 2
 
-[Makefile]
-indent_style = tab
+# Markdown documentation (preserve trailing whitespace for line breaks)
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
 
-[*.cmd]
-end_of_line = crlf
+# POSIX shell scripts
+[*.sh]
+end_of_line = lf
+indent_style = space
+indent_size = 2
 
-[*.bat]
+# Windows Command scripts
+[*.{bat,cmd}]
 end_of_line = crlf
+indent_style = space
+indent_size = 4
