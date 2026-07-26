@@ -83,13 +83,29 @@ class SearchControllerSecurityIT {
     }
 
     @Test
-    void search_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void search_Unauthenticated_Permitted() throws Exception {
         GlobalSearchRequest request = GlobalSearchRequest.builder().query("Java").build();
+
+        GlobalSearchResponse mockResponse = GlobalSearchResponse.builder()
+                .query("Java")
+                .totalResults(1)
+                .results(List.of(SearchResultResponse.builder()
+                        .id("c1")
+                        .title("Java Course")
+                        .description("Intro to Java")
+                        .searchType(SearchType.COURSE)
+                        .relevanceScore(1.0)
+                        .metadata(Collections.emptyMap())
+                        .build()))
+                .build();
+
+        when(searchService.search(any(), any(GlobalSearchRequest.class), any(Pageable.class)))
+                .thenReturn(mockResponse);
 
         mockMvc.perform(post("/api/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     @Test

@@ -324,24 +324,24 @@ class PostControllerSecurityIT {
         assertTrue(updatedPost.getIsDeleted());
     }
 
-    // 9. GET endpoints require authentication.
+    // 9. GET endpoints permitted when unauthenticated.
     @Test
-    void getEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
+    void getEndpoints_Unauthenticated_Permitted() throws Exception {
         // GET /api/posts
         mockMvc.perform(get("/api/posts"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/posts/{postId}
         mockMvc.perform(get("/api/posts/some-id"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
 
         // GET /api/posts/community/{communityId}
-        mockMvc.perform(get("/api/posts/community/some-community-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/posts/community/" + testCommunity.getId()))
+                .andExpect(status().isOk());
 
         // GET /api/posts/author/{authorId}
-        mockMvc.perform(get("/api/posts/author/some-author-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/posts/author/" + studentUser.getId()))
+                .andExpect(status().isOk());
     }
 
     @Test

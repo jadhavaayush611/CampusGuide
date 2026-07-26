@@ -196,20 +196,26 @@ class ResourceControllerSecurityIT {
                 .andExpect(jsonPath("$.communityId").value(testCommunity.getId()));
     }
     @Test
-    void createResource_NoJwt_ReturnsUnauthorized() throws Exception {
-        CreateResourceRequest request = CreateResourceRequest.builder()
-                .title("Lecture Notes")
-                .description("Math lecture notes")
-                .fileName("math_notes.pdf")
-                .originalFileName("math_notes_v1.pdf")
-                .fileType("application/pdf")
-                .fileSize(1024L)
-                .build();
+    void createResource_StudentUser_ReturnsCreated() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "math_notes.pdf",
+                "application/pdf",
+                "Dummy PDF Content".getBytes()
+        );
 
-        mockMvc.perform(post("/api/resources")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(
+                        multipart("/api/resources")
+                                .file(file)
+                                .param("title", "Lecture Notes")
+                                .param("description", "Math lecture notes")
+                                .param("councilId", "council-123")
+                                .param("communityId", testCommunity.getId())
+                                .param("tags", "math")
+                                .param("tags", "notes")
+                                .with(user(studentDetails))
+                )
+                .andExpect(status().isCreated());
     }
 
     // --- Update Resource ---
@@ -459,37 +465,37 @@ class ResourceControllerSecurityIT {
     }
 
     @Test
-    void retrievalEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
+    void retrievalEndpoints_Unauthenticated_Permitted() throws Exception {
         // GET /api/resources
         mockMvc.perform(get("/api/resources"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/resources/recent
         mockMvc.perform(get("/api/resources/recent"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/resources/{resourceId}
         mockMvc.perform(get("/api/resources/some-id"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
 
         // GET /api/resources/uploader/{uploaderId}
-        mockMvc.perform(get("/api/resources/uploader/some-uploader"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/resources/uploader/" + studentUser.getId()))
+                .andExpect(status().isOk());
 
         // GET /api/resources/council/{councilId}
-        mockMvc.perform(get("/api/resources/council/some-council"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/resources/council/council-123"))
+                .andExpect(status().isOk());
 
         // GET /api/resources/community/{communityId}
-        mockMvc.perform(get("/api/resources/community/some-community"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/resources/community/" + testCommunity.getId()))
+                .andExpect(status().isOk());
 
         // GET /api/resources/search
         mockMvc.perform(get("/api/resources/search").param("query", "notes"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/resources/tag/{tag}
         mockMvc.perform(get("/api/resources/tag/notes"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 }

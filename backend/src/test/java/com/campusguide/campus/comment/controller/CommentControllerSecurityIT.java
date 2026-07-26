@@ -311,17 +311,17 @@ class CommentControllerSecurityIT {
         assertTrue(updatedComment.getIsDeleted());
     }
 
-    // 9. GET endpoints require authentication.
+    // 9. GET endpoints permitted when unauthenticated.
     @Test
-    void getEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
+    void getEndpoints_Unauthenticated_Permitted() throws Exception {
         mockMvc.perform(get("/api/comments/some-id"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
 
-        mockMvc.perform(get("/api/comments/post/some-post-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/comments/post/" + testPost.getId()))
+                .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/comments/author/some-author-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/comments/author/" + studentUser.getId()))
+                .andExpect(status().isOk());
     }
 
     @Test

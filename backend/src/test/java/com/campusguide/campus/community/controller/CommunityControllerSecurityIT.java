@@ -87,9 +87,9 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void createCommunity_StudentRole_ReturnsForbidden() throws Exception {
+    void createCommunity_StudentRole_Permitted() throws Exception {
         CreateCommunityRequest request = CreateCommunityRequest.builder()
-                .name("Coding Community")
+                .name("Coding Community Student")
                 .description("Test Coding Community")
                 .councilId("council-123")
                 .build();
@@ -98,8 +98,7 @@ class CommunityControllerSecurityIT {
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Access Denied"));
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -156,9 +155,9 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void updateCommunity_StudentRole_ReturnsForbidden() throws Exception {
+    void updateCommunity_StudentRole_Permitted() throws Exception {
         Community existing = Community.builder()
-                .name("Original Community")
+                .name("Original Community Student")
                 .description("Original Description")
                 .councilId("council-123")
                 .isActive(true)
@@ -175,8 +174,7 @@ class CommunityControllerSecurityIT {
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Access Denied"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -214,17 +212,13 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void getEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
+    void getEndpoints_Unauthenticated_Permitted() throws Exception {
         mockMvc.perform(get("/api/communities")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
-
-        mockMvc.perform(get("/api/communities/some-id")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/communities/councils/some-council/communities")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 }

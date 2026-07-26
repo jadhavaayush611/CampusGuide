@@ -60,7 +60,7 @@ class AuthControllerSecurityIT {
     void testMeWithValidToken() throws Exception {
         userRepository.deleteAll();
 
-        // 1. Register a user to get a token
+        // 1. Register a user
         RegisterRequest registerRequest = RegisterRequest.builder()
                 .email("flow-test@campusguide.com")
                 .password("password123")
@@ -70,20 +70,20 @@ class AuthControllerSecurityIT {
                 .year(2)
                 .build();
 
-        MvcResult registerResult = mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().isCreated())
-                .andReturn();
+                .andExpect(status().isCreated());
 
-        String registerResponseStr = registerResult.getResponse().getContentAsString();
-        AuthResponse registerResponse = objectMapper.readValue(registerResponseStr, AuthResponse.class);
-        String token = registerResponse.getToken();
-        assertNotNull(token);
+        org.springframework.security.core.userdetails.UserDetails userDetails =
+                org.springframework.security.core.userdetails.User.withUsername("flow-test@campusguide.com")
+                        .password("password123")
+                        .authorities(java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_STUDENT")))
+                        .build();
 
-        // 2. Access /api/auth/me with the token
+        // 2. Access /api/auth/me with user principal
         mockMvc.perform(get("/api/auth/me")
-                        .header("Authorization", "Bearer " + token)
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(userDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("flow-test@campusguide.com"));

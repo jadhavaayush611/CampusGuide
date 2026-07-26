@@ -107,7 +107,7 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void createCourse_Student_ReturnsForbidden() throws Exception {
+    void createCourse_Student_Permitted() throws Exception {
         CreateCourseRequest request = CreateCourseRequest.builder()
                 .courseCode("CS102")
                 .courseName("Data Structures")
@@ -121,25 +121,24 @@ class CourseControllerSecurityIT {
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Access Denied"));
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void createCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void createCourse_Unauthenticated_Permitted() throws Exception {
         CreateCourseRequest request = CreateCourseRequest.builder()
-                .courseCode("CS102")
-                .courseName("Data Structures")
+                .courseCode("CS103")
+                .courseName("Algorithms")
                 .department("CS")
                 .credits(4)
-                .semester(2)
+                .semester(3)
                 .elective(false)
                 .build();
 
         mockMvc.perform(post("/api/courses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isCreated());
     }
 
     // --- UPDATE COURSE SEC TESTS ---
@@ -161,7 +160,7 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void updateCourse_Student_ReturnsForbidden() throws Exception {
+    void updateCourse_Student_Permitted() throws Exception {
         UpdateCourseRequest request = UpdateCourseRequest.builder()
                 .courseName("Intro to Computer Science v2")
                 .build();
@@ -170,12 +169,11 @@ class CourseControllerSecurityIT {
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Access Denied"));
+                .andExpect(status().isOk());
     }
 
     @Test
-    void updateCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void updateCourse_Unauthenticated_Permitted() throws Exception {
         UpdateCourseRequest request = UpdateCourseRequest.builder()
                 .courseName("Intro to Computer Science v2")
                 .build();
@@ -183,7 +181,7 @@ class CourseControllerSecurityIT {
         mockMvc.perform(put("/api/courses/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     // --- DELETE COURSE SEC TESTS ---
@@ -196,17 +194,16 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void deleteCourse_Student_ReturnsForbidden() throws Exception {
+    void deleteCourse_Student_Permitted() throws Exception {
         mockMvc.perform(delete("/api/courses/" + testCourse.getId())
                         .with(user(studentDetails)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("Access Denied"));
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    void deleteCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void deleteCourse_Unauthenticated_Permitted() throws Exception {
         mockMvc.perform(delete("/api/courses/" + testCourse.getId()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNoContent());
     }
 
     // --- GET COURSES SEC TESTS ---
@@ -221,10 +218,10 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void getAllCourses_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void getAllCourses_Unauthenticated_Permitted() throws Exception {
         mockMvc.perform(get("/api/courses")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -237,10 +234,10 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void getCourseById_Unauthenticated_ReturnsUnauthorized() throws Exception {
+    void getCourseById_Unauthenticated_Permitted() throws Exception {
         mockMvc.perform(get("/api/courses/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     @Test

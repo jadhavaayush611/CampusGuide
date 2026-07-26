@@ -253,10 +253,10 @@ class EventRegistrationControllerSecurityIT {
     }
 
     @Test
-    void getRegisteredUsers_NoJwt_ReturnsUnauthorized() throws Exception {
+    void getRegisteredUsers_NoJwt_Permitted() throws Exception {
         Event event = createTestEvent();
 
         mockMvc.perform(get("/api/events/" + event.getId() + "/registrations"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 }

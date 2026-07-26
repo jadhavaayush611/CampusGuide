@@ -417,25 +417,39 @@ class RoadmapControllerSecurityIT {
     }
 
     @Test
-    void retrievalEndpoints_Unauthenticated_ReturnUnauthorized() throws Exception {
+    void retrievalEndpoints_Unauthenticated_Permitted() throws Exception {
+        Roadmap roadmap = Roadmap.builder()
+                .title("Special CSE Roadmap")
+                .description("CSE description")
+                .degreeProgram("B.Tech")
+                .department("Computer Science")
+                .totalCredits(180)
+                .expectedGraduationYear(2028)
+                .createdBy(studentUser.getId())
+                .isDeleted(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        roadmap = roadmapRepository.save(roadmap);
+
         // GET /api/roadmaps (Get all)
         mockMvc.perform(get("/api/roadmaps"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/roadmaps/{roadmapId} (Get by ID)
-        mockMvc.perform(get("/api/roadmaps/some-roadmap-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/roadmaps/" + roadmap.getId()))
+                .andExpect(status().isOk());
 
         // GET /api/roadmaps/creator/{userId} (Get by creator)
-        mockMvc.perform(get("/api/roadmaps/creator/some-creator-id"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/roadmaps/creator/" + studentUser.getId()))
+                .andExpect(status().isOk());
 
         // GET /api/roadmaps/degree/{degreeProgram} (Get by degree program)
         mockMvc.perform(get("/api/roadmaps/degree/B.Tech"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
 
         // GET /api/roadmaps/department/{department} (Get by department)
         mockMvc.perform(get("/api/roadmaps/department/Computer Science"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 }

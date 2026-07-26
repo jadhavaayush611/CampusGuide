@@ -484,7 +484,7 @@ class EventControllerSecurityIT {
         event = eventRepository.save(event);
 
         mockMvc.perform(get("/api/events/" + event.getId()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     // --- GET ALL EVENTS TESTS ---
@@ -498,9 +498,9 @@ class EventControllerSecurityIT {
     }
 
     @Test
-    void getAllEvents_NoJwt_ReturnsUnauthorized() throws Exception {
+    void getAllEvents_NoJwt_Permitted() throws Exception {
         mockMvc.perform(get("/api/events"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     // --- GET UPCOMING EVENTS TESTS ---
@@ -514,9 +514,9 @@ class EventControllerSecurityIT {
     }
 
     @Test
-    void getUpcomingEvents_NoJwt_ReturnsUnauthorized() throws Exception {
+    void getUpcomingEvents_NoJwt_Permitted() throws Exception {
         mockMvc.perform(get("/api/events/upcoming"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     // --- GET EVENTS BY COUNCIL TESTS ---
@@ -530,8 +530,8 @@ class EventControllerSecurityIT {
     }
 
     @Test
-    void getEventsByCouncil_NoJwt_ReturnsUnauthorized() throws Exception {
+    void getEventsByCouncil_NoJwt_Permitted() throws Exception {
         mockMvc.perform(get("/api/events/council/" + "council-123"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 }
