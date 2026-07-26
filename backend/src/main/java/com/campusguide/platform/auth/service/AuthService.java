@@ -19,6 +19,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+/**
+ * @deprecated As of Batch 1.4, registration logic has been migrated to {@link AuthenticationService}
+ * and {@link AuthenticationServiceImpl}. This class will be phased out upon completion of the login batch.
+ */
+@Deprecated(since = "1.4", forRemoval = true)
 @Service
 @RequiredArgsConstructor
 public class AuthService {

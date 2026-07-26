@@ -97,6 +97,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.platform.auth.exception.EmailAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleEmailAlreadyExistsException(com.campusguide.platform.auth.exception.EmailAlreadyExistsException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.platform.auth.exception.UsernameAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUsernameAlreadyExistsException(com.campusguide.platform.auth.exception.UsernameAlreadyExistsException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(org.springframework.dao.DuplicateKeyException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateKeyException(org.springframework.dao.DuplicateKeyException ex) {
+        Map<String, String> error = new HashMap<>();
+        String msg = ex.getMessage();
+        if (msg != null && msg.contains("email")) {
+            error.put("error", "Email already exists");
+        } else if (msg != null && msg.contains("username")) {
+            error.put("error", "Username already exists");
+        } else {
+            error.put("error", "Resource already exists");
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
         Map<String, String> error = new HashMap<>();
