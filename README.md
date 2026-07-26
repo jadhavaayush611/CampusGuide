@@ -64,7 +64,7 @@ CampusGuide unifies these activities into a single platform structured around fo
 
 ## Architecture
 
-CampusGuide follows a clean 4-domain monolith architecture. For full architectural details, see [`ARCHITECTURE.md`](file:///D:/CampusGuide/ARCHITECTURE.md).
+CampusGuide follows a clean 4-domain monolith architecture. For full architectural details, see [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ```
 CampusGuide
@@ -121,29 +121,29 @@ CampusGuide
 ## API Documentation
 
 > [!NOTE]
-> *Full OpenAPI specifications and Postman collections are maintained in [`docs/api-contracts.md`](file:///D:/CampusGuide/docs/api-contracts.md).*
+> *Full OpenAPI specifications and Postman collections are maintained in [`docs/api-contracts.md`](./docs/api-contracts.md).*
 
 ---
 
 ## Atlas AI
 
 > [!NOTE]
-> *Atlas AI integration details and recommendation strategy configurations are documented in [`docs/ai-module.md`](file:///D:/CampusGuide/docs/ai-module.md).*
+> *Atlas AI integration details and recommendation strategy configurations are documented in [`docs/ai-module.md`](./docs/ai-module.md).*
 
 ---
 
 ## Roadmap
 
-Check our locked product roadmap in [`ROADMAP.md`](file:///D:/CampusGuide/ROADMAP.md) to view upcoming phases and features.
+Check our locked product roadmap in [`ROADMAP.md`](./ROADMAP.md) to view upcoming phases and features.
 
 ---
 
 ## Contributing
 
-We welcome community contributions! Please read [`CONTRIBUTING.md`](file:///D:/CampusGuide/CONTRIBUTING.md) for guidelines on branching strategies, commit conventions, and pull request expectations. All contributors must adhere to our [`CODE_OF_CONDUCT.md`](file:///D:/CampusGuide/CODE_OF_CONDUCT.md).
+We welcome community contributions! Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for guidelines on branching strategies, commit conventions, and pull request expectations. All contributors must adhere to our [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [`LICENSE`](file:///D:/CampusGuide/LICENSE) file for details.
+This project is licensed under the MIT License - see the [`LICENSE`](./LICENSE) file for details.

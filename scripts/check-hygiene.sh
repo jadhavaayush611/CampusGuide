@@ -10,10 +10,24 @@ FAILED=0
 
 cd "$ROOT_DIR"
 
-# Audit absolute machine paths in tracked files
-if git grep -rnE "[C|D]:\\\\|/Users/" -- ".github" "docs" "backend" "frontend" "scripts" ".agents" > /dev/null 2>&1; then
+# Human-readable regex pattern for absolute machine paths:
+# - Windows drive paths: e.g. C:\..., D:/...
+# - macOS user paths: e.g. /Users/...
+# - Linux user paths: e.g. /home/...
+ABSOLUTE_PATH_PATTERN='\b[A-Za-z]:[/\\]|/Users/|/home/'
+
+# Exclude hygiene checking scripts/workflows and intentional documentation examples from self-matching
+EXCLUSIONS=(
+    ":^scripts/check-hygiene.sh"
+    ":^scripts/check-hygiene.bat"
+    ":^.github/workflows/repository-hygiene.yml"
+    ":^.agents/skills/repository-hygiene/SKILL.md"
+)
+
+# Audit absolute machine paths in tracked files across the repository
+if git grep -nE "$ABSOLUTE_PATH_PATTERN" -- "." "${EXCLUSIONS[@]}" > /dev/null 2>&1; then
     echo "[HYGIENE ERROR] Absolute machine paths detected in tracked files!"
-    git grep -rnE "[C|D]:\\\\|/Users/" -- ".github" "docs" "backend" "frontend" "scripts" ".agents"
+    git grep -nE "$ABSOLUTE_PATH_PATTERN" -- "." "${EXCLUSIONS[@]}"
     FAILED=1
 fi
 

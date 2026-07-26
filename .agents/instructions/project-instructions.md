@@ -1,7 +1,7 @@
 # CampusGuide AI Project Instructions
 
 ## Context
-CampusGuide is a multi-domain modular monolithic application for campus management built with Spring Boot (Java 21/25) and React (Vite/JavaScript).
+CampusGuide is a multi-domain modular monolithic application for campus management built with Spring Boot (Java 25) and React (Vite/JavaScript).
 
 ## Architecture Boundaries
 1. **Four Core Domains**:
@@ -16,7 +16,7 @@ CampusGuide is a multi-domain modular monolithic application for campus manageme
    - **Decoupled Security DTOs**: Never expose internal entities in controller requests/responses.
 
 ## Code Style & Formatting Enforcement (.editorconfig)
-AI agents working on feature implementations, refactoring tasks, or bug fixes MUST strictly enforce [.editorconfig](file:///D:/CampusGuide/.editorconfig) formatting standards across all generated code:
+AI agents working on feature implementations, refactoring tasks, or bug fixes MUST strictly enforce [.editorconfig](../../.editorconfig) formatting standards across all generated code:
 
 - **Never introduce formatting inconsistent with `.editorconfig`**:
   - 4 spaces for Java, Kotlin, XML, Properties, YAML, SQL (`indent_size = 4`).

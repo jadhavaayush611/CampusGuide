@@ -1,6 +1,6 @@
 # CampusGuide System Architecture Overview
 
-This document provides a high-level architectural overview of the CampusGuide platform. For granular API contracts, database schemas, and module specifications, refer to the documentation in [`docs/`](file:///D:/CampusGuide/docs).
+This document provides a high-level architectural overview of the CampusGuide platform. For granular API contracts, database schemas, and module specifications, refer to the documentation in [`docs/`](./docs).
 
 ---
 
@@ -57,9 +57,10 @@ graph TD
    - `Repository`: Spring Data MongoDB interfaces for database access.
    - `DTO`: Explicit request and response models. Entities are never exposed directly.
 2. **Stateless Authentication**: JWT bearer tokens attached to request headers.
-3. **Database Single-Source-Of-Truth**: MongoDB Atlas collections specified in [`docs/db-schema.md`](file:///D:/CampusGuide/docs/db-schema.md).
+3. **Database Single-Source-Of-Truth**: MongoDB Atlas collections specified in [`docs/db-schema.md`](./docs/db-schema.md).
 
 For detailed domain specifications, see:
-- [API Contracts](file:///D:/CampusGuide/docs/api-contracts.md)
-- [Database Schema](file:///D:/CampusGuide/docs/db-schema.md)
-- [Permission Matrix](file:///D:/CampusGuide/docs/permission-matrix.md)
+- [API Contracts](./docs/api-contracts.md)
+- [Database Schema](./docs/db-schema.md)
+- [Permission Matrix](./docs/permission-matrix.md)
+

@@ -8,7 +8,7 @@ description: Audits the repository for portable configurations, cross-platform l
 ## Execution Steps
 
 1. Run `git status` and check for untracked scratch files, temporary logs, or binary artifacts.
-2. Search codebase for hardcoded absolute paths (e.g. `C:\`, `D:\`, `/home/user/`).
+2. Search codebase for hardcoded absolute paths (e.g. `C:/...`, `D:/...`, `/home/user/`).
 3. Audit `.editorconfig` compliance:
    - Ensure LF (`\n`) line endings are used across code, markdown, and shell scripts.
    - Ensure CRLF is restricted strictly to Windows `.bat` / `.cmd` scripts.

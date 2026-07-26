@@ -13,16 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
       - name: Verify Executable Permissions & Scripts
         run: |
           chmod +x scripts/*.sh
 
-      - name: Audit for Absolute Paths
+      - name: Audit Repository Hygiene
         run: |
-          if grep -rnE "[C|D]:\\\\|/Users/" --exclude-dir={.git,node_modules,target} .; then
-            echo "Error: Absolute paths detected in committed files!"
-            exit 1
-          fi
+          ./scripts/check-hygiene.sh
 
       - name: Execute Verification Script
         run: |

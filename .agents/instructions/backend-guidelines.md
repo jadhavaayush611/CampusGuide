@@ -1,7 +1,7 @@
 # Backend Coding & Architectural Guidelines
 
 ## Technology Stack
-- Java 21+ / Spring Boot 4.0.6
+- Java 25 / Spring Boot 4.0.6
 - Spring Data MongoDB
 - Spring Security + JWT
 - JUnit 5 / Spring Security Test

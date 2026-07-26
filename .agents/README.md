@@ -45,8 +45,8 @@ This directory contains shared AI agent skills, prompt libraries, coding workflo
 
 ## Agent Documentation Cross-References
 
-- [Atlas Agent Operational Guide](file:///D:/CampusGuide/docs/agents/atlas-agent.md)
-- [Backend Agent Operational Guide](file:///D:/CampusGuide/docs/agents/backend-agent.md)
-- [Frontend Agent Operational Guide](file:///D:/CampusGuide/docs/agents/frontend-agent.md)
-- [Documentation Agent Operational Guide](file:///D:/CampusGuide/docs/agents/documentation-agent.md)
-- [Mobile Agent Operational Guide](file:///D:/CampusGuide/docs/agents/mobile-agent.md)
+- [Atlas Agent Operational Guide](../docs/agents/atlas-agent.md)
+- [Backend Agent Operational Guide](../docs/agents/backend-agent.md)
+- [Frontend Agent Operational Guide](../docs/agents/frontend-agent.md)
+- [Documentation Agent Operational Guide](../docs/agents/documentation-agent.md)
+- [Mobile Agent Operational Guide](../docs/agents/mobile-agent.md)
