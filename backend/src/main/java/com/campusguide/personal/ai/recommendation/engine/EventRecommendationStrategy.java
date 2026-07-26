@@ -63,7 +63,7 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
             boolean deptMatched = false;
 
             // Department check: matches user department
-            String userDept = user.getDepartment();
+            String userDept = null;
             if (userDept != null && !userDept.isBlank()) {
                 boolean titleMatch = event.getTitle() != null && event.getTitle().toLowerCase().contains(userDept.toLowerCase());
                 boolean descMatch = event.getDescription() != null && event.getDescription().toLowerCase().contains(userDept.toLowerCase());

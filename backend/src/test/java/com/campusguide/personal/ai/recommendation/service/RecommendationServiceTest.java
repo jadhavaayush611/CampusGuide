@@ -64,9 +64,9 @@ class RecommendationServiceTest {
         user = User.builder()
                 .id("student-123")
                 .email("student@campusguide.com")
-                .firstName("John")
-                .lastName("Doe")
-                .department("Computer Science")
+                .username("student123")
+                .passwordHash("password")
+                .role(com.campusguide.platform.user.entity.UserRole.STUDENT)
                 .build();
     }
 

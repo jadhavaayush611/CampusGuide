@@ -5,7 +5,7 @@ import com.campusguide.platform.auth.dto.LoginRequest;
 import com.campusguide.platform.auth.dto.RegisterRequest;
 import com.campusguide.platform.user.dto.UserResponse;
 import com.campusguide.platform.auth.service.AuthService;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,19 +73,16 @@ class AuthControllerTest {
         authResponse = AuthResponse.builder()
                 .token("mocked-jwt-token")
                 .email("test@campusguide.com")
-                .role(Role.STUDENT)
+                .role(UserRole.STUDENT)
                 .build();
 
         userResponse = UserResponse.builder()
                 .id("user123")
                 .email("test@campusguide.com")
-                .firstName("John")
-                .lastName("Doe")
-                .role(Role.STUDENT)
-                .department("Computer Science")
-                .year(3)
-                .isPremium(false)
-                .isVerified(false)
+                .username("test")
+                .role(UserRole.STUDENT)
+                .enabled(true)
+                .emailVerified(false)
                 .build();
     }
 
@@ -134,8 +131,7 @@ class AuthControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.email").value("test@campusguide.com"))
                     .andExpect(jsonPath("$.role").value("STUDENT"))
-                    .andExpect(jsonPath("$.firstName").value("John"))
-                    .andExpect(jsonPath("$.lastName").value("Doe"))
+                    .andExpect(jsonPath("$.username").value("test"))
                     .andExpect(jsonPath("$.id").value("user123"));
         } finally {
             SecurityContextHolder.clearContext();

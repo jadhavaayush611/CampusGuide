@@ -9,7 +9,7 @@ import com.campusguide.campus.post.dto.PostSummaryResponse;
 import com.campusguide.campus.post.dto.UpdatePostRequest;
 import com.campusguide.campus.post.entity.Post;
 import com.campusguide.campus.post.repository.PostRepository;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +93,7 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isAuthor = post.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this post");
@@ -140,7 +140,7 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isAuthor = post.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this post");

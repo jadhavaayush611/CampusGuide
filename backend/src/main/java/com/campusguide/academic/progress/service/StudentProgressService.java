@@ -10,7 +10,7 @@ import com.campusguide.academic.progress.dto.*;
 import com.campusguide.academic.progress.entity.StudentProgress;
 import com.campusguide.academic.progress.repository.StudentProgressRepository;
 import com.campusguide.academic.roadmap.service.RoadmapService;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +95,7 @@ public class StudentProgressService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + targetStudentId));
 
         // Check authorization: Owner or SUPER_ADMIN only
-        if (!progress.getStudentId().equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
+        if (!progress.getStudentId().equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("You are not authorized to update this student progress");
         }
 
@@ -137,7 +137,7 @@ public class StudentProgressService {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
-        if (user.getRole() != Role.SUPER_ADMIN) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN is authorized to perform administrative academic updates");
         }
 
@@ -223,7 +223,7 @@ public class StudentProgressService {
         String studentId = targetStudentId != null ? targetStudentId : user.getId();
 
         // Check authorization: Owner or SUPER_ADMIN
-        if (!studentId.equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
+        if (!studentId.equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("You are not authorized to modify this student progress");
         }
 
@@ -273,7 +273,7 @@ public class StudentProgressService {
         String studentId = targetStudentId != null ? targetStudentId : user.getId();
 
         // Check authorization: Owner or SUPER_ADMIN
-        if (!studentId.equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
+        if (!studentId.equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("You are not authorized to modify this student progress");
         }
 
@@ -334,7 +334,7 @@ public class StudentProgressService {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
-        if (user.getRole() != Role.SUPER_ADMIN) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can access another student's progress");
         }
 
@@ -358,7 +358,7 @@ public class StudentProgressService {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
-        if (user.getRole() != Role.SUPER_ADMIN) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can access all progress records");
         }
 

@@ -10,7 +10,7 @@ import com.campusguide.campus.resource.dto.ResourceSummaryResponse;
 import com.campusguide.campus.resource.dto.UpdateResourceRequest;
 import com.campusguide.campus.resource.entity.Resource;
 import com.campusguide.campus.resource.repository.ResourceRepository;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -100,7 +100,7 @@ public class ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isUploader = resource.getUploaderId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isUploader && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this resource");
@@ -143,7 +143,7 @@ public class ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isUploader = resource.getUploaderId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isUploader && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this resource");

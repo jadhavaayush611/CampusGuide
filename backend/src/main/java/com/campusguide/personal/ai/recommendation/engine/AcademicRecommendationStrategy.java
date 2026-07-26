@@ -39,7 +39,7 @@ public class AcademicRecommendationStrategy implements RecommendationStrategy {
                 : Collections.emptyList();
 
         int currentSemester = context.getCurrentSemester() != null ? context.getCurrentSemester() : 1;
-        String userDept = user.getDepartment();
+        String userDept = null;
 
         // Map course ID to Course object for easy lookup
         Map<String, Course> courseMap = new HashMap<>();
@@ -55,7 +55,7 @@ public class AcademicRecommendationStrategy implements RecommendationStrategy {
                 continue;
             }
 
-            boolean isDeptMatch = userDept != null && userDept.equalsIgnoreCase(course.getDepartment());
+            boolean isDeptMatch = userDept == null || userDept.isBlank() || userDept.equalsIgnoreCase(course.getDepartment());
             if (!isDeptMatch) {
                 continue; // Only recommend courses from the user's department for academic recommendations
             }

@@ -1,6 +1,6 @@
 package com.campusguide.platform.auth.dto;
 
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class AuthResponse {
 
     private String token;
-    private Role role;
+    private UserRole role;
     private String email;
 }

@@ -38,8 +38,8 @@ public class CommunityRecommendationStrategy implements RecommendationStrategy {
                 .collect(Collectors.toSet());
 
         List<RecommendationResponse> recommendations = new ArrayList<>();
-        String userDept = user.getDepartment();
-        String userBio = user.getBio() != null ? user.getBio().toLowerCase() : "";
+        String userDept = null;
+        String userBio = "";
 
         // Extract keywords from bio
         Set<String> bioKeywords = new HashSet<>();

@@ -1,16 +1,15 @@
 package com.campusguide.platform.auth.service;
 
-import com.campusguide.common.exception.BadRequestException;
 import com.campusguide.common.exception.ConflictException;
 import com.campusguide.common.exception.ResourceNotFoundException;
 import com.campusguide.common.exception.UnauthorisedException;
 import com.campusguide.platform.auth.dto.AuthResponse;
 import com.campusguide.platform.auth.dto.LoginRequest;
 import com.campusguide.platform.auth.dto.RegisterRequest;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.jwt.JwtService;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
-import com.campusguide.platform.jwt.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,10 +50,6 @@ class AuthServiceTest {
         registerRequest = RegisterRequest.builder()
                 .email("test@campusguide.com")
                 .password("password123")
-                .firstName("John")
-                .lastName("Doe")
-                .department("Computer Science")
-                .year(3)
                 .build();
 
         loginRequest = LoginRequest.builder()
@@ -63,14 +59,11 @@ class AuthServiceTest {
 
         user = User.builder()
                 .email("test@campusguide.com")
-                .password("hashedPassword123")
-                .firstName("John")
-                .lastName("Doe")
-                .role(Role.STUDENT)
-                .department("Computer Science")
-                .year(3)
-                .isPremium(false)
-                .isVerified(false)
+                .username("test")
+                .passwordHash("hashedPassword123")
+                .role(UserRole.STUDENT)
+                .enabled(true)
+                .emailVerified(false)
                 .build();
     }
 
@@ -86,7 +79,7 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("mocked-jwt-token", response.getToken());
         assertEquals(registerRequest.getEmail(), response.getEmail());
-        assertEquals(Role.STUDENT, response.getRole());
+        assertEquals(UserRole.STUDENT, response.getRole());
 
         verify(userRepository).existsByEmail(registerRequest.getEmail());
         verify(passwordEncoder).encode(registerRequest.getPassword());
@@ -107,7 +100,7 @@ class AuthServiceTest {
     @Test
     void login_Successful() {
         when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(true);
+        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())).thenReturn(true);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mocked-jwt-token");
 
         AuthResponse response = authService.login(loginRequest);
@@ -115,10 +108,10 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("mocked-jwt-token", response.getToken());
         assertEquals(loginRequest.getEmail(), response.getEmail());
-        assertEquals(Role.STUDENT, response.getRole());
+        assertEquals(UserRole.STUDENT, response.getRole());
 
         verify(userRepository).findByEmail(loginRequest.getEmail());
-        verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());
+        verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPasswordHash());
         verify(jwtService).generateToken(any(UserDetails.class));
     }
 
@@ -135,12 +128,12 @@ class AuthServiceTest {
     @Test
     void login_ThrowsUnauthorisedException_WhenPasswordDoesNotMatch() {
         when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())).thenReturn(false);
+        when(passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())).thenReturn(false);
 
         assertThrows(UnauthorisedException.class, () -> authService.login(loginRequest));
 
         verify(userRepository).findByEmail(loginRequest.getEmail());
-        verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPassword());
+        verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPasswordHash());
         verify(jwtService, never()).generateToken(any(UserDetails.class));
     }
 }

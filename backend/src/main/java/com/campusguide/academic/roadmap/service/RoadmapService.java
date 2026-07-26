@@ -9,7 +9,7 @@ import com.campusguide.academic.roadmap.dto.RoadmapSummaryResponse;
 import com.campusguide.academic.roadmap.dto.UpdateRoadmapRequest;
 import com.campusguide.academic.roadmap.entity.Roadmap;
 import com.campusguide.academic.roadmap.repository.RoadmapRepository;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
@@ -117,7 +117,7 @@ public class RoadmapService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isCreator = roadmap.getCreatedBy().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isCreator && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this roadmap");
@@ -184,7 +184,7 @@ public class RoadmapService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isCreator = roadmap.getCreatedBy().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isCreator && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this roadmap");

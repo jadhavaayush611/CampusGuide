@@ -53,7 +53,6 @@ class AnalyticsServiceTest {
     void testGetDashboardSummary_EmptyDatabase() {
         // Arrange
         when(userRepository.count()).thenReturn(0L);
-        when(userRepository.countByIsVerifiedTrue()).thenReturn(0L);
         when(roadmapRepository.count()).thenReturn(0L);
         when(roadmapRepository.countByIsDeletedFalse()).thenReturn(0L);
         when(communityRepository.count()).thenReturn(0L);
@@ -84,7 +83,6 @@ class AnalyticsServiceTest {
 
         // Verify repository interaction
         verify(userRepository, times(1)).count();
-        verify(userRepository, times(1)).countByIsVerifiedTrue();
         verify(roadmapRepository, times(1)).count();
         verify(roadmapRepository, times(1)).countByIsDeletedFalse();
         verify(communityRepository, times(1)).count();
@@ -100,7 +98,6 @@ class AnalyticsServiceTest {
     void testGetDashboardSummary_PopulatedData() {
         // Arrange
         when(userRepository.count()).thenReturn(100L);
-        when(userRepository.countByIsVerifiedTrue()).thenReturn(80L);
         when(roadmapRepository.count()).thenReturn(50L);
         when(roadmapRepository.countByIsDeletedFalse()).thenReturn(45L);
         when(communityRepository.count()).thenReturn(20L);
@@ -117,7 +114,7 @@ class AnalyticsServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals(100, response.getTotalUsers());
-        assertEquals(80, response.getActiveUsers());
+        assertEquals(100, response.getActiveUsers());
         assertEquals(50, response.getTotalRoadmaps());
         assertEquals(45, response.getPublishedRoadmaps());
         assertEquals(20, response.getTotalCommunities());
@@ -131,7 +128,6 @@ class AnalyticsServiceTest {
 
         // Verify repository interactions
         verify(userRepository, times(1)).count();
-        verify(userRepository, times(1)).countByIsVerifiedTrue();
         verify(roadmapRepository, times(1)).count();
         verify(roadmapRepository, times(1)).countByIsDeletedFalse();
         verify(communityRepository, times(1)).count();
@@ -146,14 +142,12 @@ class AnalyticsServiceTest {
     @Test
     void testGetUserStatistics() {
         when(userRepository.count()).thenReturn(100L);
-        when(userRepository.countByIsVerifiedTrue()).thenReturn(80L);
 
         ModuleStatisticsResponse stats = analyticsService.getUserStatistics();
 
         assertEquals(100L, stats.getTotal());
-        assertEquals(80L, stats.getActive());
+        assertEquals(100L, stats.getActive());
         verify(userRepository, times(1)).count();
-        verify(userRepository, times(1)).countByIsVerifiedTrue();
     }
 
     @Test

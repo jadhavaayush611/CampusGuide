@@ -46,14 +46,12 @@ public class ResourceRecommendationStrategy implements RecommendationStrategy {
         if (currentCourseIds.isEmpty()) {
             activeCourses.stream()
                     .filter(c -> c.getSemester() != null && c.getSemester() == currentSemester)
-                    .filter(c -> c.getDepartment() != null && c.getDepartment().equalsIgnoreCase(user.getDepartment()))
                     .map(Course::getId)
                     .forEach(currentCourseIds::add);
         }
 
-        // 2. Identify roadmap courses (not completed, in user's department)
+        // 2. Identify roadmap courses (not completed)
         List<Course> roadmapCourses = activeCourses.stream()
-                .filter(c -> c.getDepartment() != null && c.getDepartment().equalsIgnoreCase(user.getDepartment()))
                 .filter(c -> !completedIds.contains(c.getId()))
                 .toList();
 
@@ -97,15 +95,16 @@ public class ResourceRecommendationStrategy implements RecommendationStrategy {
                 }
             }
 
-            // Department match boost (if uploader/council matches user department keywords)
-            if (!courseMatched && user.getDepartment() != null && !user.getDepartment().isBlank()) {
-                String dept = user.getDepartment().toLowerCase();
+            // Department match boost (if uploader/council matches department keywords)
+            String userDepartment = null;
+            if (!courseMatched && userDepartment != null && !userDepartment.isBlank()) {
+                String dept = userDepartment.toLowerCase();
                 boolean tagMatch = resource.getTags() != null && resource.getTags().stream().anyMatch(t -> t.toLowerCase().contains(dept));
                 boolean titleMatch = resource.getTitle() != null && resource.getTitle().toLowerCase().contains(dept);
 
                 if (tagMatch || titleMatch) {
                     score = properties.getResource().getDepartmentWeight();
-                    explanation = "This resource is relevant to your " + user.getDepartment() + " department.";
+                    explanation = "This resource is relevant to your " + userDepartment + " department.";
                     reason = RecommendationReason.DEPARTMENT_MATCH;
                 }
             }

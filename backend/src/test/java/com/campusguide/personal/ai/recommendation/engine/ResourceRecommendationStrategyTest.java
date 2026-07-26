@@ -27,7 +27,7 @@ class ResourceRecommendationStrategyTest {
     void recommend_CourseMatchingAndRelevanceScoring() {
         User user = User.builder()
                 .id("student-1")
-                .department("Computer Science")
+                .username("student1")
                 .build();
 
         Course courseCurrent = Course.builder()

@@ -12,7 +12,7 @@ import com.campusguide.academic.roadmap.service.RoadmapService;
 import com.campusguide.academic.semesterplanner.dto.*;
 import com.campusguide.academic.semesterplanner.entity.SemesterPlan;
 import com.campusguide.academic.semesterplanner.repository.SemesterPlanRepository;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
@@ -395,7 +395,7 @@ public class SemesterPlanService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         // Authorization check
-        if (user.getRole() != Role.SUPER_ADMIN) {
+        if (user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can view other students' plans");
         }
 
@@ -407,7 +407,7 @@ public class SemesterPlanService {
     // --- PRIVATE UTILITY AND MAPPER METHODS ---
 
     private void checkOwnerOrAdmin(SemesterPlan plan, User user) {
-        if (!plan.getStudentId().equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
+        if (!plan.getStudentId().equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("You are not authorized to access/modify this semester plan");
         }
     }

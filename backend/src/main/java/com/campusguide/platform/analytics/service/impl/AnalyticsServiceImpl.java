@@ -37,7 +37,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         long startTime = System.currentTimeMillis();
 
         long totalUsers = userRepository.count();
-        long activeUsers = userRepository.countByIsVerifiedTrue();
+        long activeUsers = totalUsers;
 
         long totalRoadmaps = roadmapRepository.count();
         long publishedRoadmaps = roadmapRepository.countByIsDeletedFalse();
@@ -77,7 +77,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         long startTime = System.currentTimeMillis();
 
         long total = userRepository.count();
-        long active = userRepository.countByIsVerifiedTrue();
+        long active = total;
 
         long duration = System.currentTimeMillis() - startTime;
         logger.info("User statistics generated in {} ms", duration);

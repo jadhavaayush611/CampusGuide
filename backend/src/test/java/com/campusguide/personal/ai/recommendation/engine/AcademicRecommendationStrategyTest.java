@@ -26,7 +26,7 @@ class AcademicRecommendationStrategyTest {
     void recommend_MatchingRoadmapAndPrerequisites() {
         User user = User.builder()
                 .id("student-1")
-                .department("Computer Science")
+                .username("student1")
                 .build();
 
         Course courseA = Course.builder()

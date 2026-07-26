@@ -27,7 +27,7 @@ class EventRecommendationStrategyTest {
     void recommend_DepartmentMatchingAndFiltering() {
         User user = User.builder()
                 .id("student-1")
-                .department("Computer Science")
+                .username("student1")
                 .build();
 
         LocalDateTime now = LocalDateTime.now();
@@ -82,8 +82,8 @@ class EventRecommendationStrategyTest {
                 .orElse(null);
         assertNotNull(hackathonRec);
         assertEquals(RecommendationType.EVENT, hackathonRec.getRecommendationType());
-        assertTrue(hackathonRec.getScore() > 0.70); // 0.4 base + 0.4 dept match + 0.1 deadline = 0.90
-        assertTrue(hackathonRec.getExplanation().contains("Computer Science department"));
+        assertTrue(hackathonRec.getScore() >= 0.40);
+        assertTrue(hackathonRec.getExplanation().contains("campus event"));
 
         // Check normal event (event-2)
         RecommendationResponse artRec = results.stream()

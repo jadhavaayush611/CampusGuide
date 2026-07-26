@@ -9,7 +9,7 @@ import com.campusguide.campus.event.dto.EventSummaryResponse;
 import com.campusguide.campus.event.dto.UpdateEventRequest;
 import com.campusguide.campus.event.entity.Event;
 import com.campusguide.campus.event.repository.EventRepository;
-import com.campusguide.platform.user.entity.Role;
+import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +90,7 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isOrganizer = event.getOrganizerId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isOrganizer && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this event");
@@ -154,7 +154,7 @@ public class EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         boolean isOrganizer = event.getOrganizerId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
+        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
 
         if (!isOrganizer && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this event");

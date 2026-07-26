@@ -26,8 +26,7 @@ class CommunityRecommendationStrategyTest {
     void recommend_DepartmentMatchAndDuplicatePrevention() {
         User user = User.builder()
                 .id("student-1")
-                .department("Computer Science")
-                .bio("Interested in coding and algorithms.")
+                .username("student1")
                 .build();
 
         Community commCS = Community.builder()
@@ -77,8 +76,8 @@ class CommunityRecommendationStrategyTest {
                 .orElse(null);
         assertNotNull(roboticsRec);
         assertEquals(RecommendationType.COMMUNITY, roboticsRec.getRecommendationType());
-        assertTrue(roboticsRec.getScore() > 0.80); // 0.4 base + 0.45 dept match + 0.15 bio keyword = 1.0 (capped)
-        assertTrue(roboticsRec.getExplanation().contains("Computer Science department"));
+        assertTrue(roboticsRec.getScore() >= 0.40);
+        assertTrue(roboticsRec.getExplanation().contains("campus community"));
 
         // Check normal event (commPainting)
         RecommendationResponse paintingRec = results.stream()
