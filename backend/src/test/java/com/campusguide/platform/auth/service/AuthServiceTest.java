@@ -4,8 +4,8 @@ import com.campusguide.common.exception.ConflictException;
 import com.campusguide.common.exception.ResourceNotFoundException;
 import com.campusguide.common.exception.UnauthorisedException;
 import com.campusguide.platform.auth.dto.AuthResponse;
-import com.campusguide.platform.auth.dto.LoginRequest;
-import com.campusguide.platform.auth.dto.RegisterRequest;
+import com.campusguide.platform.auth.dto.request.LoginRequest;
+import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.jwt.JwtService;
 import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
@@ -49,12 +49,13 @@ class AuthServiceTest {
     void setUp() {
         registerRequest = RegisterRequest.builder()
                 .email("test@campusguide.com")
-                .password("password123")
+                .username("test")
+                .password("Password123!")
                 .build();
 
         loginRequest = LoginRequest.builder()
-                .email("test@campusguide.com")
-                .password("password123")
+                .emailOrUsername("test@campusguide.com")
+                .password("Password123!")
                 .build();
 
         user = User.builder()
@@ -99,7 +100,7 @@ class AuthServiceTest {
 
     @Test
     void login_Successful() {
-        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(loginRequest.getEmailOrUsername())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())).thenReturn(true);
         when(jwtService.generateToken(any(UserDetails.class))).thenReturn("mocked-jwt-token");
 
@@ -107,32 +108,32 @@ class AuthServiceTest {
 
         assertNotNull(response);
         assertEquals("mocked-jwt-token", response.getToken());
-        assertEquals(loginRequest.getEmail(), response.getEmail());
+        assertEquals(loginRequest.getEmailOrUsername(), response.getEmail());
         assertEquals(UserRole.STUDENT, response.getRole());
 
-        verify(userRepository).findByEmail(loginRequest.getEmail());
+        verify(userRepository).findByEmail(loginRequest.getEmailOrUsername());
         verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPasswordHash());
         verify(jwtService).generateToken(any(UserDetails.class));
     }
 
     @Test
     void login_ThrowsResourceNotFoundException_WhenUserDoesNotExist() {
-        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(loginRequest.getEmailOrUsername())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> authService.login(loginRequest));
 
-        verify(userRepository).findByEmail(loginRequest.getEmail());
+        verify(userRepository).findByEmail(loginRequest.getEmailOrUsername());
         verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 
     @Test
     void login_ThrowsUnauthorisedException_WhenPasswordDoesNotMatch() {
-        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(loginRequest.getEmailOrUsername())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())).thenReturn(false);
 
         assertThrows(UnauthorisedException.class, () -> authService.login(loginRequest));
 
-        verify(userRepository).findByEmail(loginRequest.getEmail());
+        verify(userRepository).findByEmail(loginRequest.getEmailOrUsername());
         verify(passwordEncoder).matches(loginRequest.getPassword(), user.getPasswordHash());
         verify(jwtService, never()).generateToken(any(UserDetails.class));
     }

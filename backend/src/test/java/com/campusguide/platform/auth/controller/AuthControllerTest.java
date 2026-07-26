@@ -1,8 +1,8 @@
 package com.campusguide.platform.auth.controller;
 
 import com.campusguide.platform.auth.dto.AuthResponse;
-import com.campusguide.platform.auth.dto.LoginRequest;
-import com.campusguide.platform.auth.dto.RegisterRequest;
+import com.campusguide.platform.auth.dto.request.LoginRequest;
+import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.user.dto.UserResponse;
 import com.campusguide.platform.auth.service.AuthService;
 import com.campusguide.platform.user.entity.UserRole;
@@ -58,16 +58,13 @@ class AuthControllerTest {
 
         registerRequest = RegisterRequest.builder()
                 .email("test@campusguide.com")
-                .password("password123")
-                .firstName("John")
-                .lastName("Doe")
-                .department("Computer Science")
-                .year(3)
+                .username("testuser")
+                .password("Password123!")
                 .build();
 
         loginRequest = LoginRequest.builder()
-                .email("test@campusguide.com")
-                .password("password123")
+                .emailOrUsername("test@campusguide.com")
+                .password("Password123!")
                 .build();
 
         authResponse = AuthResponse.builder()

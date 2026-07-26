@@ -1,8 +1,8 @@
 package com.campusguide.platform.auth.service;
 
 import com.campusguide.platform.auth.dto.AuthResponse;
-import com.campusguide.platform.auth.dto.LoginRequest;
-import com.campusguide.platform.auth.dto.RegisterRequest;
+import com.campusguide.platform.auth.dto.request.LoginRequest;
+import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.user.dto.UserResponse;
 import com.campusguide.platform.user.entity.UserRole;
 import com.campusguide.platform.user.entity.User;
@@ -32,7 +32,8 @@ public class AuthService {
             throw new ConflictException("Email already exists");
         }
 
-        String username = request.getEmail().contains("@") ? request.getEmail().split("@")[0] : request.getEmail();
+        String username = request.getUsername() != null ? request.getUsername()
+                : (request.getEmail().contains("@") ? request.getEmail().split("@")[0] : request.getEmail());
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -60,8 +61,10 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String identifier = request.getEmailOrUsername() != null ? request.getEmailOrUsername() : "";
+        User user = userRepository.findByEmail(identifier)
+                .orElseGet(() -> userRepository.findByUsername(identifier)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new UnauthorisedException("Invalid credentials");

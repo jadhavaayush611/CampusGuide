@@ -1,8 +1,8 @@
 package com.campusguide.platform.auth.controller;
 
 import com.campusguide.platform.auth.dto.AuthResponse;
-import com.campusguide.platform.auth.dto.LoginRequest;
-import com.campusguide.platform.auth.dto.RegisterRequest;
+import com.campusguide.platform.auth.dto.request.LoginRequest;
+import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.auth.service.AuthService;
 import com.campusguide.platform.user.dto.UserResponse;
 import jakarta.validation.Valid;

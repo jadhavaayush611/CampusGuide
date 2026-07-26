@@ -1,7 +1,7 @@
 package com.campusguide.platform.auth.controller;
 
 import com.campusguide.platform.auth.dto.AuthResponse;
-import com.campusguide.platform.auth.dto.RegisterRequest;
+import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,11 +63,8 @@ class AuthControllerSecurityIT {
         // 1. Register a user
         RegisterRequest registerRequest = RegisterRequest.builder()
                 .email("flow-test@campusguide.com")
-                .password("password123")
-                .firstName("Test")
-                .lastName("User")
-                .department("Science")
-                .year(2)
+                .username("flowtest")
+                .password("Password123!")
                 .build();
 
         mockMvc.perform(post("/api/auth/register")
