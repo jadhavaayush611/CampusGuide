@@ -1,7 +1,7 @@
 # Personal Domain Overview
 
 ## Overview
-The Personal domain (`com.campusguide.personal`) manages user-centric sub-systems, including AI conversations, notifications, achievements, recommendations, and student task planning.
+The Personal domain (`com.campusguide.personal`) manages user-centric sub-systems, including AI conversations, notifications, achievements, recommendations, student task planning, and personal calendar management.
 
 ## Modules
 
@@ -10,11 +10,17 @@ Manages personal tasks, study goals, assignment tracking, and event-linked plann
 - **Aggregate Root**: `PlannerTask`
 - **Key Features**: Task creation, due date validation, reminder boundaries, status transitions, completed task immutability, ownership isolation.
 
-### 2. Notifications (`com.campusguide.personal.notification`)
+### 2. Calendar (`com.campusguide.personal.calendar`)
+Manages student personal calendar entries, academic schedules, task/event time-blocks, and range queries.
+- **Aggregate Root**: `CalendarEntry`
+- **Key Features**: Authenticated user ownership isolation, date-time range validation, mutual exclusivity for PlannerTask vs. Event references, all-day flag support, overlapping range queries.
+
+### 3. Notifications (`com.campusguide.personal.notification`)
 Delivers user notifications across campus events, academic updates, and personal reminders.
 
-### 3. AI Gateway (`com.campusguide.personal.ai`)
+### 4. AI Gateway (`com.campusguide.personal.ai`)
 Manages Atlas AI assistant conversations, message histories, and context generation.
 
-### 4. Achievements (`com.campusguide.personal.achievement`)
+### 5. Achievements (`com.campusguide.personal.achievement`)
 Tracks student milestones, badges, and academic accomplishments.
+

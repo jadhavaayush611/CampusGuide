@@ -90,14 +90,108 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ---
 
+## Calendar API Contract
+
+### Base Endpoint: `/api/v1/calendar`
+
+All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bearer JWT token must be provided in `Authorization` header.
+
+---
+
+### 1. Create Calendar Entry
+- **HTTP Method**: `POST`
+- **Path**: `/api/v1/calendar`
+- **Request Body**:
+```json
+{
+  "title": "Algorithms Lecture",
+  "description": "Chapter 4 Algorithms",
+  "type": "ACADEMIC",
+  "linkedPlannerTaskId": null,
+  "linkedEventId": null,
+  "location": "Hall B",
+  "startTime": "2026-08-15T10:00:00",
+  "endTime": "2026-08-15T12:00:00",
+  "isAllDay": false,
+  "color": "#0000FF",
+  "notes": "Bring notebook"
+}
+```
+- **Response Status**: `201 Created`
+- **Response Body**: `CalendarEntryResponse`
+
+---
+
+### 2. Get All Calendar Entries
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/calendar`
+- **Response Status**: `200 OK`
+- **Response Body**: `List<CalendarEntryResponse>` (sorted by `startTime` ascending, `endTime` ascending)
+
+---
+
+### 3. Get Calendar Entry by ID
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/calendar/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Response Status**: `200 OK`
+- **Response Body**: `CalendarEntryResponse`
+
+---
+
+### 4. Get Calendar Entries in Range
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/calendar/range`
+- **Query Parameters**:
+  - `from` (ISO LocalDateTime, required)
+  - `to` (ISO LocalDateTime, required)
+- **Response Status**: `200 OK`
+- **Response Body**: `List<CalendarEntryResponse>` (returns overlapping entries sorted chronologically)
+
+---
+
+### 5. Update Calendar Entry
+- **HTTP Method**: `PUT`
+- **Path**: `/api/v1/calendar/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Request Body**:
+```json
+{
+  "title": "Algorithms Lecture (Rescheduled)",
+  "description": "Chapter 4 & 5",
+  "type": "ACADEMIC",
+  "linkedPlannerTaskId": null,
+  "linkedEventId": null,
+  "location": "Hall C",
+  "startTime": "2026-08-15T11:00:00",
+  "endTime": "2026-08-15T13:00:00",
+  "isAllDay": false,
+  "color": "#0000FF",
+  "notes": "Revised timing"
+}
+```
+- **Response Status**: `200 OK`
+- **Response Body**: `CalendarEntryResponse`
+
+---
+
+### 6. Delete Calendar Entry
+- **HTTP Method**: `DELETE`
+- **Path**: `/api/v1/calendar/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Response Status**: `204 No Content`
+
+---
+
 ## Response Status & Error Codes
 
 | Status Code | Description | Scenario |
 |---|---|---|
-| `200 OK` | Success | Fetch, update, or patch successful |
-| `201 Created` | Resource Created | New planner task created |
-| `204 No Content` | Deleted | Task deleted |
-| `400 Bad Request` | Validation Error | Missing mandatory title/type/priority, dueAt preceding createdAt, reminderAt not before dueAt, or modifying non-notes on completed task |
+| `200 OK` | Success | Fetch or update successful |
+| `201 Created` | Resource Created | New planner task or calendar entry created |
+| `204 No Content` | Deleted | Task or calendar entry deleted |
+| `400 Bad Request` | Validation Error | Mandatory fields missing, invalid time range (from >= to, startTime >= endTime), or referencing both task and event |
 | `401 Unauthorized` | Unauthenticated | Missing or invalid JWT token |
-| `403 Forbidden` | Access Denied | User trying to access another user's task |
-| `404 Not Found` | Not Found | Task ID or linked Event ID does not exist |
+| `403 Forbidden` | Access Denied | User trying to access another user's entry |
+| `404 Not Found` | Not Found | Entry ID, linked Planner Task ID, or linked Event ID does not exist |
+
