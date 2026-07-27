@@ -22,5 +22,8 @@ Delivers user notifications across campus events, academic updates, and personal
 Manages Atlas AI assistant conversations, message histories, and context generation.
 
 ### 5. Achievements (`com.campusguide.personal.achievement`)
-Tracks student milestones, badges, and academic accomplishments.
+Tracks student milestones, badges, skill progression, and academic accomplishments.
+- **Aggregate Root**: `AchievementProgress`
+- **Key Features**: Authenticated user ownership isolation, progress range validation (0-100), compound unique constraint `(userId, achievementCode)`, automatic `EARNED` transition and `earnedAt` timestamping, earned status immutability against downgrades, optional evidence URL and flexible metadata.
+
 
