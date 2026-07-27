@@ -14,6 +14,7 @@ backend/build/
 *.log
 *.log.*
 backend/.mvn/wrapper/maven-wrapper.jar
+.agents
 
 # Frontend (Node / Vite / React)
 node_modules/
