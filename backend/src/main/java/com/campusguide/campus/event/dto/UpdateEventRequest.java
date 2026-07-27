@@ -1,7 +1,10 @@
 package com.campusguide.campus.event.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
+import com.campusguide.campus.event.entity.EventType;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,28 +13,47 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UpdateEventRequest {
 
-    @Size(max = 150, message = "Title cannot exceed 150 characters")
+    @NotBlank(message = "Title is required")
     private String title;
 
-    @Size(max = 5000, message = "Description cannot exceed 5000 characters")
+    @NotBlank(message = "Slug is required")
+    private String slug;
+
+    @NotBlank(message = "Description is required")
     private String description;
 
-    @Size(max = 200, message = "Location cannot exceed 200 characters")
-    private String location;
+    private String summary;
 
+    @NotBlank(message = "Venue is required")
+    private String venue;
+
+    @NotNull(message = "Event type is required")
+    private EventType eventType;
+
+    private Boolean registrationRequired;
+
+    private LocalDateTime registrationStart;
+
+    private LocalDateTime registrationEnd;
+
+    @Positive(message = "Capacity must be positive")
+    private Integer capacity;
+
+    @NotNull(message = "Start time is required")
     private LocalDateTime startTime;
 
+    @NotNull(message = "End time is required")
     private LocalDateTime endTime;
 
-    private LocalDateTime registrationDeadline;
+    private String bannerUrl;
 
-    @Min(value = 1, message = "Maximum participants must be at least 1")
-    private Integer maxParticipants;
+    @Email(message = "Contact email must be valid")
+    private String contactEmail;
 
-    private String imageUrl;
+    private String contactNumber;
 }

@@ -10,47 +10,46 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class EventRegistrationController {
 
-    private final EventRegistrationService eventRegistrationService;
+    private final EventRegistrationService registrationService;
 
-    @PostMapping("/{eventId}/register")
+    @PostMapping("/{id}/register")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EventResponse> registerForEvent(
-            @PathVariable String eventId,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        EventResponse response = eventRegistrationService.registerForEvent(eventId, userDetails);
+        EventResponse response = registrationService.registerForEvent(id, userDetails);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{eventId}/register")
+    @DeleteMapping("/{id}/register")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EventResponse> cancelRegistration(
-            @PathVariable String eventId,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        EventResponse response = eventRegistrationService.cancelRegistration(eventId, userDetails);
+        EventResponse response = registrationService.cancelRegistration(id, userDetails);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{eventId}/registration-status")
+    @GetMapping("/{id}/is-registered")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Boolean>> getRegistrationStatus(
-            @PathVariable String eventId,
+    public ResponseEntity<Boolean> isUserRegistered(
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        boolean registered = eventRegistrationService.isUserRegistered(eventId, userDetails);
-        return ResponseEntity.ok(Map.of("registered", registered));
+        boolean isRegistered = registrationService.isUserRegistered(id, userDetails);
+        return ResponseEntity.ok(isRegistered);
     }
 
-    @GetMapping("/{eventId}/registrations")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<String>> getRegisteredUsers(
-            @PathVariable String eventId) {
-        List<String> registeredUsers = eventRegistrationService.getRegisteredUsers(eventId);
-        return ResponseEntity.ok(registeredUsers);
+    @GetMapping("/{id}/registered-users")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
+    public ResponseEntity<List<String>> getRegisteredUsers(@PathVariable UUID id) {
+        List<String> userIds = registrationService.getRegisteredUsers(id);
+        return ResponseEntity.ok(userIds);
     }
 }

@@ -81,7 +81,7 @@ class SearchServiceTest {
         Course course = Course.builder().id("c1").courseName("Advanced Java").courseCode("CS201").description("Java programming").active(true).build();
         Roadmap roadmap = Roadmap.builder().id("rm1").title("Java Roadmap").description("Become Java expert").isDeleted(false).build();
         Community community = Community.builder().id("cm1").name("Java Community").description("For Java lovers").isActive(true).build();
-        Event event = Event.builder().id("e1").title("Java Conference").description("Annual conference").isDeleted(false).build();
+        Event event = Event.builder().id(java.util.UUID.randomUUID()).title("Java Conference").description("Annual conference").venue("Main Hall").build();
         Resource resource = Resource.builder().id("res1").title("Java Book").description("Study resource").tags(List.of("Java")).isDeleted(false).build();
 
         when(courseRepository.findByActiveTrueAndCourseNameContainingIgnoreCaseOrActiveTrueAndCourseCodeContainingIgnoreCaseOrActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString(), anyString()))
@@ -90,7 +90,7 @@ class SearchServiceTest {
                 .thenReturn(List.of(roadmap));
         when(communityRepository.findByIsActiveTrueAndNameContainingIgnoreCaseOrIsActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString()))
                 .thenReturn(List.of(community));
-        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
+        when(eventRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
                 .thenReturn(List.of(event));
         when(resourceRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndTagsContainingIgnoreCase(anyString(), anyString(), anyString()))
                 .thenReturn(List.of(resource));
@@ -137,7 +137,7 @@ class SearchServiceTest {
                 .thenReturn(Collections.emptyList());
         when(communityRepository.findByIsActiveTrueAndNameContainingIgnoreCaseOrIsActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
-        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
+        when(eventRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
         when(resourceRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndTagsContainingIgnoreCase(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
@@ -171,7 +171,7 @@ class SearchServiceTest {
                 .thenReturn(List.of(roadmapContains));
         when(communityRepository.findByIsActiveTrueAndNameContainingIgnoreCaseOrIsActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString()))
                 .thenReturn(List.of(communityDesc));
-        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
+        when(eventRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
         when(resourceRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndTagsContainingIgnoreCase(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
@@ -208,7 +208,7 @@ class SearchServiceTest {
                 .thenReturn(Collections.emptyList());
         when(communityRepository.findByIsActiveTrueAndNameContainingIgnoreCaseOrIsActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
-        when(eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
+        when(eventRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
         when(resourceRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndTagsContainingIgnoreCase(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());

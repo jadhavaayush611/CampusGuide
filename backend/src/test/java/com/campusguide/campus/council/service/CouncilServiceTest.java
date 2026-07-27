@@ -223,7 +223,7 @@ class CouncilServiceTest {
     void deleteCouncil_Success_WhenNoDependencies() {
         when(councilRepository.findById(councilId)).thenReturn(Optional.of(council));
         when(communityRepository.findByCouncilId(councilId.toString())).thenReturn(Collections.emptyList());
-        when(eventRepository.findByCouncilIdAndIsDeletedFalse(councilId.toString())).thenReturn(Collections.emptyList());
+        when(eventRepository.existsByCouncilId(councilId)).thenReturn(false);
         when(resourceRepository.findByCouncilIdAndIsDeletedFalseOrderByCreatedAtDesc(councilId.toString())).thenReturn(Collections.emptyList());
 
         councilService.deleteCouncil(councilId);

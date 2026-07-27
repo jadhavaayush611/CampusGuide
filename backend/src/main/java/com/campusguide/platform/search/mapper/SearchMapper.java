@@ -81,13 +81,12 @@ public class SearchMapper {
         }
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("councilId", event.getCouncilId());
-        metadata.put("organizerId", event.getOrganizerId());
-        metadata.put("location", event.getLocation());
+        metadata.put("location", event.getVenue());
         metadata.put("startTime", event.getStartTime());
         metadata.put("endTime", event.getEndTime());
 
         return SearchResultResponse.builder()
-                .id(event.getId())
+                .id(event.getId() != null ? event.getId().toString() : null)
                 .title(event.getTitle())
                 .description(event.getDescription())
                 .searchType(SearchType.EVENT)

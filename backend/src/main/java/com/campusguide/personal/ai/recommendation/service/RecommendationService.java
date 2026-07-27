@@ -11,6 +11,7 @@ import com.campusguide.campus.community.repository.CommunityRepository;
 import com.campusguide.campus.academic.course.entity.Course;
 import com.campusguide.campus.academic.course.repository.CourseRepository;
 import com.campusguide.campus.event.entity.Event;
+import com.campusguide.campus.event.entity.EventStatus;
 import com.campusguide.campus.event.repository.EventRepository;
 import com.campusguide.campus.post.entity.Post;
 import com.campusguide.campus.post.repository.PostRepository;
@@ -142,7 +143,7 @@ public class RecommendationService {
         List<Roadmap> roadmaps = roadmapRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
         List<SemesterPlan> semesterPlans = semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(user.getId());
         List<Post> userPosts = postRepository.findByAuthorIdAndIsDeletedFalse(user.getId());
-        List<Event> upcomingEvents = eventRepository.findByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqualOrderByStartTimeAsc(LocalDateTime.now());
+        List<Event> upcomingEvents = eventRepository.findByStatusAndEndTimeGreaterThanEqualOrderByStartTimeAsc(EventStatus.PUBLISHED, LocalDateTime.now());
         List<Community> allActiveCommunities = communityRepository.findByIsActiveTrue();
         List<Resource> allActiveResources = resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc();
 

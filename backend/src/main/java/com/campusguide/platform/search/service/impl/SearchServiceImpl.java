@@ -114,7 +114,7 @@ public class SearchServiceImpl implements SearchService {
 
         // 4. Search Events
         if (typesToSearch.contains(SearchType.EVENT)) {
-            List<Event> events = eventRepository.findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
+            List<Event> events = eventRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(
                     query, query, query
             );
             for (Event event : events) {

@@ -5,11 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.UUID;
 
 @Document(collection = "events")
 @Data
@@ -19,36 +19,43 @@ import java.util.List;
 public class Event {
 
     @Id
-    private String id;
+    private UUID id;
 
     private String title;
 
+    @Indexed(unique = true)
+    private String slug;
+
     private String description;
 
+    private String summary;
+
     @Indexed
-    private String councilId;
+    private UUID councilId;
 
-    private String organizerId;
+    private String venue;
 
-    private String location;
+    private EventType eventType;
+
+    private EventStatus status;
+
+    private Boolean registrationRequired;
+
+    private LocalDateTime registrationStart;
+
+    private LocalDateTime registrationEnd;
+
+    private Integer capacity;
 
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
 
-    private LocalDateTime registrationDeadline;
+    private String bannerUrl;
 
-    private Integer maxParticipants;
+    private String contactEmail;
 
-    private Integer attendeeCount;
-
-    private List<String> registeredUserIds;
-
-    private String imageUrl;
-
-    private Boolean isCancelled;
-
-    private Boolean isDeleted;
+    private String contactNumber;
 
     private LocalDateTime createdAt;
 

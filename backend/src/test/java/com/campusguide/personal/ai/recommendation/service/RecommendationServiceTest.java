@@ -92,7 +92,7 @@ class RecommendationServiceTest {
         when(roadmapRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(Collections.emptyList());
         when(semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(user.getId())).thenReturn(Collections.emptyList());
         when(postRepository.findByAuthorIdAndIsDeletedFalse(user.getId())).thenReturn(Collections.emptyList());
-        when(eventRepository.findByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqualOrderByStartTimeAsc(any())).thenReturn(Collections.emptyList());
+        when(eventRepository.findByStatusAndEndTimeGreaterThanEqualOrderByStartTimeAsc(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any())).thenReturn(Collections.emptyList());
         when(communityRepository.findByIsActiveTrue()).thenReturn(Collections.emptyList());
         when(resourceRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(Collections.emptyList());
 

@@ -1,29 +1,34 @@
 package com.campusguide.campus.event.repository;
 
 import com.campusguide.campus.event.entity.Event;
+import com.campusguide.campus.event.entity.EventStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-public interface EventRepository extends MongoRepository<Event, String> {
+@Repository
+public interface EventRepository extends MongoRepository<Event, UUID> {
 
-    List<Event> findByCouncilIdAndIsDeletedFalse(String councilId);
+    Optional<Event> findBySlug(String slug);
 
-    List<Event> findByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqualOrderByStartTimeAsc(LocalDateTime now);
+    boolean existsBySlug(String slug);
 
-    List<Event> findByIsDeletedFalseOrderByStartTimeAsc();
+    boolean existsBySlugAndIdNot(String slug, UUID id);
 
-    List<Event> findByIsDeletedFalseAndStartTimeBeforeOrderByStartTimeDesc(LocalDateTime now);
+    List<Event> findByCouncilId(UUID councilId);
 
-    List<Event> findByOrganizerIdAndIsDeletedFalseOrderByStartTimeAsc(String organizerId);
+    List<Event> findByStatusAndEndTimeGreaterThanEqualOrderByStartTimeAsc(EventStatus status, LocalDateTime now);
 
-    List<Event> findByIsDeletedFalseAndTitleContainingIgnoreCaseOrIsDeletedFalseAndDescriptionContainingIgnoreCaseOrIsDeletedFalseAndLocationContainingIgnoreCaseOrderByStartTimeAsc(
-            String title, String description, String location);
+    List<Event> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrVenueContainingIgnoreCaseOrderByStartTimeAsc(
+            String titleQuery, String descQuery, String venueQuery);
 
-    List<Event> findByIsDeletedFalseAndStartTimeBetweenOrderByStartTimeAsc(LocalDateTime startDate, LocalDateTime endDate);
+    long countByStatus(EventStatus status);
 
-    long countByIsDeletedFalse();
+    long countByStatusAndEndTimeGreaterThanEqual(EventStatus status, LocalDateTime now);
 
-    long countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(LocalDateTime now);
+    boolean existsByCouncilId(UUID councilId);
 }
-

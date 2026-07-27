@@ -2,112 +2,83 @@ package com.campusguide.campus.event.controller;
 
 import com.campusguide.campus.event.dto.CreateEventRequest;
 import com.campusguide.campus.event.dto.EventResponse;
-import com.campusguide.campus.event.dto.EventSummaryResponse;
 import com.campusguide.campus.event.dto.UpdateEventRequest;
+import com.campusguide.campus.event.dto.UpdateEventStatusRequest;
 import com.campusguide.campus.event.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/events")
+@RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<EventResponse> createEvent(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody CreateEventRequest request) {
-        EventResponse response = eventService.createEvent(userDetails, request);
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody CreateEventRequest request) {
+        EventResponse response = eventService.createEvent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/{eventId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<EventResponse> updateEvent(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable String eventId,
-            @Valid @RequestBody UpdateEventRequest request) {
-        EventResponse response = eventService.updateEvent(userDetails, eventId, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{eventId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteEvent(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable String eventId) {
-        eventService.deleteEvent(userDetails, eventId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getAllActiveEvents() {
-        List<EventSummaryResponse> response = eventService.getAllActiveEvents();
+    public ResponseEntity<List<EventResponse>> getPublicEvents() {
+        List<EventResponse> response = eventService.getPublicUpcomingEvents();
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/upcoming")
+    @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getUpcomingEvents() {
-        List<EventSummaryResponse> response = eventService.getUpcomingEvents();
+    public ResponseEntity<EventResponse> getEventById(@PathVariable UUID id) {
+        EventResponse response = eventService.getEventById(id);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/past")
+    @GetMapping("/slug/{slug}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getPastEvents() {
-        List<EventSummaryResponse> response = eventService.getPastEvents();
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/organizer/{organizerId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getEventsByOrganizer(@PathVariable String organizerId) {
-        List<EventSummaryResponse> response = eventService.getEventsByOrganizer(organizerId);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/search")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> searchEvents(@RequestParam String query) {
-        List<EventSummaryResponse> response = eventService.searchEvents(query);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/range")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getEventsBetween(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        List<EventSummaryResponse> response = eventService.getEventsBetween(start, end);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{eventId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<EventResponse> getEventById(@PathVariable String eventId) {
-        EventResponse response = eventService.getEventById(eventId);
+    public ResponseEntity<EventResponse> getEventBySlug(@PathVariable String slug) {
+        EventResponse response = eventService.getEventBySlug(slug);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/council/{councilId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<EventSummaryResponse>> getEventsByCouncil(@PathVariable String councilId) {
-        List<EventSummaryResponse> response = eventService.getEventsByCouncil(councilId);
+    public ResponseEntity<List<EventResponse>> getEventsByCouncil(@PathVariable UUID councilId) {
+        List<EventResponse> response = eventService.getEventsByCouncil(councilId);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
+    public ResponseEntity<EventResponse> updateEvent(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateEventRequest request) {
+        EventResponse response = eventService.updateEvent(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
+    public ResponseEntity<EventResponse> updateEventStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateEventStatusRequest request) {
+        EventResponse response = eventService.updateEventStatus(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable UUID id) {
+        eventService.deleteEvent(id);
+        return ResponseEntity.noContent().build();
     }
 }

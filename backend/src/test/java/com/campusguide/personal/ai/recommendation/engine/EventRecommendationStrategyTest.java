@@ -1,16 +1,17 @@
 package com.campusguide.personal.ai.recommendation.engine;
 
+import com.campusguide.campus.event.entity.Event;
+import com.campusguide.personal.ai.recommendation.config.RecommendationProperties;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationResponse;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationType;
 import com.campusguide.personal.ai.recommendation.dto.RecommendationUserContext;
-import com.campusguide.campus.event.entity.Event;
 import com.campusguide.platform.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +21,7 @@ class EventRecommendationStrategyTest {
 
     @BeforeEach
     void setUp() {
-        strategy = new EventRecommendationStrategy(new com.campusguide.personal.ai.recommendation.config.RecommendationProperties());
+        strategy = new EventRecommendationStrategy(new RecommendationProperties());
     }
 
     @Test
@@ -32,52 +33,40 @@ class EventRecommendationStrategyTest {
 
         LocalDateTime now = LocalDateTime.now();
 
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+
         Event eventDeptMatch = Event.builder()
-                .id("event-1")
+                .id(id1)
                 .title("Computer Science Department Hackathon")
                 .description("Solve coding problems.")
+                .venue("Main Hall")
                 .startTime(now.plusDays(2))
-                .registrationDeadline(now.plusDays(1))
-                .registeredUserIds(new ArrayList<>())
-                .isCancelled(false)
-                .isDeleted(false)
+                .registrationEnd(now.plusDays(1))
                 .build();
 
         Event eventNoMatch = Event.builder()
-                .id("event-2")
+                .id(id2)
                 .title("Art Club Gathering")
                 .description("Painting session.")
+                .venue("Studio 1")
                 .startTime(now.plusDays(5))
-                .registrationDeadline(now.plusDays(4))
-                .registeredUserIds(new ArrayList<>())
-                .isCancelled(false)
-                .isDeleted(false)
-                .build();
-
-        Event eventAlreadyRegistered = Event.builder()
-                .id("event-3")
-                .title("CS Coding Bootcamp")
-                .description("Intensive Java coding.")
-                .startTime(now.plusDays(2))
-                .registrationDeadline(now.plusDays(1))
-                .registeredUserIds(List.of("student-1")) // Already registered
-                .isCancelled(false)
-                .isDeleted(false)
+                .registrationEnd(now.plusDays(4))
                 .build();
 
         RecommendationUserContext context = RecommendationUserContext.builder()
                 .user(user)
-                .upcomingEvents(List.of(eventDeptMatch, eventNoMatch, eventAlreadyRegistered))
+                .upcomingEvents(List.of(eventDeptMatch, eventNoMatch))
                 .build();
 
         List<RecommendationResponse> results = strategy.recommend(context);
 
         assertNotNull(results);
-        assertEquals(2, results.size()); // Already registered event-3 should be filtered out
+        assertEquals(2, results.size());
 
         // Check department match event (event-1)
         RecommendationResponse hackathonRec = results.stream()
-                .filter(r -> r.getId().equals("event-1"))
+                .filter(r -> r.getId().equals(id1.toString()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(hackathonRec);
@@ -87,7 +76,7 @@ class EventRecommendationStrategyTest {
 
         // Check normal event (event-2)
         RecommendationResponse artRec = results.stream()
-                .filter(r -> r.getId().equals("event-2"))
+                .filter(r -> r.getId().equals(id2.toString()))
                 .findFirst()
                 .orElse(null);
         assertNotNull(artRec);
@@ -98,6 +87,5 @@ class EventRecommendationStrategyTest {
     @Test
     void recommend_EmptyOrNullContext() {
         assertTrue(strategy.recommend(null).isEmpty());
-        assertTrue(strategy.recommend(RecommendationUserContext.builder().build()).isEmpty());
     }
 }

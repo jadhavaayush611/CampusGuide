@@ -52,10 +52,6 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
         LocalDateTime now = LocalDateTime.now();
 
         for (Event event : upcomingEvents) {
-            // Skip if user is already registered for the event
-            if (event.getRegisteredUserIds() != null && event.getRegisteredUserIds().contains(user.getId())) {
-                continue;
-            }
 
             double score = properties.getEvent().getBaseWeight(); // Base score for upcoming events
             String explanation = "Upcoming campus event.";
@@ -77,7 +73,7 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
             }
 
             // Registered communities check: boost if organized by a council matching user's active communities
-            if (event.getCouncilId() != null && participatedCouncilIds.contains(event.getCouncilId())) {
+            if (event.getCouncilId() != null && participatedCouncilIds.contains(event.getCouncilId().toString())) {
                 score += properties.getEvent().getCommunityWeight();
                 if (!deptMatched) {
                     explanation = "Organized by a council related to your active communities.";
@@ -86,8 +82,8 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
             }
 
             // Upcoming deadlines check: boost if registration deadline is within 3 days
-            if (event.getRegistrationDeadline() != null && event.getRegistrationDeadline().isAfter(now)) {
-                long hoursToDeadline = Duration.between(now, event.getRegistrationDeadline()).toHours();
+            if (event.getRegistrationEnd() != null && event.getRegistrationEnd().isAfter(now)) {
+                long hoursToDeadline = Duration.between(now, event.getRegistrationEnd()).toHours();
                 if (hoursToDeadline <= 72) { // 3 days
                     score += properties.getEvent().getDeadlineWeight();
                     explanation = explanation + " Registration is closing soon!";
@@ -101,7 +97,7 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
             score = Math.min(1.0, score);
 
             recommendations.add(RecommendationResponse.builder()
-                    .id(event.getId())
+                    .id(event.getId() != null ? event.getId().toString() : null)
                     .title(event.getTitle())
                     .description(event.getDescription())
                     .recommendationType(RecommendationType.EVENT)
@@ -110,10 +106,10 @@ public class EventRecommendationStrategy implements RecommendationStrategy {
                     .score(score)
                     .explanation(explanation)
                     .metadata(Map.of(
-                            "councilId", event.getCouncilId() != null ? event.getCouncilId() : "",
+                            "councilId", event.getCouncilId() != null ? event.getCouncilId().toString() : "",
                             "startTime", event.getStartTime() != null ? event.getStartTime().toString() : "",
-                            "location", event.getLocation() != null ? event.getLocation() : "",
-                            "registrationDeadline", event.getRegistrationDeadline() != null ? event.getRegistrationDeadline().toString() : ""
+                            "location", event.getVenue() != null ? event.getVenue() : "",
+                            "registrationDeadline", event.getRegistrationEnd() != null ? event.getRegistrationEnd().toString() : ""
                     ))
                     .build());
         }

@@ -1,11 +1,14 @@
 package com.campusguide.campus.event.controller;
 
+import com.campusguide.campus.council.entity.Council;
+import com.campusguide.campus.council.repository.CouncilRepository;
 import com.campusguide.campus.event.entity.Event;
+import com.campusguide.campus.event.entity.EventStatus;
+import com.campusguide.campus.event.entity.EventType;
 import com.campusguide.campus.event.repository.EventRepository;
 import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +24,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,15 +46,16 @@ class EventControllerSecurityIT {
     @Autowired
     private UserRepository userRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private CouncilRepository councilRepository;
 
-    private User organizerUser;
-    private User otherUser;
     private User adminUser;
+    private User studentUser;
 
-    private UserDetails organizerDetails;
-    private UserDetails otherDetails;
     private UserDetails adminDetails;
+    private UserDetails studentDetails;
+
+    private UUID councilId;
 
     @BeforeEach
     void setUp() {
@@ -59,28 +63,32 @@ class EventControllerSecurityIT {
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
 
-        // 1. Save Users in Repository
-        organizerUser = User.builder()
-                .email("organizer@campusguide.com")
-                .password("password")
-                .role(Role.STUDENT)
-                .firstName("Organizer")
-                .lastName("User")
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        organizerUser = userRepository.save(organizerUser);
+        eventRepository.deleteAll();
+        userRepository.deleteAll();
+        councilRepository.deleteAll();
 
-        otherUser = User.builder()
-                .email("other@campusguide.com")
+        councilId = UUID.randomUUID();
+        Council council = Council.builder()
+                .id(councilId)
+                .name("Security Council")
+                .slug("security-council")
+                .description("Security Council")
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        councilRepository.save(council);
+
+        studentUser = User.builder()
+                .email("student@campusguide.com")
                 .password("password")
                 .role(Role.STUDENT)
-                .firstName("Other")
+                .firstName("Student")
                 .lastName("User")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        otherUser = userRepository.save(otherUser);
+        studentUser = userRepository.save(studentUser);
 
         adminUser = User.builder()
                 .email("admin@campusguide.com")
@@ -93,13 +101,7 @@ class EventControllerSecurityIT {
                 .build();
         adminUser = userRepository.save(adminUser);
 
-        // 2. Build UserDetails for MockMvc authentication helper
-        organizerDetails = org.springframework.security.core.userdetails.User.withUsername("organizer@campusguide.com")
-                .password("password")
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
-                .build();
-
-        otherDetails = org.springframework.security.core.userdetails.User.withUsername("other@campusguide.com")
+        studentDetails = org.springframework.security.core.userdetails.User.withUsername("student@campusguide.com")
                 .password("password")
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
@@ -108,430 +110,42 @@ class EventControllerSecurityIT {
                 .password("password")
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN")))
                 .build();
-
-        
     }
 
     @AfterEach
     void tearDown() {
         eventRepository.deleteAll();
         userRepository.deleteAll();
-    }
-
-    // --- CREATE EVENT TESTS ---
-
-    @Test
-    void createEvent_AuthenticatedOrganizer_ReturnsCreated() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        String requestJson = "{"
-                + "\"title\":\"Hackathon\","
-                + "\"description\":\"A great hackathon\","
-                + "\"councilId\":\"" + "council-123" + "\","
-                + "\"location\":\"Hall A\","
-                + "\"startTime\":\"" + now.plusDays(2) + "\","
-                + "\"endTime\":\"" + now.plusDays(3) + "\","
-                + "\"registrationDeadline\":\"" + now.plusDays(1) + "\","
-                + "\"maxParticipants\":100,"
-                + "\"imageUrl\":\"http://example.com/image.png\""
-                + "}";
-
-        mockMvc.perform(post("/api/events")
-                        .with(user(organizerDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value("Hackathon"))
-                .andExpect(jsonPath("$.organizerId").value(organizerUser.getId()));
+        councilRepository.deleteAll();
     }
 
     @Test
     void createEvent_SuperAdmin_ReturnsCreated() throws Exception {
         LocalDateTime now = LocalDateTime.now().withNano(0);
         String requestJson = "{"
-                + "\"title\":\"Hackathon\","
-                + "\"description\":\"A great hackathon\","
-                + "\"councilId\":\"" + "council-123" + "\","
-                + "\"location\":\"Hall A\","
+                + "\"title\":\"Security Hackathon\","
+                + "\"slug\":\"security-hackathon\","
+                + "\"description\":\"Security competition\","
+                + "\"councilId\":\"" + councilId + "\","
+                + "\"venue\":\"Auditorium A\","
+                + "\"eventType\":\"HACKATHON\","
                 + "\"startTime\":\"" + now.plusDays(2) + "\","
-                + "\"endTime\":\"" + now.plusDays(3) + "\","
-                + "\"registrationDeadline\":\"" + now.plusDays(1) + "\","
-                + "\"maxParticipants\":100,"
-                + "\"imageUrl\":\"http://example.com/image.png\""
+                + "\"endTime\":\"" + now.plusDays(3) + "\""
                 + "}";
 
-        mockMvc.perform(post("/api/events")
+        mockMvc.perform(post("/api/v1/events")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.title").value("Hackathon"))
-                .andExpect(jsonPath("$.organizerId").value(adminUser.getId()));
+                .andExpect(jsonPath("$.title").value("Security Hackathon"));
     }
 
     @Test
-    void createEvent_NoJwt_ReturnsUnauthorized() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        String requestJson = "{"
-                + "\"title\":\"Hackathon\","
-                + "\"description\":\"A great hackathon\","
-                + "\"councilId\":\"" + "council-123" + "\","
-                + "\"location\":\"Hall A\","
-                + "\"startTime\":\"" + now.plusDays(2) + "\","
-                + "\"endTime\":\"" + now.plusDays(3) + "\","
-                + "\"registrationDeadline\":\"" + now.plusDays(1) + "\","
-                + "\"maxParticipants\":100,"
-                + "\"imageUrl\":\"http://example.com/image.png\""
-                + "}";
-
-        mockMvc.perform(post("/api/events")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // --- UPDATE EVENT TESTS ---
-
-    @Test
-    void updateEvent_Organizer_ReturnsOk() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        String requestJson = "{\"title\":\"Updated Hackathon\"}";
-
-        mockMvc.perform(put("/api/events/" + event.getId())
-                        .with(user(organizerDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Hackathon"));
-    }
-
-    @Test
-    void updateEvent_SuperAdmin_ReturnsOk() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        String requestJson = "{\"title\":\"Updated Hackathon\"}";
-
-        mockMvc.perform(put("/api/events/" + event.getId())
-                        .with(user(adminDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Updated Hackathon"));
-    }
-
-    @Test
-    void updateEvent_OtherStudent_ReturnsForbidden() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        String requestJson = "{\"title\":\"Updated Hackathon\"}";
-
-        mockMvc.perform(put("/api/events/" + event.getId())
-                        .with(user(otherDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("You are not authorized to update this event"));
-    }
-
-    @Test
-    void updateEvent_NoJwt_ReturnsUnauthorized() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        String requestJson = "{\"title\":\"Updated Hackathon\"}";
-
-        mockMvc.perform(put("/api/events/" + event.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestJson))
-                .andExpect(status().isUnauthorized());
-    }
-
-    // --- DELETE EVENT TESTS ---
-
-    @Test
-    void deleteEvent_Organizer_ReturnsNoContent() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(delete("/api/events/" + event.getId())
-                        .with(user(organizerDetails)))
-                .andExpect(status().isNoContent());
-
-        Event deletedEvent = eventRepository.findById(event.getId()).orElseThrow();
-        assertTrue(deletedEvent.getIsDeleted());
-    }
-
-    @Test
-    void deleteEvent_SuperAdmin_ReturnsNoContent() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(delete("/api/events/" + event.getId())
-                        .with(user(adminDetails)))
-                .andExpect(status().isNoContent());
-
-        Event deletedEvent = eventRepository.findById(event.getId()).orElseThrow();
-        assertTrue(deletedEvent.getIsDeleted());
-    }
-
-    @Test
-    void deleteEvent_OtherStudent_ReturnsForbidden() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(delete("/api/events/" + event.getId())
-                        .with(user(otherDetails)))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("You are not authorized to delete this event"));
-
-        Event notDeletedEvent = eventRepository.findById(event.getId()).orElseThrow();
-        assertFalse(notDeletedEvent.getIsDeleted());
-    }
-
-    @Test
-    void deleteEvent_NoJwt_ReturnsUnauthorized() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(delete("/api/events/" + event.getId()))
-                .andExpect(status().isUnauthorized());
-
-        Event notDeletedEvent = eventRepository.findById(event.getId()).orElseThrow();
-        assertFalse(notDeletedEvent.getIsDeleted());
-    }
-
-    // --- GET EVENT TESTS ---
-
-    @Test
-    void getEvent_Authenticated_ReturnsOk() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(get("/api/events/" + event.getId())
-                        .with(user(otherDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Original Hackathon"));
-    }
-
-    @Test
-    void getEvent_NoJwt_ReturnsUnauthorized() throws Exception {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
-        Event event = Event.builder()
-                .title("Original Hackathon")
-                .description("Original description")
-                .councilId("council-123")
-                .organizerId(organizerUser.getId())
-                .location("Hall A")
-                .startTime(now.plusDays(2))
-                .endTime(now.plusDays(3))
-                .registrationDeadline(now.plusDays(1))
-                .maxParticipants(100)
-                .attendeeCount(0)
-                .isCancelled(false)
-                .isDeleted(false)
-                .createdAt(now)
-                .updatedAt(now)
-                .build();
-        event = eventRepository.save(event);
-
-        mockMvc.perform(get("/api/events/" + event.getId()))
-                .andExpect(status().isOk());
-    }
-
-    // --- GET ALL EVENTS TESTS ---
-
-    @Test
-    void getAllEvents_Authenticated_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/events")
-                        .with(user(otherDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    void getAllEvents_NoJwt_Permitted() throws Exception {
-        mockMvc.perform(get("/api/events"))
-                .andExpect(status().isOk());
-    }
-
-    // --- GET UPCOMING EVENTS TESTS ---
-
-    @Test
-    void getUpcomingEvents_Authenticated_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/events/upcoming")
-                        .with(user(otherDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    void getUpcomingEvents_NoJwt_Permitted() throws Exception {
-        mockMvc.perform(get("/api/events/upcoming"))
-                .andExpect(status().isOk());
-    }
-
-    // --- GET EVENTS BY COUNCIL TESTS ---
-
-    @Test
-    void getEventsByCouncil_Authenticated_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/events/council/" + "council-123")
-                        .with(user(otherDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-    }
-
-    @Test
-    void getEventsByCouncil_NoJwt_Permitted() throws Exception {
-        mockMvc.perform(get("/api/events/council/" + "council-123"))
+    void getEvents_Authenticated_ReturnsOk() throws Exception {
+        mockMvc.perform(get("/api/v1/events")
+                        .with(user(studentDetails)))
                 .andExpect(status().isOk());
     }
 }

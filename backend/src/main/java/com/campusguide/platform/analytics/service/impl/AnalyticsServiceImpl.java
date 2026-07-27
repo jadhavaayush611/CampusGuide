@@ -45,8 +45,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         long totalCommunities = communityRepository.count();
         long activeCommunities = communityRepository.countByIsActiveTrue();
 
-        long totalEvents = eventRepository.countByIsDeletedFalse();
-        long upcomingEvents = eventRepository.countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(LocalDateTime.now());
+        long totalEvents = eventRepository.count();
+        long upcomingEvents = eventRepository.countByStatusAndEndTimeGreaterThanEqual(com.campusguide.campus.event.entity.EventStatus.PUBLISHED, LocalDateTime.now());
 
         long totalAiConversations = conversationRepository.count();
         long totalNotifications = notificationRepository.count();
@@ -94,8 +94,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         logger.info("Generating event statistics");
         long startTime = System.currentTimeMillis();
 
-        long total = eventRepository.countByIsDeletedFalse();
-        long active = eventRepository.countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(LocalDateTime.now());
+        long total = eventRepository.count();
+        long active = eventRepository.countByStatusAndEndTimeGreaterThanEqual(com.campusguide.campus.event.entity.EventStatus.PUBLISHED, LocalDateTime.now());
 
         long duration = System.currentTimeMillis() - startTime;
         logger.info("Event statistics generated in {} ms", duration);

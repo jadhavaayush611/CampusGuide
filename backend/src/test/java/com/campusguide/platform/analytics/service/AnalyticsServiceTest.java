@@ -57,8 +57,8 @@ class AnalyticsServiceTest {
         when(roadmapRepository.countByIsDeletedFalse()).thenReturn(0L);
         when(communityRepository.count()).thenReturn(0L);
         when(communityRepository.countByIsActiveTrue()).thenReturn(0L);
-        when(eventRepository.countByIsDeletedFalse()).thenReturn(0L);
-        when(eventRepository.countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class))).thenReturn(0L);
+        when(eventRepository.count()).thenReturn(0L);
+        when(eventRepository.countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class))).thenReturn(0L);
         when(conversationRepository.count()).thenReturn(0L);
         when(notificationRepository.count()).thenReturn(0L);
         when(resourceRepository.countByIsDeletedFalse()).thenReturn(0L);
@@ -87,8 +87,8 @@ class AnalyticsServiceTest {
         verify(roadmapRepository, times(1)).countByIsDeletedFalse();
         verify(communityRepository, times(1)).count();
         verify(communityRepository, times(1)).countByIsActiveTrue();
-        verify(eventRepository, times(1)).countByIsDeletedFalse();
-        verify(eventRepository, times(1)).countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class));
+        verify(eventRepository, times(1)).count();
+        verify(eventRepository, times(1)).countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class));
         verify(conversationRepository, times(1)).count();
         verify(notificationRepository, times(1)).count();
         verify(resourceRepository, times(1)).countByIsDeletedFalse();
@@ -102,8 +102,8 @@ class AnalyticsServiceTest {
         when(roadmapRepository.countByIsDeletedFalse()).thenReturn(45L);
         when(communityRepository.count()).thenReturn(20L);
         when(communityRepository.countByIsActiveTrue()).thenReturn(18L);
-        when(eventRepository.countByIsDeletedFalse()).thenReturn(30L);
-        when(eventRepository.countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class))).thenReturn(5L);
+        when(eventRepository.count()).thenReturn(30L);
+        when(eventRepository.countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class))).thenReturn(5L);
         when(conversationRepository.count()).thenReturn(200L);
         when(notificationRepository.count()).thenReturn(1000L);
         when(resourceRepository.countByIsDeletedFalse()).thenReturn(150L);
@@ -132,8 +132,8 @@ class AnalyticsServiceTest {
         verify(roadmapRepository, times(1)).countByIsDeletedFalse();
         verify(communityRepository, times(1)).count();
         verify(communityRepository, times(1)).countByIsActiveTrue();
-        verify(eventRepository, times(1)).countByIsDeletedFalse();
-        verify(eventRepository, times(1)).countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class));
+        verify(eventRepository, times(1)).count();
+        verify(eventRepository, times(1)).countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class));
         verify(conversationRepository, times(1)).count();
         verify(notificationRepository, times(1)).count();
         verify(resourceRepository, times(1)).countByIsDeletedFalse();
@@ -152,15 +152,15 @@ class AnalyticsServiceTest {
 
     @Test
     void testGetEventStatistics() {
-        when(eventRepository.countByIsDeletedFalse()).thenReturn(30L);
-        when(eventRepository.countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class))).thenReturn(5L);
+        when(eventRepository.count()).thenReturn(30L);
+        when(eventRepository.countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class))).thenReturn(5L);
 
         ModuleStatisticsResponse stats = analyticsService.getEventStatistics();
 
         assertEquals(30L, stats.getTotal());
         assertEquals(5L, stats.getActive());
-        verify(eventRepository, times(1)).countByIsDeletedFalse();
-        verify(eventRepository, times(1)).countByIsDeletedFalseAndIsCancelledFalseAndStartTimeGreaterThanEqual(any(LocalDateTime.class));
+        verify(eventRepository, times(1)).count();
+        verify(eventRepository, times(1)).countByStatusAndEndTimeGreaterThanEqual(eq(com.campusguide.campus.event.entity.EventStatus.PUBLISHED), any(LocalDateTime.class));
     }
 
     @Test

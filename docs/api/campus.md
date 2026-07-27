@@ -113,3 +113,63 @@
 - **Response**: `204 No Content`
 - **Errors**: `401 Unauthorized`, `404 Not Found`
 
+## Events API (`/api/v1/events`)
+
+### 1. Create Event
+- **Endpoint**: `POST /api/v1/events`
+- **Security**: `@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")`
+- **Request Body**: `CreateEventRequest`
+- **Response**: `201 Created` (`EventResponse`)
+- **Errors**: `400 Bad Request` (Validation errors, invalid dates, negative capacity), `401 Unauthorized`, `403 Forbidden`, `404 Not Found` (Council not found), `409 Conflict` (Duplicate slug)
+
+### 2. List Public Upcoming Events
+- **Endpoint**: `GET /api/v1/events`
+- **Security**: `@PreAuthorize("isAuthenticated()")`
+- **Response**: `200 OK` (`List<EventResponse>`)
+- **Errors**: `401 Unauthorized`
+
+### 3. Get Event by ID
+- **Endpoint**: `GET /api/v1/events/{id}`
+- **Security**: `@PreAuthorize("isAuthenticated()")`
+- **Path Parameter**: `id` (UUID)
+- **Response**: `200 OK` (`EventResponse`)
+- **Errors**: `401 Unauthorized`, `404 Not Found`
+
+### 4. Get Event by Slug
+- **Endpoint**: `GET /api/v1/events/slug/{slug}`
+- **Security**: `@PreAuthorize("isAuthenticated()")`
+- **Path Parameter**: `slug` (String, e.g., `annual-tech-symposium`)
+- **Response**: `200 OK` (`EventResponse`)
+- **Errors**: `401 Unauthorized`, `404 Not Found`
+
+### 5. Get Events by Council
+- **Endpoint**: `GET /api/v1/events/council/{councilId}`
+- **Security**: `@PreAuthorize("isAuthenticated()")`
+- **Path Parameter**: `councilId` (UUID)
+- **Response**: `200 OK` (`List<EventResponse>`)
+- **Errors**: `401 Unauthorized`, `404 Not Found` (Council not found)
+
+### 6. Update Event
+- **Endpoint**: `PUT /api/v1/events/{id}`
+- **Security**: `@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")`
+- **Path Parameter**: `id` (UUID)
+- **Request Body**: `UpdateEventRequest`
+- **Response**: `200 OK` (`EventResponse`)
+- **Errors**: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict` (Duplicate slug)
+
+### 7. Update Event Status
+- **Endpoint**: `PATCH /api/v1/events/{id}/status`
+- **Security**: `@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")`
+- **Path Parameter**: `id` (UUID)
+- **Request Body**: `UpdateEventStatusRequest` (`{"status": EventStatus}`)
+- **Response**: `200 OK` (`EventResponse`)
+- **Errors**: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`
+
+### 8. Delete Event
+- **Endpoint**: `DELETE /api/v1/events/{id}`
+- **Security**: `@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")`
+- **Path Parameter**: `id` (UUID)
+- **Response**: `204 No Content`
+- **Errors**: `401 Unauthorized`, `403 Forbidden`, `404 Not Found`
+
+

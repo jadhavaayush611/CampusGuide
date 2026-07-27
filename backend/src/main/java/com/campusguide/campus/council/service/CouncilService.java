@@ -159,7 +159,7 @@ public class CouncilService {
         String idStr = councilId.toString();
 
         boolean hasCommunities = communityRepository != null && !communityRepository.findByCouncilId(idStr).isEmpty();
-        boolean hasEvents = eventRepository != null && !eventRepository.findByCouncilIdAndIsDeletedFalse(idStr).isEmpty();
+        boolean hasEvents = eventRepository != null && eventRepository.existsByCouncilId(councilId);
         boolean hasResources = resourceRepository != null && !resourceRepository.findByCouncilIdAndIsDeletedFalseOrderByCreatedAtDesc(idStr).isEmpty();
 
         return hasCommunities || hasEvents || hasResources;
