@@ -279,17 +279,127 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ---
 
+## Scheduled Notification API Contract
+
+### Base Endpoint: `/api/v1/notifications`
+
+All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bearer JWT token must be provided in `Authorization` header.
+
+---
+
+### 1. Create Scheduled Notification
+- **HTTP Method**: `POST`
+- **Path**: `/api/v1/notifications`
+- **Request Body**:
+```json
+{
+  "title": "Study Group Alert",
+  "message": "Algorithms study group starts in 15 minutes",
+  "type": "REMINDER",
+  "scheduledFor": "2026-08-15T14:45:00",
+  "linkedPlannerTaskId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "linkedCalendarEntryId": null,
+  "linkedEventId": null,
+  "linkedAchievementId": null,
+  "channel": "IN_APP",
+  "priority": "HIGH",
+  "metadata": {
+    "location": "Library Room 302"
+  }
+}
+```
+- **Response Status**: `201 Created`
+- **Response Body**: `ScheduledNotificationResponse`
+
+---
+
+### 2. Get All User Notifications
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/notifications`
+- **Response Status**: `200 OK`
+- **Response Body**: `List<ScheduledNotificationResponse>` (sorted by `scheduledFor` ascending)
+
+---
+
+### 3. Get Pending Notifications
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/notifications/pending`
+- **Response Status**: `200 OK`
+- **Response Body**: `List<ScheduledNotificationResponse>` (returns pending notifications where `status=SCHEDULED` and `scheduledFor <= now`)
+
+---
+
+### 4. Get Notification by ID
+- **HTTP Method**: `GET`
+- **Path**: `/api/v1/notifications/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Response Status**: `200 OK`
+- **Response Body**: `ScheduledNotificationResponse`
+
+---
+
+### 5. Update Notification Status
+- **HTTP Method**: `PATCH`
+- **Path**: `/api/v1/notifications/{id}/status`
+- **Path Parameters**: `id` (UUID)
+- **Request Body**:
+```json
+{
+  "status": "DELIVERED"
+}
+```
+- **Response Status**: `200 OK`
+- **Response Body**: `ScheduledNotificationResponse`
+
+---
+
+### 6. Update Scheduled Notification
+- **HTTP Method**: `PUT`
+- **Path**: `/api/v1/notifications/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Request Body**:
+```json
+{
+  "title": "Study Group Alert (Rescheduled)",
+  "message": "Algorithms study group moved to Room 405",
+  "type": "REMINDER",
+  "scheduledFor": "2026-08-15T15:15:00",
+  "linkedPlannerTaskId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "linkedCalendarEntryId": null,
+  "linkedEventId": null,
+  "linkedAchievementId": null,
+  "channel": "PUSH",
+  "priority": "URGENT",
+  "metadata": {
+    "location": "Library Room 405"
+  }
+}
+```
+- **Response Status**: `200 OK`
+- **Response Body**: `ScheduledNotificationResponse`
+
+---
+
+### 7. Delete Scheduled Notification
+- **HTTP Method**: `DELETE`
+- **Path**: `/api/v1/notifications/{id}`
+- **Path Parameters**: `id` (UUID)
+- **Response Status**: `204 No Content`
+
+---
+
 ## Response Status & Error Codes
 
 | Status Code | Description | Scenario |
 |---|---|---|
 | `200 OK` | Success | Fetch or update successful |
-| `201 Created` | Resource Created | New planner task, calendar entry, or achievement created |
-| `204 No Content` | Deleted | Task, calendar entry, or achievement deleted |
-| `400 Bad Request` | Validation Error | Mandatory fields missing, invalid time range, progress out of bounds [0, 100], or attempting to downgrade EARNED achievement |
+| `201 Created` | Resource Created | New planner task, calendar entry, achievement, or scheduled notification created |
+| `204 No Content` | Deleted | Task, calendar entry, achievement, or notification deleted |
+| `400 Bad Request` | Validation Error | Mandatory fields missing, past `scheduledFor`, multiple aggregate references, or invalid status transition |
 | `401 Unauthorized` | Unauthenticated | Missing or invalid JWT token |
-| `403 Forbidden` | Access Denied | User trying to access another user's resource |
-| `404 Not Found` | Not Found | Resource ID does not exist |
+| `403 Forbidden` | Access Denied | User trying to access or mutate another user's notification/resource |
+| `404 Not Found` | Not Found | Resource ID or referenced entity does not exist |
 | `409 Conflict` | Conflict | Achievement code already exists for the user |
+
 
 

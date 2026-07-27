@@ -59,6 +59,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.personal.notification.exception.ScheduledNotificationNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleScheduledNotificationNotFoundException(com.campusguide.personal.notification.exception.ScheduledNotificationNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.notification.exception.ScheduledNotificationAccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleScheduledNotificationAccessDeniedException(com.campusguide.personal.notification.exception.ScheduledNotificationAccessDeniedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.notification.exception.ScheduledNotificationValidationException.class)
+    public ResponseEntity<Map<String, String>> handleScheduledNotificationValidationException(com.campusguide.personal.notification.exception.ScheduledNotificationValidationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+
 
     @ExceptionHandler(UnauthorisedException.class)
     public ResponseEntity<Map<String, String>> handleUnauthorisedException(UnauthorisedException ex) {

@@ -17,6 +17,8 @@ Manages student personal calendar entries, academic schedules, task/event time-b
 
 ### 3. Notifications (`com.campusguide.personal.notification`)
 Delivers user notifications across campus events, academic updates, and personal reminders.
+- **Aggregate Root**: `ScheduledNotification`
+- **Key Features**: Authenticated user ownership, future schedule validation (`scheduledFor`), single aggregate reference enforcement, state transition machine (`SCHEDULED` -> `DELIVERED` -> `READ`, `CANCELLED` terminal state), automatic timestamping (`deliveredAt`, `readAt`), cross-channel delivery readiness (`IN_APP`, `PUSH`, `EMAIL`, `WEBSOCKET`, `SMS`), and Atlas AI integration support.
 
 ### 4. AI Gateway (`com.campusguide.personal.ai`)
 Manages Atlas AI assistant conversations, message histories, and context generation.
