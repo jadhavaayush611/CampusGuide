@@ -43,4 +43,4 @@ The Notice Board module (`com.campusguide.campus.notice`) manages official campu
 
 ## Architectural Design Principles
 - **Visibility vs. Authorization Separation**: `NoticeVisibility` specifies target audience semantics ("Who should see this notice?"). Authorization & access control rules ("Who is permitted to invoke endpoints or modify state?") are enforced exclusively in Spring Security (`@PreAuthorize`), keeping the domain model free of entitlement logic.
-- **Encapsulated Priority Sorting**: Priority weighting and descending comparators (`NoticePriority.byWeightDesc()`) are encapsulated directly within the [NoticePriority](file:///D:/CampusGuide/backend/src/main/java/com/campusguide/campus/notice/enums/NoticePriority.java) enum to prevent comparison logic leakage into application services.
+- **Encapsulated Priority Sorting**: Priority weighting and descending comparators (`NoticePriority.byWeightDesc()`) are encapsulated directly within the [NoticePriority](../../backend/src/main/java/com/campusguide/campus/notice/enums/NoticePriority.java) enum to prevent comparison logic leakage into application services.
