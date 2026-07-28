@@ -12,13 +12,11 @@ import com.campusguide.personal.notification.exception.ScheduledNotificationNotF
 import com.campusguide.personal.notification.mapper.ScheduledNotificationMapper;
 import com.campusguide.personal.notification.repository.ScheduledNotificationRepository;
 import com.campusguide.personal.notification.validation.ScheduledNotificationValidator;
-import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,24 +29,22 @@ public class ScheduledNotificationService {
     private final ScheduledNotificationRepository repository;
     private final ScheduledNotificationMapper mapper;
     private final ScheduledNotificationValidator validator;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public ScheduledNotificationResponse createNotification(UserDetails userDetails, CreateScheduledNotificationRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         LocalDateTime now = LocalDateTime.now();
 
         validator.validateCreate(request, now);
 
         ScheduledNotification entity = mapper.toEntity(request, userId);
-        entity.setCreatedAt(now);
-        entity.setUpdatedAt(now);
 
         ScheduledNotification saved = repository.save(entity);
         return mapper.toResponse(saved);
     }
 
     public List<ScheduledNotificationResponse> getAllNotifications(UserDetails userDetails) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         List<ScheduledNotification> list = repository.findByUserIdOrderByScheduledForAsc(userId);
         return list.stream()
                 .map(mapper::toResponse)
@@ -56,13 +52,13 @@ public class ScheduledNotificationService {
     }
 
     public ScheduledNotificationResponse getNotificationById(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         ScheduledNotification entity = findAndVerifyOwnership(id, userId);
         return mapper.toResponse(entity);
     }
 
     public List<ScheduledNotificationResponse> getPendingNotifications(UserDetails userDetails) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         LocalDateTime now = LocalDateTime.now();
         List<ScheduledNotification> pending = repository
                 .findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(userId, NotificationStatus.SCHEDULED, now);
@@ -72,21 +68,20 @@ public class ScheduledNotificationService {
     }
 
     public ScheduledNotificationResponse updateNotificationStatus(UserDetails userDetails, UUID id, UpdateNotificationStatusRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         ScheduledNotification entity = findAndVerifyOwnership(id, userId);
 
         LocalDateTime now = LocalDateTime.now();
         validator.validateStatusTransition(entity, request.getStatus());
 
         applyStatusTransition(entity, request.getStatus(), now);
-        entity.setUpdatedAt(now);
 
         ScheduledNotification saved = repository.save(entity);
         return mapper.toResponse(saved);
     }
 
     public ScheduledNotificationResponse updateNotification(UserDetails userDetails, UUID id, UpdateScheduledNotificationRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         ScheduledNotification entity = findAndVerifyOwnership(id, userId);
 
         LocalDateTime now = LocalDateTime.now();
@@ -103,19 +98,18 @@ public class ScheduledNotificationService {
         entity.setChannel(request.getChannel());
         entity.setPriority(request.getPriority());
         entity.setMetadata(request.getMetadata());
-        entity.setUpdatedAt(now);
 
         ScheduledNotification saved = repository.save(entity);
         return mapper.toResponse(saved);
     }
 
     public void deleteNotification(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         ScheduledNotification entity = findAndVerifyOwnership(id, userId);
         repository.delete(entity);
     }
 
-    public ScheduledNotification findAndVerifyOwnership(UUID id, UUID userId) {
+    public ScheduledNotification findAndVerifyOwnership(UUID id, String userId) {
         ScheduledNotification entity = repository.findById(id)
                 .orElseThrow(() -> new ScheduledNotificationNotFoundException("Scheduled notification not found with id: " + id));
 
@@ -139,26 +133,7 @@ public class ScheduledNotificationService {
         }
     }
 
-    public UUID resolveUserId(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseGet(() -> userRepository.findByUsername(userDetails.getUsername())
-                        .orElseThrow(() -> new UnauthorisedException("User not found: " + userDetails.getUsername())));
-
-        return parseUserId(user.getId());
-    }
-
-    private UUID parseUserId(String idStr) {
-        if (idStr == null) {
-            throw new UnauthorisedException("User ID is missing");
-        }
-        try {
-            return UUID.fromString(idStr);
-        } catch (IllegalArgumentException e) {
-            return UUID.nameUUIDFromBytes(idStr.getBytes(StandardCharsets.UTF_8));
-        }
+    public String resolveUserId(UserDetails userDetails) {
+        return currentUserService.getCurrentUserId(userDetails);
     }
 }

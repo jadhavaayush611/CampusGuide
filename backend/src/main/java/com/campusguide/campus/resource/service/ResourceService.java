@@ -10,14 +10,15 @@ import com.campusguide.campus.resource.dto.ResourceSummaryResponse;
 import com.campusguide.campus.resource.dto.UpdateResourceRequest;
 import com.campusguide.campus.resource.entity.Resource;
 import com.campusguide.campus.resource.repository.ResourceRepository;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final CommunityRepository communityRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     /**
      * Creates a new resource metadata record.
@@ -37,12 +38,7 @@ public class ResourceService {
      * @return the created ResourceResponse
      */
     public ResourceResponse createResource(UserDetails userDetails, CreateResourceRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         String councilId = request.getCouncilId();
 
@@ -66,8 +62,8 @@ public class ResourceService {
                 .fileType(request.getFileType())
                 .fileSize(request.getFileSize())
                 .isDeleted(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         resource = resourceRepository.save(resource);
@@ -96,11 +92,10 @@ public class ResourceService {
             throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isUploader = resource.getUploaderId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isUploader && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this resource");
@@ -116,7 +111,7 @@ public class ResourceService {
             resource.setTags(request.getTags());
         }
 
-        resource.setUpdatedAt(LocalDateTime.now());
+        resource.setUpdatedAt(Instant.now());
         resource = resourceRepository.save(resource);
         return toResourceResponse(resource);
     }
@@ -139,18 +134,17 @@ public class ResourceService {
             throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isUploader = resource.getUploaderId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isUploader && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this resource");
         }
 
         resource.setIsDeleted(true);
-        resource.setUpdatedAt(LocalDateTime.now());
+        resource.setUpdatedAt(Instant.now());
         resourceRepository.save(resource);
     }
 
@@ -189,9 +183,7 @@ public class ResourceService {
      * @return list of resource summaries
      */
     public List<ResourceSummaryResponse> getResourcesByUploader(String uploaderId) {
-        if (!userRepository.existsById(uploaderId)) {
-            throw new ResourceNotFoundException("User not found with id: " + uploaderId);
-        }
+        currentUserService.getUserByIdentifier(uploaderId);
         return resourceRepository.findByUploaderIdAndIsDeletedFalseOrderByCreatedAtDesc(uploaderId).stream()
                 .map(this::toResourceSummaryResponse)
                 .toList();
@@ -283,8 +275,8 @@ public class ResourceService {
                 .fileType(resource.getFileType())
                 .fileSize(resource.getFileSize())
                 .downloadUrl(resource.getDownloadUrl())
-                .createdAt(resource.getCreatedAt())
-                .updatedAt(resource.getUpdatedAt())
+                .createdAt(resource.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(resource.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(resource.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(resource.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 
@@ -298,7 +290,7 @@ public class ResourceService {
                 .fileType(resource.getFileType())
                 .fileSize(resource.getFileSize())
                 .uploaderId(resource.getUploaderId())
-                .createdAt(resource.getCreatedAt())
+                .createdAt(resource.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(resource.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 }

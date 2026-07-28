@@ -24,7 +24,7 @@ import com.campusguide.campus.academic.roadmap.repository.RoadmapRepository;
 import com.campusguide.campus.academic.semesterplanner.entity.SemesterPlan;
 import com.campusguide.campus.academic.semesterplanner.repository.SemesterPlanRepository;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
 import com.campusguide.personal.notification.enums.NotificationType;
 import com.campusguide.personal.notification.enums.NotificationPriority;
@@ -46,7 +46,7 @@ public class RecommendationService {
 
     private static final Logger logger = LoggerFactory.getLogger(RecommendationService.class);
 
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     private final StudentProgressRepository studentProgressRepository;
     private final CourseRepository courseRepository;
@@ -73,12 +73,7 @@ public class RecommendationService {
         long startTime = System.nanoTime();
         logger.info("Recommendation generation start");
 
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         // Build the user profile context
         RecommendationUserContext context = buildUserProfileContext(user);

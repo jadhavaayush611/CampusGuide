@@ -38,7 +38,7 @@ class NotificationRepositoryIT {
                 .type(NotificationType.ACADEMIC)
                 .priority(NotificationPriority.LOW)
                 .read(false)
-                .createdAt(LocalDateTime.now().minusDays(3))
+                .createdAt(java.time.Instant.now().minus(3, java.time.temporal.ChronoUnit.DAYS))
                 .build();
 
         Notification n2 = Notification.builder()
@@ -48,8 +48,8 @@ class NotificationRepositoryIT {
                 .type(NotificationType.SYSTEM)
                 .priority(NotificationPriority.HIGH)
                 .read(true)
-                .createdAt(LocalDateTime.now().minusDays(2))
-                .readAt(LocalDateTime.now().minusDays(1))
+                .createdAt(java.time.Instant.now().minus(2, java.time.temporal.ChronoUnit.DAYS))
+                .readAt(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.DAYS))
                 .build();
 
         Notification n3 = Notification.builder()
@@ -59,7 +59,7 @@ class NotificationRepositoryIT {
                 .type(NotificationType.AI)
                 .priority(NotificationPriority.NORMAL)
                 .read(false)
-                .createdAt(LocalDateTime.now().minusDays(1))
+                .createdAt(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.DAYS))
                 .build();
 
         // 1 notification for otherUserId
@@ -70,10 +70,16 @@ class NotificationRepositoryIT {
                 .type(NotificationType.EVENT)
                 .priority(NotificationPriority.NORMAL)
                 .read(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(java.time.Instant.now())
                 .build();
 
-        notificationRepository.saveAll(List.of(n1, n2, n3, n4));
+        notificationRepository.save(n1);
+        try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+        notificationRepository.save(n2);
+        try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+        notificationRepository.save(n3);
+        try { Thread.sleep(20); } catch (InterruptedException ignored) {}
+        notificationRepository.save(n4);
     }
 
     @AfterEach

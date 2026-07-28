@@ -99,7 +99,7 @@ class AchievementAuthorizationIT {
 
         user2Achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(user2.getId()))
+                .userId(user2.getId())
                 .achievementCode("USER2_CODE")
                 .title("User 2 Private Achievement")
                 .category(AchievementCategory.PERSONAL)

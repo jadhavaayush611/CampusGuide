@@ -148,7 +148,7 @@ class PostControllerSecurityIT {
                 .imageUrls(List.of("http://example.com/img.png"))
                 .build();
 
-        mockMvc.perform(post("/api/posts")
+        mockMvc.perform(post("/api/v1/posts")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -169,7 +169,7 @@ class PostControllerSecurityIT {
                 .communityId(testCommunity.getId())
                 .build();
 
-        mockMvc.perform(post("/api/posts")
+        mockMvc.perform(post("/api/v1/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -194,7 +194,7 @@ class PostControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/posts/" + post.getId())
+        mockMvc.perform(put("/api/v1/posts/" + post.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -222,7 +222,7 @@ class PostControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/posts/" + post.getId())
+        mockMvc.perform(put("/api/v1/posts/" + post.getId())
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -249,7 +249,7 @@ class PostControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/posts/" + post.getId())
+        mockMvc.perform(put("/api/v1/posts/" + post.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -271,7 +271,7 @@ class PostControllerSecurityIT {
                 .build();
         post = postRepository.save(post);
 
-        mockMvc.perform(delete("/api/posts/" + post.getId())
+        mockMvc.perform(delete("/api/v1/posts/" + post.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
 
@@ -293,7 +293,7 @@ class PostControllerSecurityIT {
                 .build();
         post = postRepository.save(post);
 
-        mockMvc.perform(delete("/api/posts/" + post.getId())
+        mockMvc.perform(delete("/api/v1/posts/" + post.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("You are not authorized to delete this post"));
@@ -316,7 +316,7 @@ class PostControllerSecurityIT {
                 .build();
         post = postRepository.save(post);
 
-        mockMvc.perform(delete("/api/posts/" + post.getId())
+        mockMvc.perform(delete("/api/v1/posts/" + post.getId())
                         .with(user(adminDetails)))
                 .andExpect(status().isNoContent());
 
@@ -326,22 +326,22 @@ class PostControllerSecurityIT {
 
     // 9. GET endpoints permitted when unauthenticated.
     @Test
-    void getEndpoints_Unauthenticated_Permitted() throws Exception {
-        // GET /api/posts
-        mockMvc.perform(get("/api/posts"))
-                .andExpect(status().isOk());
+    void getEndpoints_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        // GET /api/v1/posts
+        mockMvc.perform(get("/api/v1/posts"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/posts/{postId}
-        mockMvc.perform(get("/api/posts/some-id"))
-                .andExpect(status().isNotFound());
+        // GET /api/v1/posts/{postId}
+        mockMvc.perform(get("/api/v1/posts/some-id"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/posts/community/{communityId}
-        mockMvc.perform(get("/api/posts/community/" + testCommunity.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/posts/community/{communityId}
+        mockMvc.perform(get("/api/v1/posts/community/" + testCommunity.getId()))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/posts/author/{authorId}
-        mockMvc.perform(get("/api/posts/author/" + studentUser.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/posts/author/{authorId}
+        mockMvc.perform(get("/api/v1/posts/author/" + studentUser.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -357,26 +357,26 @@ class PostControllerSecurityIT {
                 .build();
         post = postRepository.save(post);
 
-        // GET /api/posts
-        mockMvc.perform(get("/api/posts")
+        // GET /api/v1/posts
+        mockMvc.perform(get("/api/v1/posts")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/posts/{postId}
-        mockMvc.perform(get("/api/posts/" + post.getId())
+        // GET /api/v1/posts/{postId}
+        mockMvc.perform(get("/api/v1/posts/" + post.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Title"));
 
-        // GET /api/posts/community/{communityId}
-        mockMvc.perform(get("/api/posts/community/" + testCommunity.getId())
+        // GET /api/v1/posts/community/{communityId}
+        mockMvc.perform(get("/api/v1/posts/community/" + testCommunity.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/posts/author/{authorId}
-        mockMvc.perform(get("/api/posts/author/" + studentUser.getId())
+        // GET /api/v1/posts/author/{authorId}
+        mockMvc.perform(get("/api/v1/posts/author/" + studentUser.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());

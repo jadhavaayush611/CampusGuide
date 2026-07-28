@@ -10,14 +10,15 @@ import com.campusguide.campus.comment.entity.Comment;
 import com.campusguide.campus.comment.repository.CommentRepository;
 import com.campusguide.campus.post.entity.Post;
 import com.campusguide.campus.post.repository.PostRepository;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     /**
      * Creates a new comment.
@@ -39,9 +40,7 @@ public class CommentService {
      * @throws ResourceNotFoundException if the post or user does not exist
      */
     public CommentResponse createComment(UserDetails userDetails, CreateCommentRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + request.getPostId()));
@@ -50,17 +49,14 @@ public class CommentService {
             throw new ResourceNotFoundException("Post not found with id: " + request.getPostId());
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
-
         Comment comment = Comment.builder()
                 .postId(post.getId())
                 .authorId(user.getId())
                 .content(request.getContent())
                 .isEdited(false)
                 .isDeleted(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         comment = commentRepository.save(comment);
@@ -95,11 +91,10 @@ public class CommentService {
             throw new ResourceNotFoundException("Comment not found with id: " + commentId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isAuthor = comment.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this comment");
@@ -110,7 +105,7 @@ public class CommentService {
         }
 
         comment.setIsEdited(true);
-        comment.setUpdatedAt(LocalDateTime.now());
+        comment.setUpdatedAt(Instant.now());
 
         comment = commentRepository.save(comment);
         return toCommentResponse(comment);
@@ -137,18 +132,17 @@ public class CommentService {
             throw new ResourceNotFoundException("Comment not found with id: " + commentId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isAuthor = comment.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this comment");
         }
 
         comment.setIsDeleted(true);
-        comment.setUpdatedAt(LocalDateTime.now());
+        comment.setUpdatedAt(Instant.now());
         commentRepository.save(comment);
 
         Post post = postRepository.findById(comment.getPostId())
@@ -205,9 +199,7 @@ public class CommentService {
      * @throws ResourceNotFoundException if the author does not exist
      */
     public List<CommentSummaryResponse> getCommentsByAuthor(String authorId) {
-        if (!userRepository.existsById(authorId)) {
-            throw new ResourceNotFoundException("User not found with id: " + authorId);
-        }
+        currentUserService.getUserByIdentifier(authorId);
 
         return commentRepository.findByAuthorIdAndIsDeletedFalse(authorId).stream()
                 .map(this::toCommentSummaryResponse)
@@ -224,8 +216,8 @@ public class CommentService {
                 .authorId(comment.getAuthorId())
                 .postId(comment.getPostId())
                 .isEdited(comment.getIsEdited())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
+                .createdAt(comment.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(comment.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(comment.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(comment.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 
@@ -237,7 +229,7 @@ public class CommentService {
                 .id(comment.getId())
                 .content(comment.getContent())
                 .authorId(comment.getAuthorId())
-                .createdAt(comment.getCreatedAt())
+                .createdAt(comment.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(comment.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 }

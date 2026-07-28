@@ -22,14 +22,14 @@ class AchievementProgressRepositoryIT {
     @Autowired
     private AchievementProgressRepository repository;
 
-    private UUID userId;
+    private String userId;
     private AchievementProgress achievement1;
     private AchievementProgress achievement2;
 
     @BeforeEach
     void setUp() {
         repository.deleteAll();
-        userId = UUID.randomUUID();
+        userId = UUID.randomUUID().toString();
 
         achievement1 = AchievementProgress.builder()
                 .id(UUID.randomUUID())

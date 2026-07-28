@@ -51,7 +51,7 @@ class AnalyticsControllerSecurityIT {
 
     @Test
     void getDashboardSummary_AdminRole_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/dashboard")
+        mockMvc.perform(get("/api/v1/admin/analytics/dashboard")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -60,23 +60,23 @@ class AnalyticsControllerSecurityIT {
     }
 
     @Test
-    void getDashboardSummary_StudentRole_Permitted() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/dashboard")
+    void getDashboardSummary_StudentRole_Forbidden() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/analytics/dashboard")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void getDashboardSummary_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/dashboard")
+    void getDashboardSummary_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/analytics/dashboard")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getUserStatistics_AdminRole_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/users")
+        mockMvc.perform(get("/api/v1/admin/analytics/users")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -84,16 +84,16 @@ class AnalyticsControllerSecurityIT {
     }
 
     @Test
-    void getUserStatistics_StudentRole_Permitted() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/users")
+    void getUserStatistics_StudentRole_Forbidden() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/analytics/users")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void getEventStatistics_AdminRole_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/events")
+        mockMvc.perform(get("/api/v1/admin/analytics/events")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -102,7 +102,7 @@ class AnalyticsControllerSecurityIT {
 
     @Test
     void getCommunityStatistics_AdminRole_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/admin/analytics/communities")
+        mockMvc.perform(get("/api/v1/admin/analytics/communities")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

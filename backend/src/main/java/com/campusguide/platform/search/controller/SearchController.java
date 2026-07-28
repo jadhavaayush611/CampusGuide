@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/search")
+@RequestMapping("/api/v1/search")
 @RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
 public class SearchController {

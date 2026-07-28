@@ -2,7 +2,7 @@ package com.campusguide.platform.auth.mapper;
 
 import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,7 @@ class UserMapperTest {
         assertEquals("student@campusguide.com", user.getEmail());
         assertEquals("student123", user.getUsername());
         assertEquals("encodedPassword123", user.getPasswordHash());
-        assertEquals(UserRole.STUDENT, user.getRole());
+        assertEquals(Role.STUDENT, user.getRole());
         assertTrue(user.isEnabled());
         assertFalse(user.isEmailVerified());
     }

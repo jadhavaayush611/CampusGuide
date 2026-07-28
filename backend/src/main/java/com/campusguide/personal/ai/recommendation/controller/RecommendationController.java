@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/ai/recommendations")
+@RequestMapping("/api/v1/ai/recommendations")
 @RequiredArgsConstructor
 @Validated
 public class RecommendationController {
@@ -23,7 +23,7 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
 
     /**
-     * GET /api/ai/recommendations
+     * GET /api/v1/ai/recommendations
      * Returns all recommendation categories for the authenticated user.
      */
     @GetMapping
@@ -37,7 +37,7 @@ public class RecommendationController {
     }
 
     /**
-     * GET /api/ai/recommendations/{type}
+     * GET /api/v1/ai/recommendations/{type}
      * Returns recommendations of the specified category for the authenticated user.
      * Supported types: academic, events, communities, resources
      */

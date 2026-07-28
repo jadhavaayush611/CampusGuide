@@ -30,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class RoadmapServiceTest {
 
@@ -37,7 +39,7 @@ class RoadmapServiceTest {
     private RoadmapRepository roadmapRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private com.campusguide.personal.notification.service.interfaces.NotificationService notificationService;
@@ -94,6 +96,11 @@ class RoadmapServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(creatorUserDetails)).thenReturn(creatorUser);
+        lenient().when(currentUserService.getCurrentUser(adminUserDetails)).thenReturn(adminUser);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
+        lenient().when(currentUserService.getUserByIdentifier(anyString())).thenReturn(creatorUser);
+
         createRequest = CreateRoadmapRequest.builder()
                 .title("B.Tech Computer Science 2026")
                 .description("Four year academic curriculum roadmap")
@@ -147,7 +154,7 @@ class RoadmapServiceTest {
 
     @Test
     void createRoadmap_Success() {
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
         when(roadmapRepository.save(any(Roadmap.class))).thenReturn(activeRoadmap);
 
         RoadmapResponse response = roadmapService.createRoadmap(creatorUserDetails, createRequest);
@@ -184,7 +191,7 @@ class RoadmapServiceTest {
                 .isDeleted(false)
                 .build();
 
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
         when(roadmapRepository.save(any(Roadmap.class))).thenReturn(activeRoadmapWithNullDesc);
 
         RoadmapResponse response = roadmapService.createRoadmap(creatorUserDetails, requestWithNullDesc);
@@ -197,14 +204,15 @@ class RoadmapServiceTest {
 
     @Test
     void createRoadmap_Unauthenticated() {
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () ->
                 roadmapService.createRoadmap(null, createRequest));
         verify(roadmapRepository, never()).save(any(Roadmap.class));
     }
 
     @Test
-    void createRoadmap_UserNotFound() {
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.empty());
+    void createRoadmap_UserNotFound_ThrowsResourceNotFoundException() {
+        when(currentUserService.getCurrentUser(creatorUserDetails)).thenThrow(new ResourceNotFoundException("User not found"));
 
         assertThrows(ResourceNotFoundException.class, () ->
                 roadmapService.createRoadmap(creatorUserDetails, createRequest));
@@ -218,7 +226,7 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_CreatorSuccess() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
         
         Roadmap updatedRoadmap = Roadmap.builder()
                 .id("roadmap-123")
@@ -245,7 +253,6 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_AdminSuccess() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
         
         Roadmap updatedRoadmap = Roadmap.builder()
                 .id("roadmap-123")
@@ -268,7 +275,6 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_NonOwnerDenied() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(otherUserDetails.getUsername())).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () ->
                 roadmapService.updateRoadmap(otherUserDetails, "roadmap-123", updateRequest));
@@ -278,7 +284,7 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_PartialUpdates() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         UpdateRoadmapRequest partialRequest = UpdateRoadmapRequest.builder()
                 .title("New Title Only")
@@ -314,7 +320,7 @@ class RoadmapServiceTest {
     @Test
     void deleteRoadmap_Creator() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         roadmapService.deleteRoadmap(creatorUserDetails, "roadmap-123");
 
@@ -325,7 +331,6 @@ class RoadmapServiceTest {
     @Test
     void deleteRoadmap_Admin() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
 
         roadmapService.deleteRoadmap(adminUserDetails, "roadmap-123");
 
@@ -394,7 +399,7 @@ class RoadmapServiceTest {
 
     @Test
     void getRoadmapsByCreator_Success() {
-        when(userRepository.existsById("user-creator")).thenReturn(true);
+        when(currentUserService.getUserByIdentifier("user-creator")).thenReturn(creatorUser);
         when(roadmapRepository.findByCreatedByAndIsDeletedFalseOrderByCreatedAtDesc("user-creator")).thenReturn(List.of(activeRoadmap));
 
         List<RoadmapSummaryResponse> response = roadmapService.getRoadmapsByCreator("user-creator");
@@ -406,7 +411,7 @@ class RoadmapServiceTest {
 
     @Test
     void getRoadmapsByCreator_CreatorNotFound() {
-        when(userRepository.existsById("user-none")).thenReturn(false);
+        when(currentUserService.getUserByIdentifier("user-none")).thenThrow(new ResourceNotFoundException("User not found"));
 
         assertThrows(ResourceNotFoundException.class, () ->
                 roadmapService.getRoadmapsByCreator("user-none"));
@@ -450,7 +455,7 @@ class RoadmapServiceTest {
                 .expectedGraduationYear(2026)
                 .build();
 
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         assertThrows(BadRequestException.class, () ->
                 roadmapService.createRoadmap(creatorUserDetails, request));
@@ -466,7 +471,7 @@ class RoadmapServiceTest {
                 .expectedGraduationYear(2026)
                 .build();
 
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         assertThrows(BadRequestException.class, () ->
                 roadmapService.createRoadmap(creatorUserDetails, request));
@@ -475,7 +480,7 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_BlankDegree() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         UpdateRoadmapRequest blankRequest = UpdateRoadmapRequest.builder()
                 .degreeProgram("   ")
@@ -488,7 +493,7 @@ class RoadmapServiceTest {
     @Test
     void updateRoadmap_BlankDepartment() {
         when(roadmapRepository.findById("roadmap-123")).thenReturn(Optional.of(activeRoadmap));
-        when(userRepository.findByEmail(creatorUserDetails.getUsername())).thenReturn(Optional.of(creatorUser));
+
 
         UpdateRoadmapRequest blankRequest = UpdateRoadmapRequest.builder()
                 .department("")

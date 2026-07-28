@@ -80,8 +80,8 @@ class PlannerTaskValidationTest {
 
     @Test
     void testValidator_DueAtBeforeCreatedAt() {
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime dueAt = createdAt.minusMinutes(10);
+        java.time.Instant createdAt = java.time.Instant.now();
+        LocalDateTime dueAt = LocalDateTime.ofInstant(createdAt, java.time.ZoneId.systemDefault()).minusMinutes(10);
 
         assertThrows(PlannerTaskValidationException.class, () ->
                 plannerTaskValidator.validateDueAt(dueAt, createdAt));

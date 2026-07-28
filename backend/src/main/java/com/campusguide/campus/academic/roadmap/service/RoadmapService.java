@@ -9,9 +9,9 @@ import com.campusguide.campus.academic.roadmap.dto.RoadmapSummaryResponse;
 import com.campusguide.campus.academic.roadmap.dto.UpdateRoadmapRequest;
 import com.campusguide.campus.academic.roadmap.entity.Roadmap;
 import com.campusguide.campus.academic.roadmap.repository.RoadmapRepository;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
 import com.campusguide.personal.notification.enums.NotificationType;
 import com.campusguide.personal.notification.enums.NotificationPriority;
@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,7 +30,7 @@ import java.util.List;
 public class RoadmapService {
 
     private final RoadmapRepository roadmapRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
 
     /**
@@ -40,12 +41,7 @@ public class RoadmapService {
      * @return the created RoadmapResponse
      */
     public RoadmapResponse createRoadmap(UserDetails userDetails, CreateRoadmapRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         if (request.getTitle() == null || request.getTitle().trim().isBlank()) {
             throw new BadRequestException("Title cannot be blank");
@@ -113,11 +109,10 @@ public class RoadmapService {
             throw new ResourceNotFoundException("Roadmap not found with id: " + roadmapId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isCreator = roadmap.getCreatedBy().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isCreator && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this roadmap");
@@ -157,7 +152,7 @@ public class RoadmapService {
             roadmap.setExpectedGraduationYear(request.getExpectedGraduationYear());
         }
 
-        roadmap.setUpdatedAt(LocalDateTime.now());
+        roadmap.setUpdatedAt(Instant.now());
         roadmap = roadmapRepository.save(roadmap);
         return toRoadmapResponse(roadmap);
     }
@@ -180,18 +175,17 @@ public class RoadmapService {
             throw new ResourceNotFoundException("Roadmap not found with id: " + roadmapId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isCreator = roadmap.getCreatedBy().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isCreator && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this roadmap");
         }
 
         roadmap.setIsDeleted(true);
-        roadmap.setUpdatedAt(LocalDateTime.now());
+        roadmap.setUpdatedAt(Instant.now());
         roadmapRepository.save(roadmap);
     }
 
@@ -230,9 +224,7 @@ public class RoadmapService {
      * @return list of roadmap summaries
      */
     public List<RoadmapSummaryResponse> getRoadmapsByCreator(String creatorId) {
-        if (!userRepository.existsById(creatorId)) {
-            throw new ResourceNotFoundException("User not found with id: " + creatorId);
-        }
+        currentUserService.getUserByIdentifier(creatorId);
         return roadmapRepository.findByCreatedByAndIsDeletedFalseOrderByCreatedAtDesc(creatorId).stream()
                 .map(this::toRoadmapSummaryResponse)
                 .toList();
@@ -281,8 +273,8 @@ public class RoadmapService {
                 .totalCredits(roadmap.getTotalCredits())
                 .expectedGraduationYear(roadmap.getExpectedGraduationYear())
                 .createdBy(roadmap.getCreatedBy())
-                .createdAt(roadmap.getCreatedAt())
-                .updatedAt(roadmap.getUpdatedAt())
+                .createdAt(roadmap.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(roadmap.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(roadmap.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(roadmap.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

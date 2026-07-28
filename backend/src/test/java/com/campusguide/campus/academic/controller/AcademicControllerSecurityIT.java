@@ -156,7 +156,7 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getDashboard_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/dashboard")
+        mockMvc.perform(get("/api/v1/academic/dashboard")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -164,7 +164,7 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getDashboard_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/dashboard")
+        mockMvc.perform(get("/api/v1/academic/dashboard")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -172,14 +172,14 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getDashboard_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/academic/dashboard")
+        mockMvc.perform(get("/api/v1/academic/dashboard")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getProgress_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/progress")
+        mockMvc.perform(get("/api/v1/academic/progress")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -187,7 +187,7 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getProgress_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/progress")
+        mockMvc.perform(get("/api/v1/academic/progress")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -195,14 +195,14 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getProgress_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/academic/progress")
+        mockMvc.perform(get("/api/v1/academic/progress")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getRecommendedSemester_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/recommended-semester")
+        mockMvc.perform(get("/api/v1/academic/recommended-semester")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -210,7 +210,7 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getRecommendedSemester_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/academic/recommended-semester")
+        mockMvc.perform(get("/api/v1/academic/recommended-semester")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -218,7 +218,7 @@ class AcademicControllerSecurityIT {
 
     @Test
     void getRecommendedSemester_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/academic/recommended-semester")
+        mockMvc.perform(get("/api/v1/academic/recommended-semester")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }

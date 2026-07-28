@@ -149,7 +149,7 @@ class ResourceControllerSecurityIT {
         );
 
         mockMvc.perform(
-                        multipart("/api/resources")
+                        multipart("/api/v1/resources")
                                 .file(file)
                                 .param("title", "Lecture Notes")
                                 .param("description", "Math lecture notes")
@@ -178,7 +178,7 @@ class ResourceControllerSecurityIT {
         );
 
         mockMvc.perform(
-                        multipart("/api/resources")
+                        multipart("/api/v1/resources")
                                 .file(file)
                                 .param("title", "Lecture Notes")
                                 .param("description", "Math lecture notes")
@@ -205,7 +205,7 @@ class ResourceControllerSecurityIT {
         );
 
         mockMvc.perform(
-                        multipart("/api/resources")
+                        multipart("/api/v1/resources")
                                 .file(file)
                                 .param("title", "Lecture Notes")
                                 .param("description", "Math lecture notes")
@@ -245,7 +245,7 @@ class ResourceControllerSecurityIT {
                 .tags(List.of("updated"))
                 .build();
 
-        mockMvc.perform(put("/api/resources/" + resource.getId())
+        mockMvc.perform(put("/api/v1/resources/" + resource.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -270,7 +270,7 @@ class ResourceControllerSecurityIT {
                 .title("Updated Title")
                 .build();
 
-        mockMvc.perform(put("/api/resources/" + resource.getId())
+        mockMvc.perform(put("/api/v1/resources/" + resource.getId())
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -294,7 +294,7 @@ class ResourceControllerSecurityIT {
                 .title("Updated Title")
                 .build();
 
-        mockMvc.perform(put("/api/resources/" + resource.getId())
+        mockMvc.perform(put("/api/v1/resources/" + resource.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -317,7 +317,7 @@ class ResourceControllerSecurityIT {
                 .title("Updated Title")
                 .build();
 
-        mockMvc.perform(put("/api/resources/" + resource.getId())
+        mockMvc.perform(put("/api/v1/resources/" + resource.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -336,7 +336,7 @@ class ResourceControllerSecurityIT {
                 .build();
         resource = resourceRepository.save(resource);
 
-        mockMvc.perform(delete("/api/resources/" + resource.getId())
+        mockMvc.perform(delete("/api/v1/resources/" + resource.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
 
@@ -355,7 +355,7 @@ class ResourceControllerSecurityIT {
                 .build();
         resource = resourceRepository.save(resource);
 
-        mockMvc.perform(delete("/api/resources/" + resource.getId())
+        mockMvc.perform(delete("/api/v1/resources/" + resource.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("You are not authorized to delete this resource"));
@@ -375,7 +375,7 @@ class ResourceControllerSecurityIT {
                 .build();
         resource = resourceRepository.save(resource);
 
-        mockMvc.perform(delete("/api/resources/" + resource.getId())
+        mockMvc.perform(delete("/api/v1/resources/" + resource.getId())
                         .with(user(adminDetails)))
                 .andExpect(status().isNoContent());
 
@@ -394,7 +394,7 @@ class ResourceControllerSecurityIT {
                 .build();
         resource = resourceRepository.save(resource);
 
-        mockMvc.perform(delete("/api/resources/" + resource.getId()))
+        mockMvc.perform(delete("/api/v1/resources/" + resource.getId()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -414,51 +414,51 @@ class ResourceControllerSecurityIT {
                 .build();
         resource = resourceRepository.save(resource);
 
-        // GET /api/resources (Get all)
-        mockMvc.perform(get("/api/resources")
+        // GET /api/v1/resources (Get all)
+        mockMvc.perform(get("/api/v1/resources")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/{resourceId} (Get by ID)
-        mockMvc.perform(get("/api/resources/" + resource.getId())
+        // GET /api/v1/resources/{resourceId} (Get by ID)
+        mockMvc.perform(get("/api/v1/resources/" + resource.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Special Lecture Notes"));
 
-        // GET /api/resources/uploader/{uploaderId} (Get by uploader)
-        mockMvc.perform(get("/api/resources/uploader/" + studentUser.getId())
+        // GET /api/v1/resources/uploader/{uploaderId} (Get by uploader)
+        mockMvc.perform(get("/api/v1/resources/uploader/" + studentUser.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/council/{councilId} (Get by council)
-        mockMvc.perform(get("/api/resources/council/" + "council-123")
+        // GET /api/v1/resources/council/{councilId} (Get by council)
+        mockMvc.perform(get("/api/v1/resources/council/" + "council-123")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/community/{communityId} (Get by community)
-        mockMvc.perform(get("/api/resources/community/" + testCommunity.getId())
+        // GET /api/v1/resources/community/{communityId} (Get by community)
+        mockMvc.perform(get("/api/v1/resources/community/" + testCommunity.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/search (Search)
-        mockMvc.perform(get("/api/resources/search")
+        // GET /api/v1/resources/search (Search)
+        mockMvc.perform(get("/api/v1/resources/search")
                         .param("query", "Special")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/tag/{tag} (Tag search)
-        mockMvc.perform(get("/api/resources/tag/exam")
+        // GET /api/v1/resources/tag/{tag} (Tag search)
+        mockMvc.perform(get("/api/v1/resources/tag/exam")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/resources/recent (Recent resources)
-        mockMvc.perform(get("/api/resources/recent")
+        // GET /api/v1/resources/recent (Recent resources)
+        mockMvc.perform(get("/api/v1/resources/recent")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
@@ -466,36 +466,36 @@ class ResourceControllerSecurityIT {
 
     @Test
     void retrievalEndpoints_Unauthenticated_Permitted() throws Exception {
-        // GET /api/resources
-        mockMvc.perform(get("/api/resources"))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources
+        mockMvc.perform(get("/api/v1/resources"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/recent
-        mockMvc.perform(get("/api/resources/recent"))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/recent
+        mockMvc.perform(get("/api/v1/resources/recent"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/{resourceId}
-        mockMvc.perform(get("/api/resources/some-id"))
-                .andExpect(status().isNotFound());
+        // GET /api/v1/resources/{resourceId}
+        mockMvc.perform(get("/api/v1/resources/some-id"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/uploader/{uploaderId}
-        mockMvc.perform(get("/api/resources/uploader/" + studentUser.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/uploader/{uploaderId}
+        mockMvc.perform(get("/api/v1/resources/uploader/" + studentUser.getId()))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/council/{councilId}
-        mockMvc.perform(get("/api/resources/council/council-123"))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/council/{councilId}
+        mockMvc.perform(get("/api/v1/resources/council/council-123"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/community/{communityId}
-        mockMvc.perform(get("/api/resources/community/" + testCommunity.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/community/{communityId}
+        mockMvc.perform(get("/api/v1/resources/community/" + testCommunity.getId()))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/search
-        mockMvc.perform(get("/api/resources/search").param("query", "notes"))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/search
+        mockMvc.perform(get("/api/v1/resources/search").param("query", "notes"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/resources/tag/{tag}
-        mockMvc.perform(get("/api/resources/tag/notes"))
-                .andExpect(status().isOk());
+        // GET /api/v1/resources/tag/{tag}
+        mockMvc.perform(get("/api/v1/resources/tag/notes"))
+                .andExpect(status().isUnauthorized());
     }
 }

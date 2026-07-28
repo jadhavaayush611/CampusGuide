@@ -36,6 +36,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class StudentProgressServiceTest {
 
@@ -43,7 +45,7 @@ class StudentProgressServiceTest {
     private StudentProgressRepository studentProgressRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private CourseService courseService;
@@ -102,6 +104,11 @@ class StudentProgressServiceTest {
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(studentUserDetails)).thenReturn(studentUser);
+        lenient().when(currentUserService.getCurrentUser(adminUserDetails)).thenReturn(adminUser);
+        lenient().when(currentUserService.getCurrentUser(otherStudentUserDetails)).thenReturn(otherStudentUser);
+        lenient().when(currentUserService.getUserByIdentifier(anyString())).thenReturn(studentUser);
+
         createRequest = CreateStudentProgressRequest.builder()
                 .roadmapId("roadmap-123")
                 .build();
@@ -136,7 +143,7 @@ class StudentProgressServiceTest {
 
     @Test
     void createProgress_Successful() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.empty());
         when(roadmapService.getRoadmapById("roadmap-123")).thenReturn(RoadmapResponse.builder().id("roadmap-123").build());
         when(studentProgressRepository.save(any(StudentProgress.class))).thenReturn(studentProgress);
@@ -157,7 +164,7 @@ class StudentProgressServiceTest {
 
     @Test
     void createProgress_DuplicateProgress_ThrowsConflictException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
 
         assertThrows(ConflictException.class, () -> studentProgressService.createProgress(studentUserDetails, createRequest));
@@ -167,7 +174,7 @@ class StudentProgressServiceTest {
 
     @Test
     void createProgress_RoadmapNotFound_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.empty());
         when(roadmapService.getRoadmapById("roadmap-123")).thenThrow(new ResourceNotFoundException("Roadmap not found"));
 
@@ -180,7 +187,7 @@ class StudentProgressServiceTest {
 
     @Test
     void updateProgress_Owner_Successful() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -194,7 +201,6 @@ class StudentProgressServiceTest {
 
     @Test
     void adminUpdateProgress_SuperAdmin_Successful() {
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -208,7 +214,7 @@ class StudentProgressServiceTest {
 
     @Test
     void adminUpdateProgress_Student_ThrowsAccessDeniedException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
 
         assertThrows(AccessDeniedException.class, () -> studentProgressService.adminUpdateProgress(studentUserDetails, adminUpdateRequest));
         verify(studentProgressRepository, never()).save(any(StudentProgress.class));
@@ -216,7 +222,6 @@ class StudentProgressServiceTest {
 
     @Test
     void updateProgress_Unauthorized_ThrowsAccessDeniedException() {
-        when(userRepository.findByEmail(otherStudentUserDetails.getUsername())).thenReturn(Optional.of(otherStudentUser));
         // We're attempting to update progress of student-123, but we are otherStudentUser (student-789)
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
         updateRequest.setStudentId("student-123");
@@ -228,7 +233,6 @@ class StudentProgressServiceTest {
 
     @Test
     void adminUpdateProgress_InvalidGpa_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
 
         // GPA too high
@@ -244,7 +248,7 @@ class StudentProgressServiceTest {
 
     @Test
     void updateProgress_InvalidSemester_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
 
         // Semester <= 0
@@ -267,7 +271,7 @@ class StudentProgressServiceTest {
                 .active(true)
                 .build();
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseById("course-456")).thenReturn(courseResponse);
         when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse);
@@ -285,7 +289,7 @@ class StudentProgressServiceTest {
     void markCourseCompleted_Duplicate_ThrowsConflictException() {
         studentProgress.getCompletedCourseIds().add("course-456");
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseById("course-456")).thenReturn(CourseResponse.builder().id("course-456").credits(4).build());
 
@@ -311,7 +315,7 @@ class StudentProgressServiceTest {
                 .credits(6)
                 .build();
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse456);
         when(courseService.getCourseByIdInternal("course-789")).thenReturn(courseResponse789);
@@ -335,7 +339,7 @@ class StudentProgressServiceTest {
                 .credits(4)
                 .build();
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseByIdInternal("course-456")).thenReturn(courseResponse);
         when(studentProgressRepository.save(any(StudentProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -348,7 +352,7 @@ class StudentProgressServiceTest {
 
     @Test
     void removeCompletedCourse_NotCompleted_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
 
         assertThrows(BadRequestException.class, () -> studentProgressService.removeCompletedCourse(studentUserDetails, "course-456", null));

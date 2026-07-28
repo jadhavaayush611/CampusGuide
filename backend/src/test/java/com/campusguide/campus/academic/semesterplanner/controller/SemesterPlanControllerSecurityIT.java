@@ -239,7 +239,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(1)
                 .build();
 
-        mockMvc.perform(post("/api/semester-plans")
+        mockMvc.perform(post("/api/v1/semester-plans")
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -256,7 +256,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(1)
                 .build();
 
-        mockMvc.perform(post("/api/semester-plans")
+        mockMvc.perform(post("/api/v1/semester-plans")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -270,7 +270,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(2)
                 .build();
 
-        mockMvc.perform(put("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(put("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -284,7 +284,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(2)
                 .build();
 
-        mockMvc.perform(put("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(put("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -297,7 +297,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(3)
                 .build();
 
-        mockMvc.perform(put("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(put("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -311,7 +311,7 @@ class SemesterPlanControllerSecurityIT {
                 .semesterNumber(2)
                 .build();
 
-        mockMvc.perform(put("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(put("/api/v1/semester-plans/" + testPlan.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -321,7 +321,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getMyPlans_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/semester-plans")
+        mockMvc.perform(get("/api/v1/semester-plans")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -330,14 +330,14 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getMyPlans_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/semester-plans")
+        mockMvc.perform(get("/api/v1/semester-plans")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getSemesterPlan_Student_OwnPlan_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -346,7 +346,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getSemesterPlan_Student_OtherPlan_ReturnsForbidden() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -354,7 +354,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getSemesterPlan_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/" + testPlan.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -363,7 +363,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getSemesterPlan_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/" + testPlan.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/" + testPlan.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -372,7 +372,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void addCourse_Student_OwnPlan_ReturnsOk() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -382,7 +382,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void addCourse_Student_OtherPlan_ReturnsForbidden() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -390,7 +390,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void addCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/add/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -403,7 +403,7 @@ class SemesterPlanControllerSecurityIT {
         testPlan.setTotalPlannedCredits(4);
         semesterPlanRepository.save(testPlan);
 
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -413,7 +413,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void removeCourse_Student_OtherPlan_ReturnsForbidden() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -421,7 +421,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void removeCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/remove/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -434,7 +434,7 @@ class SemesterPlanControllerSecurityIT {
         testPlan.setTotalPlannedCredits(4);
         semesterPlanRepository.save(testPlan);
 
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/finalize")
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/finalize")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -443,7 +443,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void finalizeSemesterPlan_Student_OtherPlan_ReturnsForbidden() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/finalize")
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/finalize")
                         .with(user(otherStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -451,7 +451,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void finalizeSemesterPlan_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(patch("/api/semester-plans/" + testPlan.getId() + "/finalize")
+        mockMvc.perform(patch("/api/v1/semester-plans/" + testPlan.getId() + "/finalize")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -460,7 +460,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getPlansByStudent_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/student/" + studentUser.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -469,7 +469,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getPlansByStudent_Student_ReturnsForbidden() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/student/" + studentUser.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -477,7 +477,7 @@ class SemesterPlanControllerSecurityIT {
 
     @Test
     void getPlansByStudent_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/semester-plans/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/semester-plans/student/" + studentUser.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }

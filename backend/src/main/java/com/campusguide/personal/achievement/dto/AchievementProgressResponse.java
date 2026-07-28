@@ -18,7 +18,7 @@ import java.util.UUID;
 public class AchievementProgressResponse {
 
     private UUID id;
-    private UUID userId;
+    private String userId;
     private String achievementCode;
     private String title;
     private String description;

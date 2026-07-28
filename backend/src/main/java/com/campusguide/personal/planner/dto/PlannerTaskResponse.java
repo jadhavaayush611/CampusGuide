@@ -18,7 +18,7 @@ import java.util.UUID;
 public class PlannerTaskResponse {
 
     private UUID id;
-    private UUID userId;
+    private String userId;
     private String title;
     private String description;
     private TaskType type;

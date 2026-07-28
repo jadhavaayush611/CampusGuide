@@ -42,7 +42,7 @@ public class User {
     private String passwordHash;
 
     @NotNull(message = "Role must not be null")
-    private UserRole role;
+    private Role role;
 
     @Builder.Default
     private boolean enabled = true;
@@ -75,14 +75,10 @@ public class User {
         }
 
         public UserBuilder role(Object roleObj) {
-            if (roleObj instanceof UserRole ur) {
-                this.role = ur;
+            if (roleObj instanceof Role r) {
+                this.role = r;
             } else if (roleObj != null) {
-                try {
-                    this.role = UserRole.valueOf(roleObj.toString());
-                } catch (Exception ignored) {
-                    this.role = roleObj.toString().contains("ADMIN") ? UserRole.ADMIN : UserRole.STUDENT;
-                }
+                this.role = Role.fromString(roleObj.toString());
             }
             return this;
         }

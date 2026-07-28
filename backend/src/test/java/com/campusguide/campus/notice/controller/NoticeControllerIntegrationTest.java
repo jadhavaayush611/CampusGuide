@@ -44,7 +44,8 @@ class NoticeControllerIntegrationTest {
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     private Notice testNotice;
-    private UserDetails userDetails;
+    private UserDetails adminUser;
+    private UserDetails studentUser;
 
     @BeforeEach
     void setUp() {
@@ -54,9 +55,14 @@ class NoticeControllerIntegrationTest {
 
         noticeRepository.deleteAll();
 
-        userDetails = User.withUsername("student@campusguide.com")
+        adminUser = User.withUsername("admin@campusguide.com")
                 .password("password")
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN")))
+                .build();
+
+        studentUser = User.withUsername("student@campusguide.com")
+                .password("password")
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
 
         testNotice = Notice.builder()
@@ -84,7 +90,7 @@ class NoticeControllerIntegrationTest {
     }
 
     @Test
-    void createNotice_ReturnsCreated() throws Exception {
+    void createNotice_AsAdmin_ReturnsCreated() throws Exception {
         CreateNoticeRequest request = CreateNoticeRequest.builder()
                 .title("Library Timing Change")
                 .slug("library-timing-change")
@@ -97,7 +103,7 @@ class NoticeControllerIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/notices")
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -115,7 +121,7 @@ class NoticeControllerIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/notices")
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -130,7 +136,7 @@ class NoticeControllerIntegrationTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/notices")
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
@@ -139,7 +145,7 @@ class NoticeControllerIntegrationTest {
     @Test
     void getAllNotices_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/v1/notices")
-                        .with(user(userDetails)))
+                        .with(user(studentUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Registration Open"))
                 .andExpect(jsonPath("$[0].slug").value("registration-open"));
@@ -148,7 +154,7 @@ class NoticeControllerIntegrationTest {
     @Test
     void getNoticeById_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/v1/notices/" + testNotice.getId())
-                        .with(user(userDetails)))
+                        .with(user(studentUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testNotice.getId().toString()))
                 .andExpect(jsonPath("$.title").value("Registration Open"));
@@ -157,14 +163,14 @@ class NoticeControllerIntegrationTest {
     @Test
     void getNoticeById_NonExistent_ReturnsNotFound() throws Exception {
         mockMvc.perform(get("/api/v1/notices/" + UUID.randomUUID())
-                        .with(user(userDetails)))
+                        .with(user(studentUser)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getNoticeBySlug_ReturnsOk() throws Exception {
         mockMvc.perform(get("/api/v1/notices/slug/registration-open")
-                        .with(user(userDetails)))
+                        .with(user(studentUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Registration Open"));
     }
@@ -172,12 +178,12 @@ class NoticeControllerIntegrationTest {
     @Test
     void getNoticeBySlug_NonExistent_ReturnsNotFound() throws Exception {
         mockMvc.perform(get("/api/v1/notices/slug/non-existent-slug")
-                        .with(user(userDetails)))
+                        .with(user(studentUser)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void updateNotice_ReturnsOk() throws Exception {
+    void updateNotice_AsAdmin_ReturnsOk() throws Exception {
         UpdateNoticeRequest request = UpdateNoticeRequest.builder()
                 .title("Updated Registration Open")
                 .slug("updated-registration-open")
@@ -191,7 +197,7 @@ class NoticeControllerIntegrationTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/notices/" + testNotice.getId())
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -200,11 +206,11 @@ class NoticeControllerIntegrationTest {
     }
 
     @Test
-    void publishNotice_ReturnsOk() throws Exception {
+    void publishNotice_AsAdmin_ReturnsOk() throws Exception {
         PublishNoticeRequest request = new PublishNoticeRequest(false);
 
         mockMvc.perform(patch("/api/v1/notices/" + testNotice.getId() + "/publish")
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -212,11 +218,11 @@ class NoticeControllerIntegrationTest {
     }
 
     @Test
-    void pinNotice_ReturnsOk() throws Exception {
+    void pinNotice_AsAdmin_ReturnsOk() throws Exception {
         PinNoticeRequest request = new PinNoticeRequest(false);
 
         mockMvc.perform(patch("/api/v1/notices/" + testNotice.getId() + "/pin")
-                        .with(user(userDetails))
+                        .with(user(adminUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -224,13 +230,13 @@ class NoticeControllerIntegrationTest {
     }
 
     @Test
-    void deleteNotice_ReturnsNoContent() throws Exception {
+    void deleteNotice_AsAdmin_ReturnsNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/notices/" + testNotice.getId())
-                        .with(user(userDetails)))
+                        .with(user(adminUser)))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/v1/notices/" + testNotice.getId())
-                        .with(user(userDetails)))
+                        .with(user(adminUser)))
                 .andExpect(status().isNotFound());
     }
 }

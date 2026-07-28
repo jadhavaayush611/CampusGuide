@@ -12,9 +12,9 @@ import com.campusguide.campus.academic.roadmap.service.RoadmapService;
 import com.campusguide.campus.academic.semesterplanner.dto.*;
 import com.campusguide.campus.academic.semesterplanner.entity.SemesterPlan;
 import com.campusguide.campus.academic.semesterplanner.repository.SemesterPlanRepository;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
 import com.campusguide.personal.notification.enums.NotificationType;
 import com.campusguide.personal.notification.enums.NotificationPriority;
@@ -23,6 +23,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 public class SemesterPlanService {
 
     private final SemesterPlanRepository semesterPlanRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final CourseService courseService;
     private final RoadmapService roadmapService;
     private final StudentProgressRepository studentProgressRepository;
@@ -48,12 +49,7 @@ public class SemesterPlanService {
      * @return the created SemesterPlanResponse
      */
     public SemesterPlanResponse createSemesterPlan(UserDetails userDetails, CreateSemesterPlanRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         // Validate roadmap exists
         roadmapService.getRoadmapById(request.getRoadmapId());
@@ -74,8 +70,8 @@ public class SemesterPlanService {
                 .plannedCourseIds(new ArrayList<>())
                 .totalPlannedCredits(0)
                 .finalized(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         plan = semesterPlanRepository.save(plan);
@@ -94,12 +90,7 @@ public class SemesterPlanService {
      * @return the updated SemesterPlanResponse
      */
     public SemesterPlanResponse updateSemesterPlan(UserDetails userDetails, String planId, UpdateSemesterPlanRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         SemesterPlan plan = semesterPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
@@ -172,7 +163,7 @@ public class SemesterPlanService {
             }
         }
 
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(Instant.now());
         plan = semesterPlanRepository.save(plan);
         return toSemesterPlanResponse(plan);
     }
@@ -186,12 +177,7 @@ public class SemesterPlanService {
      * @return the updated SemesterPlanResponse
      */
     public SemesterPlanResponse addCourse(UserDetails userDetails, String planId, String courseId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         SemesterPlan plan = semesterPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
@@ -212,6 +198,11 @@ public class SemesterPlanService {
             throw new ConflictException("Course is already planned in this semester plan");
         }
 
+        if (plan.getPlannedCourseIds() == null) {
+            plan.setPlannedCourseIds(new ArrayList<>());
+        }
+        plan.getPlannedCourseIds().add(courseId);
+        
         // Validate every prerequisite has been completed using StudentProgress
         StudentProgress progress = studentProgressRepository.findByStudentId(plan.getStudentId())
                 .orElseThrow(() -> new BadRequestException("Student progress record not found"));
@@ -230,17 +221,11 @@ public class SemesterPlanService {
             }
         }
 
-        // Add course
-        if (plan.getPlannedCourseIds() == null) {
-            plan.setPlannedCourseIds(new ArrayList<>());
-        }
-        plan.getPlannedCourseIds().add(courseId);
-
         // Increase totalPlannedCredits
         int courseCredits = course.getCredits() != null ? course.getCredits() : 0;
         plan.setTotalPlannedCredits(plan.getTotalPlannedCredits() + courseCredits);
 
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(Instant.now());
         plan = semesterPlanRepository.save(plan);
         return toSemesterPlanResponse(plan);
     }
@@ -254,12 +239,7 @@ public class SemesterPlanService {
      * @return the updated SemesterPlanResponse
      */
     public SemesterPlanResponse removeCourse(UserDetails userDetails, String planId, String courseId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         SemesterPlan plan = semesterPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
@@ -288,7 +268,7 @@ public class SemesterPlanService {
         int newCredits = plan.getTotalPlannedCredits() - courseCredits;
         plan.setTotalPlannedCredits(Math.max(0, newCredits));
 
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(Instant.now());
         plan = semesterPlanRepository.save(plan);
         return toSemesterPlanResponse(plan);
     }
@@ -301,12 +281,7 @@ public class SemesterPlanService {
      * @return the updated SemesterPlanResponse
      */
     public SemesterPlanResponse finalizeSemesterPlan(UserDetails userDetails, String planId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         SemesterPlan plan = semesterPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
@@ -322,7 +297,7 @@ public class SemesterPlanService {
         // Mark finalized = true
         plan.setFinalized(true);
 
-        plan.setUpdatedAt(LocalDateTime.now());
+        plan.setUpdatedAt(Instant.now());
         plan = semesterPlanRepository.save(plan);
         notificationService.createNotification(
                 user.getId(),
@@ -335,6 +310,17 @@ public class SemesterPlanService {
         return toSemesterPlanResponse(plan);
     }
 
+    public void deletePlan(UserDetails userDetails, String planId) {
+        User user = currentUserService.getCurrentUser(userDetails);
+
+        SemesterPlan plan = semesterPlanRepository.findById(planId)
+                .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
+
+        // Authorization check
+        checkOwnerOrAdmin(plan, user);
+
+        semesterPlanRepository.delete(plan);
+    }
 
     /**
      * Gets all semester plans for the authenticated student.
@@ -343,12 +329,7 @@ public class SemesterPlanService {
      * @return list of plans
      */
     public List<SemesterPlanResponse> getMyPlans(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         return semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(user.getId()).stream()
                 .map(this::toSemesterPlanResponse)
@@ -363,12 +344,7 @@ public class SemesterPlanService {
      * @return the plan
      */
     public SemesterPlanResponse getSemesterPlan(UserDetails userDetails, String planId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         SemesterPlan plan = semesterPlanRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Semester plan not found with ID: " + planId));
@@ -387,15 +363,10 @@ public class SemesterPlanService {
      * @return list of plans
      */
     public List<SemesterPlanResponse> getPlansByStudent(UserDetails userDetails, String studentId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         // Authorization check
-        if (user.getRole() != UserRole.ADMIN) {
+        if (user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can view other students' plans");
         }
 
@@ -407,7 +378,7 @@ public class SemesterPlanService {
     // --- PRIVATE UTILITY AND MAPPER METHODS ---
 
     private void checkOwnerOrAdmin(SemesterPlan plan, User user) {
-        if (!plan.getStudentId().equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
+        if (!plan.getStudentId().equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("You are not authorized to access/modify this semester plan");
         }
     }
@@ -426,8 +397,8 @@ public class SemesterPlanService {
                         : new ArrayList<>())
                 .totalPlannedCredits(plan.getTotalPlannedCredits())
                 .finalized(plan.getFinalized())
-                .createdAt(plan.getCreatedAt())
-                .updatedAt(plan.getUpdatedAt())
+                .createdAt(plan.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(plan.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(plan.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(plan.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

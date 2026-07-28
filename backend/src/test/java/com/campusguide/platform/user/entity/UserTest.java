@@ -32,7 +32,7 @@ class UserTest {
                 .email("student@campusguide.com")
                 .username("student123")
                 .passwordHash("hashed_password_123")
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .enabled(true)
                 .emailVerified(true)
                 .createdAt(now)
@@ -46,7 +46,7 @@ class UserTest {
         assertEquals("student@campusguide.com", user.getEmail());
         assertEquals("student123", user.getUsername());
         assertEquals("hashed_password_123", user.getPasswordHash());
-        assertEquals(UserRole.STUDENT, user.getRole());
+        assertEquals(Role.STUDENT, user.getRole());
         assertTrue(user.isEnabled());
         assertTrue(user.isEmailVerified());
         assertEquals(now, user.getCreatedAt());
@@ -60,7 +60,7 @@ class UserTest {
                 .email("not-an-email")
                 .username("validuser")
                 .passwordHash("hashed_pass")
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
@@ -75,7 +75,7 @@ class UserTest {
                 .email("user@campusguide.com")
                 .username("ab")
                 .passwordHash("hashed_pass")
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .build();
 
         Set<ConstraintViolation<User>> violations = validator.validate(userShort);
@@ -105,7 +105,7 @@ class UserTest {
                 .email("default@campusguide.com")
                 .username("defaultuser")
                 .passwordHash("hash")
-                .role(UserRole.ADMIN)
+                .role(Role.SUPER_ADMIN)
                 .build();
 
         assertTrue(user.isEnabled());

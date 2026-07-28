@@ -37,6 +37,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class ScheduledNotificationServiceTest {
 
@@ -50,7 +52,7 @@ class ScheduledNotificationServiceTest {
     private ScheduledNotificationValidator validator;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @InjectMocks
     private ScheduledNotificationService service;
@@ -78,9 +80,11 @@ class ScheduledNotificationServiceTest {
                 .username("testuser")
                 .build();
 
+        lenient().when(currentUserService.getCurrentUserId(any())).thenReturn(userId.toString());
+
         notification = ScheduledNotification.builder()
                 .id(notificationId)
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Test Title")
                 .message("Test Message")
                 .type(NotificationType.REMINDER)
@@ -94,7 +98,7 @@ class ScheduledNotificationServiceTest {
 
         responseDto = ScheduledNotificationResponse.builder()
                 .id(notificationId)
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Test Title")
                 .message("Test Message")
                 .type(NotificationType.REMINDER)
@@ -102,8 +106,8 @@ class ScheduledNotificationServiceTest {
                 .scheduledFor(notification.getScheduledFor())
                 .channel(NotificationChannel.IN_APP)
                 .priority(NotificationPriority.NORMAL)
-                .createdAt(notification.getCreatedAt())
-                .updatedAt(notification.getUpdatedAt())
+                .createdAt(notification.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(notification.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(notification.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(notification.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 
@@ -118,8 +122,8 @@ class ScheduledNotificationServiceTest {
                 .priority(NotificationPriority.NORMAL)
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
-        when(mapper.toEntity(eq(request), eq(userId))).thenReturn(notification);
+
+        when(mapper.toEntity(eq(request), eq(userId.toString()))).thenReturn(notification);
         when(repository.save(any(ScheduledNotification.class))).thenReturn(notification);
         when(mapper.toResponse(notification)).thenReturn(responseDto);
 
@@ -133,8 +137,8 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testGetAllNotifications_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
-        when(repository.findByUserIdOrderByScheduledForAsc(userId)).thenReturn(List.of(notification));
+
+        when(repository.findByUserIdOrderByScheduledForAsc(userId.toString())).thenReturn(List.of(notification));
         when(mapper.toResponse(notification)).thenReturn(responseDto);
 
         List<ScheduledNotificationResponse> results = service.getAllNotifications(userDetails);
@@ -145,7 +149,7 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testGetNotificationById_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(mapper.toResponse(notification)).thenReturn(responseDto);
 
@@ -157,7 +161,7 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testGetNotificationById_NotFound() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.empty());
 
         assertThrows(ScheduledNotificationNotFoundException.class, () -> service.getNotificationById(userDetails, notificationId));
@@ -165,8 +169,8 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testGetNotificationById_AccessDenied() {
-        notification.setUserId(UUID.randomUUID()); // different user
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+        notification.setUserId(UUID.randomUUID().toString()); // different user
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
 
         assertThrows(ScheduledNotificationAccessDeniedException.class, () -> service.getNotificationById(userDetails, notificationId));
@@ -174,22 +178,22 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testGetPendingNotifications_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
-        when(repository.findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(eq(userId), eq(NotificationStatus.SCHEDULED), any(LocalDateTime.class)))
+
+        when(repository.findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(eq(userId.toString()), eq(NotificationStatus.SCHEDULED), any(LocalDateTime.class)))
                 .thenReturn(List.of(notification));
         when(mapper.toResponse(notification)).thenReturn(responseDto);
 
         List<ScheduledNotificationResponse> results = service.getPendingNotifications(userDetails);
 
         assertEquals(1, results.size());
-        verify(repository).findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(eq(userId), eq(NotificationStatus.SCHEDULED), any(LocalDateTime.class));
+        verify(repository).findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(eq(userId.toString()), eq(NotificationStatus.SCHEDULED), any(LocalDateTime.class));
     }
 
     @Test
     void testUpdateNotificationStatus_TransitionToDelivered() {
         UpdateNotificationStatusRequest statusReq = new UpdateNotificationStatusRequest(NotificationStatus.DELIVERED);
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(repository.save(any(ScheduledNotification.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mapper.toResponse(any(ScheduledNotification.class))).thenReturn(responseDto);
@@ -207,7 +211,7 @@ class ScheduledNotificationServiceTest {
         notification.setDeliveredAt(LocalDateTime.now());
         UpdateNotificationStatusRequest statusReq = new UpdateNotificationStatusRequest(NotificationStatus.READ);
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(repository.save(any(ScheduledNotification.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mapper.toResponse(any(ScheduledNotification.class))).thenReturn(responseDto);
@@ -230,7 +234,7 @@ class ScheduledNotificationServiceTest {
                 .priority(NotificationPriority.HIGH)
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
         when(repository.save(any(ScheduledNotification.class))).thenAnswer(inv -> inv.getArgument(0));
         when(mapper.toResponse(any(ScheduledNotification.class))).thenReturn(responseDto);
@@ -247,7 +251,7 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testDeleteNotification_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(repository.findById(notificationId)).thenReturn(Optional.of(notification));
 
         service.deleteNotification(userDetails, notificationId);
@@ -257,6 +261,7 @@ class ScheduledNotificationServiceTest {
 
     @Test
     void testResolveUserId_Unauthenticated() {
+        when(currentUserService.getCurrentUserId(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () -> service.resolveUserId(null));
     }
 }

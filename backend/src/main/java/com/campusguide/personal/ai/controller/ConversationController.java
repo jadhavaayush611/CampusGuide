@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/ai/conversations")
+@RequestMapping("/api/v1/ai/conversations")
 @RequiredArgsConstructor
 @Validated
 public class ConversationController {

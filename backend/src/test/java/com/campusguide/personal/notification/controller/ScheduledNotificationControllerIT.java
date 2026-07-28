@@ -85,7 +85,7 @@ class ScheduledNotificationControllerIT {
 
         existingNotif = ScheduledNotification.builder()
                 .id(UUID.randomUUID())
-                .userId(studentUserId)
+                .userId(studentUserId.toString())
                 .title("Existing Notification")
                 .message("Message content")
                 .type(NotificationType.REMINDER)
@@ -116,7 +116,7 @@ class ScheduledNotificationControllerIT {
                 .priority(NotificationPriority.HIGH)
                 .build();
 
-        mockMvc.perform(post("/api/v1/notifications")
+        mockMvc.perform(post("/api/v1/scheduled-notifications")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -128,7 +128,7 @@ class ScheduledNotificationControllerIT {
 
     @Test
     void testGetAllNotifications_Success() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications")
+        mockMvc.perform(get("/api/v1/scheduled-notifications")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Existing Notification"));
@@ -136,7 +136,7 @@ class ScheduledNotificationControllerIT {
 
     @Test
     void testGetNotificationById_Success() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications/" + existingNotif.getId())
+        mockMvc.perform(get("/api/v1/scheduled-notifications/" + existingNotif.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(existingNotif.getId().toString()))
@@ -147,7 +147,7 @@ class ScheduledNotificationControllerIT {
     void testGetPendingNotifications_Success() throws Exception {
         ScheduledNotification pastPending = ScheduledNotification.builder()
                 .id(UUID.randomUUID())
-                .userId(studentUserId)
+                .userId(studentUserId.toString())
                 .title("Past Pending")
                 .message("Past due message")
                 .type(NotificationType.EVENT)
@@ -160,7 +160,7 @@ class ScheduledNotificationControllerIT {
                 .build();
         repository.save(pastPending);
 
-        mockMvc.perform(get("/api/v1/notifications/pending")
+        mockMvc.perform(get("/api/v1/scheduled-notifications/pending")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Past Pending"));
@@ -170,7 +170,7 @@ class ScheduledNotificationControllerIT {
     void testUpdateNotificationStatus_Success() throws Exception {
         UpdateNotificationStatusRequest statusReq = new UpdateNotificationStatusRequest(NotificationStatus.DELIVERED);
 
-        mockMvc.perform(patch("/api/v1/notifications/" + existingNotif.getId() + "/status")
+        mockMvc.perform(patch("/api/v1/scheduled-notifications/" + existingNotif.getId() + "/status")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(statusReq)))
@@ -190,7 +190,7 @@ class ScheduledNotificationControllerIT {
                 .priority(NotificationPriority.HIGH)
                 .build();
 
-        mockMvc.perform(put("/api/v1/notifications/" + existingNotif.getId())
+        mockMvc.perform(put("/api/v1/scheduled-notifications/" + existingNotif.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq)))
@@ -201,7 +201,7 @@ class ScheduledNotificationControllerIT {
 
     @Test
     void testDeleteNotification_Success() throws Exception {
-        mockMvc.perform(delete("/api/v1/notifications/" + existingNotif.getId())
+        mockMvc.perform(delete("/api/v1/scheduled-notifications/" + existingNotif.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
     }

@@ -34,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class AchievementProgressServiceTest {
 
@@ -47,7 +49,7 @@ class AchievementProgressServiceTest {
     private AchievementValidator achievementValidator;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @InjectMocks
     private AchievementProgressService service;
@@ -70,7 +72,7 @@ class AchievementProgressServiceTest {
                 .authorities("ROLE_STUDENT")
                 .build();
 
-        lenient().when(userRepository.findByEmail("student@achievement.com")).thenReturn(Optional.of(userEntity));
+        lenient().when(currentUserService.getCurrentUserId(any())).thenReturn(userId.toString());
     }
 
     @Test
@@ -83,7 +85,7 @@ class AchievementProgressServiceTest {
                 .progress(50)
                 .build();
 
-        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId, "CODE_100")).thenReturn(false);
+        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId.toString(), "CODE_100")).thenReturn(false);
         when(achievementProgressRepository.save(any(AchievementProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         AchievementProgressResponse response = service.createAchievement(userDetails, request);
@@ -104,7 +106,7 @@ class AchievementProgressServiceTest {
                 .progress(100)
                 .build();
 
-        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId, "CODE_101")).thenReturn(false);
+        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId.toString(), "CODE_101")).thenReturn(false);
         when(achievementProgressRepository.save(any(AchievementProgress.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         AchievementProgressResponse response = service.createAchievement(userDetails, request);
@@ -122,7 +124,7 @@ class AchievementProgressServiceTest {
                 .category(AchievementCategory.PERSONAL)
                 .build();
 
-        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId, "DUPLICATE_CODE")).thenReturn(true);
+        when(achievementProgressRepository.existsByUserIdAndAchievementCode(userId.toString(), "DUPLICATE_CODE")).thenReturn(true);
 
         assertThrows(AchievementAlreadyExistsException.class, () -> service.createAchievement(userDetails, request));
     }
@@ -132,7 +134,7 @@ class AchievementProgressServiceTest {
         UUID achievementId = UUID.randomUUID();
         AchievementProgress existing = AchievementProgress.builder()
                 .id(achievementId)
-                .userId(userId)
+                .userId(userId.toString())
                 .achievementCode("CODE_200")
                 .title("Read Books")
                 .category(AchievementCategory.PERSONAL)
@@ -160,7 +162,7 @@ class AchievementProgressServiceTest {
         UUID achievementId = UUID.randomUUID();
         AchievementProgress existing = AchievementProgress.builder()
                 .id(achievementId)
-                .userId(userId)
+                .userId(userId.toString())
                 .achievementCode("CODE_300")
                 .title("Complete Course")
                 .category(AchievementCategory.ACADEMIC)
@@ -189,7 +191,7 @@ class AchievementProgressServiceTest {
         UUID achievementId = UUID.randomUUID();
         AchievementProgress existing = AchievementProgress.builder()
                 .id(achievementId)
-                .userId(userId)
+                .userId(userId.toString())
                 .achievementCode("CODE_400")
                 .title("Completed Task")
                 .category(AchievementCategory.ACADEMIC)
@@ -216,7 +218,7 @@ class AchievementProgressServiceTest {
 
         AchievementProgress otherAchievement = AchievementProgress.builder()
                 .id(achievementId)
-                .userId(otherUserId)
+                .userId(otherUserId.toString())
                 .achievementCode("OTHER_CODE")
                 .build();
 
@@ -238,7 +240,7 @@ class AchievementProgressServiceTest {
         UUID achievementId = UUID.randomUUID();
         AchievementProgress existing = AchievementProgress.builder()
                 .id(achievementId)
-                .userId(userId)
+                .userId(userId.toString())
                 .achievementCode("CODE_500")
                 .build();
 

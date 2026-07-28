@@ -122,7 +122,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Entry 1")
                 .type(CalendarEntryType.PERSONAL)
                 .startTime(start)
@@ -145,7 +145,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Entry by ID")
                 .type(CalendarEntryType.TASK)
                 .startTime(start)
@@ -168,7 +168,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry1 = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Overlapping Entry")
                 .type(CalendarEntryType.ACADEMIC)
                 .startTime(base)
@@ -179,7 +179,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry2 = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Out of Range Entry")
                 .type(CalendarEntryType.PERSONAL)
                 .startTime(base.plusDays(5))
@@ -209,7 +209,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Old Title")
                 .type(CalendarEntryType.OTHER)
                 .startTime(start)
@@ -242,7 +242,7 @@ class CalendarEntryControllerIT {
 
         CalendarEntry entry = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Entry to Delete")
                 .type(CalendarEntryType.OTHER)
                 .startTime(start)

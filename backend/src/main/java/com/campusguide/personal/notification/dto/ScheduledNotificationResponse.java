@@ -20,7 +20,7 @@ import java.util.UUID;
 public class ScheduledNotificationResponse {
 
     private UUID id;
-    private UUID userId;
+    private String userId;
     private String title;
     private String message;
     private NotificationType type;

@@ -6,6 +6,7 @@ import com.campusguide.campus.council.dto.UpdateCouncilRequest;
 import com.campusguide.campus.council.entity.Council;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,7 @@ public class CouncilMapper {
             return null;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         return Council.builder()
                 .id(UUID.randomUUID())
                 .name(trim(request.getName()))
@@ -51,7 +52,7 @@ public class CouncilMapper {
         if (request.getIsActive() != null) {
             council.setIsActive(request.getIsActive());
         }
-        council.setUpdatedAt(LocalDateTime.now());
+        council.setUpdatedAt(Instant.now());
     }
 
     private String trim(String value) {
@@ -73,8 +74,8 @@ public class CouncilMapper {
                 .contactNumber(council.getContactNumber())
                 .facultyAdvisor(council.getFacultyAdvisor())
                 .isActive(council.getIsActive())
-                .createdAt(council.getCreatedAt())
-                .updatedAt(council.getUpdatedAt())
+                .createdAt(council.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(council.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(council.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(council.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

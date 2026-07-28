@@ -16,6 +16,7 @@ import com.campusguide.campus.event.validation.EventValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -108,7 +109,7 @@ public class EventService {
                 .orElseThrow(() -> new EventNotFoundException("Event not found with ID: " + id));
 
         event.setStatus(request.getStatus());
-        event.setUpdatedAt(LocalDateTime.now());
+        event.setUpdatedAt(Instant.now());
 
         Event updated = eventRepository.save(event);
         return eventMapper.toResponse(updated);

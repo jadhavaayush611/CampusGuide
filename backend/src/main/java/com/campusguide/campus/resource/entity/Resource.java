@@ -4,14 +4,26 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Document(collection = "resources")
+@CompoundIndexes({
+    @CompoundIndex(name = "uploader_deleted_created_idx", def = "{'uploaderId': 1, 'isDeleted': 1, 'createdAt': -1}"),
+    @CompoundIndex(name = "council_deleted_created_idx", def = "{'councilId': 1, 'isDeleted': 1, 'createdAt': -1}"),
+    @CompoundIndex(name = "community_deleted_created_idx", def = "{'communityId': 1, 'isDeleted': 1, 'createdAt': -1}"),
+    @CompoundIndex(name = "deleted_created_idx", def = "{'isDeleted': 1, 'createdAt': -1}")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,7 +61,31 @@ public class Resource {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    private LocalDateTime createdAt;
+    @CreatedDate
+    private Instant createdAt;
 
-    private LocalDateTime updatedAt;
+    @LastModifiedDate
+    private Instant updatedAt;
+
+    public static class ResourceBuilder {
+        public ResourceBuilder createdAt(Instant instant) {
+            this.createdAt = instant;
+            return this;
+        }
+
+        public ResourceBuilder createdAt(LocalDateTime dateTime) {
+            this.createdAt = dateTime != null ? dateTime.atZone(ZoneId.systemDefault()).toInstant() : null;
+            return this;
+        }
+
+        public ResourceBuilder updatedAt(Instant instant) {
+            this.updatedAt = instant;
+            return this;
+        }
+
+        public ResourceBuilder updatedAt(LocalDateTime dateTime) {
+            this.updatedAt = dateTime != null ? dateTime.atZone(ZoneId.systemDefault()).toInstant() : null;
+            return this;
+        }
+    }
 }

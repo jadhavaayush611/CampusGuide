@@ -12,13 +12,12 @@ import com.campusguide.personal.planner.exception.PlannerTaskNotFoundException;
 import com.campusguide.personal.planner.mapper.PlannerTaskMapper;
 import com.campusguide.personal.planner.repository.PlannerTaskRepository;
 import com.campusguide.personal.planner.validation.PlannerTaskValidator;
-import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,23 +30,21 @@ public class PlannerTaskService {
     private final PlannerTaskRepository plannerTaskRepository;
     private final PlannerTaskMapper plannerTaskMapper;
     private final PlannerTaskValidator plannerTaskValidator;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public PlannerTaskResponse createTask(UserDetails userDetails, CreatePlannerTaskRequest request) {
-        UUID userId = resolveUserId(userDetails);
-        LocalDateTime now = LocalDateTime.now();
+        String userId = resolveUserId(userDetails);
+        Instant now = Instant.now();
         plannerTaskValidator.validateCreate(request, now);
 
         PlannerTask task = plannerTaskMapper.toEntity(request, userId);
-        task.setCreatedAt(now);
-        task.setUpdatedAt(now);
 
         PlannerTask savedTask = plannerTaskRepository.save(task);
         return plannerTaskMapper.toResponse(savedTask);
     }
 
     public List<PlannerTaskResponse> getAllTasks(UserDetails userDetails) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         List<PlannerTask> tasks = plannerTaskRepository.findByUserIdOrderByDueAtAsc(userId);
         return tasks.stream()
                 .map(plannerTaskMapper::toResponse)
@@ -55,13 +52,13 @@ public class PlannerTaskService {
     }
 
     public PlannerTaskResponse getTaskById(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
         return plannerTaskMapper.toResponse(task);
     }
 
     public PlannerTaskResponse updateTask(UserDetails userDetails, UUID id, UpdatePlannerTaskRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
 
         plannerTaskValidator.validateUpdate(task, request);
@@ -81,33 +78,30 @@ public class PlannerTaskService {
             applyStatusTransition(task, request.getStatus(), now);
         }
 
-        task.setUpdatedAt(now);
-
         PlannerTask savedTask = plannerTaskRepository.save(task);
         return plannerTaskMapper.toResponse(savedTask);
     }
 
     public PlannerTaskResponse updateTaskStatus(UserDetails userDetails, UUID id, UpdateTaskStatusRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
 
         plannerTaskValidator.validateStatusChange(task, request.getStatus());
 
         LocalDateTime now = LocalDateTime.now();
         applyStatusTransition(task, request.getStatus(), now);
-        task.setUpdatedAt(now);
 
         PlannerTask savedTask = plannerTaskRepository.save(task);
         return plannerTaskMapper.toResponse(savedTask);
     }
 
     public void deleteTask(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
         plannerTaskRepository.delete(task);
     }
 
-    public PlannerTask findAndVerifyOwnership(UUID id, UUID userId) {
+    public PlannerTask findAndVerifyOwnership(UUID id, String userId) {
         PlannerTask task = plannerTaskRepository.findById(id)
                 .orElseThrow(() -> new PlannerTaskNotFoundException("Planner task not found with id: " + id));
 
@@ -133,26 +127,7 @@ public class PlannerTaskService {
         }
     }
 
-    public UUID resolveUserId(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseGet(() -> userRepository.findByUsername(userDetails.getUsername())
-                        .orElseThrow(() -> new UnauthorisedException("User not found: " + userDetails.getUsername())));
-
-        return parseUserId(user.getId());
-    }
-
-    private UUID parseUserId(String idStr) {
-        if (idStr == null) {
-            throw new UnauthorisedException("User ID is missing");
-        }
-        try {
-            return UUID.fromString(idStr);
-        } catch (IllegalArgumentException e) {
-            return UUID.nameUUIDFromBytes(idStr.getBytes(StandardCharsets.UTF_8));
-        }
+    public String resolveUserId(UserDetails userDetails) {
+        return currentUserService.getCurrentUserId(userDetails);
     }
 }

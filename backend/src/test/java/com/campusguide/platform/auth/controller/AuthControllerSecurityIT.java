@@ -43,14 +43,14 @@ class AuthControllerSecurityIT {
 
     @Test
     void testMeWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/auth/me")
+        mockMvc.perform(get("/api/v1/auth/me")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testMeWithInvalidToken() throws Exception {
-        mockMvc.perform(get("/api/auth/me")
+        mockMvc.perform(get("/api/v1/auth/me")
                         .header("Authorization", "Bearer invalid-jwt-token-value")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
@@ -67,7 +67,7 @@ class AuthControllerSecurityIT {
                 .password("Password123!")
                 .build();
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
@@ -78,8 +78,8 @@ class AuthControllerSecurityIT {
                         .authorities(java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_STUDENT")))
                         .build();
 
-        // 2. Access /api/auth/me with user principal
-        mockMvc.perform(get("/api/auth/me")
+        // 2. Access /api/v1/auth/me with user principal
+        mockMvc.perform(get("/api/v1/auth/me")
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user(userDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

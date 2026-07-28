@@ -11,11 +11,12 @@ import com.campusguide.personal.notification.enums.NotificationPriority;
 import com.campusguide.personal.notification.enums.NotificationType;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +27,11 @@ import java.util.UUID;
 public class EventRegistrationService {
 
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
 
     public EventResponse registerForEvent(UUID eventId, UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
@@ -40,9 +39,6 @@ public class EventRegistrationService {
         if (event.getStatus() == EventStatus.CANCELLED) {
             throw new BadRequestException("Cannot register for a cancelled event");
         }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -54,7 +50,7 @@ public class EventRegistrationService {
             throw new BadRequestException("Registration deadline has passed");
         }
 
-        event.setUpdatedAt(now);
+        event.setUpdatedAt(Instant.now());
         event = eventRepository.save(event);
 
         notificationService.createNotification(
@@ -69,17 +65,12 @@ public class EventRegistrationService {
     }
 
     public EventResponse cancelRegistration(UUID eventId, UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
-
-        event.setUpdatedAt(LocalDateTime.now());
+        event.setUpdatedAt(Instant.now());
         event = eventRepository.save(event);
         return toEventResponse(event);
     }
@@ -91,11 +82,7 @@ public class EventRegistrationService {
     }
 
     public boolean isUserRegistered(UUID eventId, UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
         return isUserRegistered(eventId, user.getId());
     }
 
@@ -128,8 +115,8 @@ public class EventRegistrationService {
                 .bannerUrl(event.getBannerUrl())
                 .contactEmail(event.getContactEmail())
                 .contactNumber(event.getContactNumber())
-                .createdAt(event.getCreatedAt())
-                .updatedAt(event.getUpdatedAt())
+                .createdAt(event.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(event.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(event.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(event.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 }

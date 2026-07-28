@@ -12,7 +12,7 @@ import com.campusguide.personal.notification.mapper.NotificationMapper;
 import com.campusguide.personal.notification.repository.NotificationRepository;
 import com.campusguide.personal.notification.service.interfaces.NotificationService;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final NotificationMapper notificationMapper;
 
     @Override
@@ -40,7 +41,7 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("Creating notification of type {} for user ID: {}", request.getType(), userId);
         Notification notification = notificationMapper.toEntity(request);
         notification.setUserId(userId);
-        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCreatedAt(Instant.now());
         notification.setRead(false);
         Notification saved = notificationRepository.save(notification);
         return notificationMapper.toResponse(saved);
@@ -59,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .priority(priority)
                 .metadata(metadata != null ? new HashMap<>(metadata) : new HashMap<>())
                 .read(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
         Notification saved = notificationRepository.save(notification);
         return notificationMapper.toResponse(saved);
@@ -95,7 +96,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (!notification.isRead()) {
             notification.setRead(true);
-            notification.setReadAt(LocalDateTime.now());
+            notification.setReadAt(Instant.now());
             notification = notificationRepository.save(notification);
         }
         return notificationMapper.toResponse(notification);
@@ -106,7 +107,7 @@ public class NotificationServiceImpl implements NotificationService {
         User user = getUser(userDetails);
         log.info("Marking all notifications as read for user ID: {}", user.getId());
         List<Notification> unreadNotifications = notificationRepository.findByUserIdAndRead(user.getId(), false);
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         unreadNotifications.forEach(n -> {
             n.setRead(true);
             n.setReadAt(now);
@@ -142,10 +143,6 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     private User getUser(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        return currentUserService.getCurrentUser(userDetails);
     }
 }

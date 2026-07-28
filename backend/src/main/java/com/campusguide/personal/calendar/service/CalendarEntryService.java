@@ -10,13 +10,11 @@ import com.campusguide.personal.calendar.exception.CalendarEntryNotFoundExceptio
 import com.campusguide.personal.calendar.mapper.CalendarEntryMapper;
 import com.campusguide.personal.calendar.repository.CalendarEntryRepository;
 import com.campusguide.personal.calendar.validation.CalendarEntryValidator;
-import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,10 +27,10 @@ public class CalendarEntryService {
     private final CalendarEntryRepository calendarEntryRepository;
     private final CalendarEntryMapper calendarEntryMapper;
     private final CalendarEntryValidator calendarEntryValidator;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public CalendarEntryResponse createEntry(UserDetails userDetails, CreateCalendarEntryRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         calendarEntryValidator.validateCreate(request);
 
         CalendarEntry entry = calendarEntryMapper.toEntity(request, userId);
@@ -41,7 +39,7 @@ public class CalendarEntryService {
     }
 
     public List<CalendarEntryResponse> getAllEntries(UserDetails userDetails) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         List<CalendarEntry> entries = calendarEntryRepository.findByUserIdOrderByStartTimeAscEndTimeAsc(userId);
         return entries.stream()
                 .map(calendarEntryMapper::toResponse)
@@ -49,13 +47,13 @@ public class CalendarEntryService {
     }
 
     public CalendarEntryResponse getEntryById(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         CalendarEntry entry = findAndVerifyOwnership(id, userId);
         return calendarEntryMapper.toResponse(entry);
     }
 
     public List<CalendarEntryResponse> getEntriesInRange(UserDetails userDetails, LocalDateTime from, LocalDateTime to) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         calendarEntryValidator.validateRange(from, to);
         List<CalendarEntry> entries = calendarEntryRepository
                 .findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeAscEndTimeAsc(userId, to, from);
@@ -65,7 +63,7 @@ public class CalendarEntryService {
     }
 
     public CalendarEntryResponse updateEntry(UserDetails userDetails, UUID id, UpdateCalendarEntryRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         CalendarEntry entry = findAndVerifyOwnership(id, userId);
 
         calendarEntryValidator.validateUpdate(request);
@@ -81,19 +79,18 @@ public class CalendarEntryService {
         entry.setAllDay(request.getIsAllDay() != null ? request.getIsAllDay() : false);
         entry.setColor(request.getColor());
         entry.setNotes(request.getNotes());
-        entry.setUpdatedAt(LocalDateTime.now());
 
         CalendarEntry savedEntry = calendarEntryRepository.save(entry);
         return calendarEntryMapper.toResponse(savedEntry);
     }
 
     public void deleteEntry(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         CalendarEntry entry = findAndVerifyOwnership(id, userId);
         calendarEntryRepository.delete(entry);
     }
 
-    public CalendarEntry findAndVerifyOwnership(UUID id, UUID userId) {
+    public CalendarEntry findAndVerifyOwnership(UUID id, String userId) {
         CalendarEntry entry = calendarEntryRepository.findById(id)
                 .orElseThrow(() -> new CalendarEntryNotFoundException("Calendar entry not found with id: " + id));
 
@@ -104,26 +101,7 @@ public class CalendarEntryService {
         return entry;
     }
 
-    public UUID resolveUserId(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseGet(() -> userRepository.findByUsername(userDetails.getUsername())
-                        .orElseThrow(() -> new UnauthorisedException("User not found: " + userDetails.getUsername())));
-
-        return parseUserId(user.getId());
-    }
-
-    private UUID parseUserId(String idStr) {
-        if (idStr == null) {
-            throw new UnauthorisedException("User ID is missing");
-        }
-        try {
-            return UUID.fromString(idStr);
-        } catch (IllegalArgumentException e) {
-            return UUID.nameUUIDFromBytes(idStr.getBytes(StandardCharsets.UTF_8));
-        }
+    public String resolveUserId(UserDetails userDetails) {
+        return currentUserService.getCurrentUserId(userDetails);
     }
 }

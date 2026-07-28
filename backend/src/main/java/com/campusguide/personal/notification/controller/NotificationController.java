@@ -16,8 +16,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller for user inbox notifications.
+ * Manages delivered in-app alerts, listing notifications, unread counts, marking as read, and deleting notifications.
+ * Unambiguously distinct from ScheduledNotificationController (/api/v1/scheduled-notifications).
+ */
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 @Validated
 public class NotificationController {

@@ -120,13 +120,13 @@ class NotificationControllerSecurityIT {
 
     @Test
     void testListNotifications_Unauthenticated() throws Exception {
-        mockMvc.perform(get("/api/notifications"))
+        mockMvc.perform(get("/api/v1/notifications"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testListNotifications_Authenticated() throws Exception {
-        mockMvc.perform(get("/api/notifications")
+        mockMvc.perform(get("/api/v1/notifications")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Student Notification"))
@@ -135,7 +135,7 @@ class NotificationControllerSecurityIT {
 
     @Test
     void testListUnreadNotifications_Authenticated() throws Exception {
-        mockMvc.perform(get("/api/notifications/unread")
+        mockMvc.perform(get("/api/v1/notifications/unread")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].title").value("Student Notification"))
@@ -144,7 +144,7 @@ class NotificationControllerSecurityIT {
 
     @Test
     void testCountUnreadNotifications_Authenticated() throws Exception {
-        mockMvc.perform(get("/api/notifications/unread/count")
+        mockMvc.perform(get("/api/v1/notifications/unread/count")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(1));
@@ -152,7 +152,7 @@ class NotificationControllerSecurityIT {
 
     @Test
     void testMarkAsRead_Authenticated_Success() throws Exception {
-        mockMvc.perform(patch("/api/notifications/" + studentNotification.getId() + "/read")
+        mockMvc.perform(patch("/api/v1/notifications/" + studentNotification.getId() + "/read")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.read").value(true));
@@ -160,28 +160,28 @@ class NotificationControllerSecurityIT {
 
     @Test
     void testMarkAsRead_Authenticated_Forbidden() throws Exception {
-        mockMvc.perform(patch("/api/notifications/" + otherNotification.getId() + "/read")
+        mockMvc.perform(patch("/api/v1/notifications/" + otherNotification.getId() + "/read")
                         .with(user(studentDetails)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void testMarkAllAsRead_Authenticated() throws Exception {
-        mockMvc.perform(patch("/api/notifications/read-all")
+        mockMvc.perform(patch("/api/v1/notifications/read-all")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testDeleteNotification_Authenticated_Success() throws Exception {
-        mockMvc.perform(delete("/api/notifications/" + studentNotification.getId())
+        mockMvc.perform(delete("/api/v1/notifications/" + studentNotification.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void testDeleteNotification_Authenticated_Forbidden() throws Exception {
-        mockMvc.perform(delete("/api/notifications/" + otherNotification.getId())
+        mockMvc.perform(delete("/api/v1/notifications/" + otherNotification.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isForbidden());
     }

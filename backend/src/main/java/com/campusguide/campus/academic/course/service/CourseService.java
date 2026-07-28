@@ -12,6 +12,7 @@ import com.campusguide.campus.academic.course.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +75,8 @@ public class CourseService {
                 .prerequisiteCourseIds(prereqIds)
                 .elective(request.getElective() != null ? request.getElective() : false)
                 .active(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         course = courseRepository.save(course);
@@ -165,7 +166,7 @@ public class CourseService {
             course.setActive(request.getActive());
         }
 
-        course.setUpdatedAt(LocalDateTime.now());
+        course.setUpdatedAt(Instant.now());
         course = courseRepository.save(course);
         return toCourseResponse(course);
     }
@@ -185,7 +186,7 @@ public class CourseService {
         }
 
         course.setActive(false);
-        course.setUpdatedAt(LocalDateTime.now());
+        course.setUpdatedAt(Instant.now());
         courseRepository.save(course);
     }
 
@@ -295,8 +296,8 @@ public class CourseService {
                 .prerequisiteCourseIds(course.getPrerequisiteCourseIds())
                 .elective(course.getElective())
                 .active(course.getActive())
-                .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt())
+                .createdAt(course.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(course.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(course.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(course.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

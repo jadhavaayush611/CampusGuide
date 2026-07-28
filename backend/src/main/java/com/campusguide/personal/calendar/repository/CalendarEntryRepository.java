@@ -12,12 +12,12 @@ import java.util.UUID;
 @Repository
 public interface CalendarEntryRepository extends MongoRepository<CalendarEntry, UUID> {
 
-    List<CalendarEntry> findByUserIdOrderByStartTimeAscEndTimeAsc(UUID userId);
+    List<CalendarEntry> findByUserIdOrderByStartTimeAscEndTimeAsc(String userId);
 
-    Optional<CalendarEntry> findByIdAndUserId(UUID id, UUID userId);
+    Optional<CalendarEntry> findByIdAndUserId(UUID id, String userId);
 
     List<CalendarEntry> findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeAscEndTimeAsc(
-            UUID userId, LocalDateTime startTimeBefore, LocalDateTime endTimeAfter);
+            String userId, LocalDateTime startTimeBefore, LocalDateTime endTimeAfter);
 
-    boolean existsByIdAndUserId(UUID id, UUID userId);
+    boolean existsByIdAndUserId(UUID id, String userId);
 }

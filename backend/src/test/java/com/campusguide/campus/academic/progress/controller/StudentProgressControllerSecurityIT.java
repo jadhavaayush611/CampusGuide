@@ -188,7 +188,7 @@ class StudentProgressControllerSecurityIT {
                 .build();
 
         // Use newStudentDetails who does not have progress yet
-        mockMvc.perform(post("/api/progress")
+        mockMvc.perform(post("/api/v1/progress")
                         .with(user(newStudentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -204,7 +204,7 @@ class StudentProgressControllerSecurityIT {
                 .roadmapId(testRoadmap.getId())
                 .build();
 
-        mockMvc.perform(post("/api/progress")
+        mockMvc.perform(post("/api/v1/progress")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -218,7 +218,7 @@ class StudentProgressControllerSecurityIT {
                 .currentSemester(3)
                 .build();
 
-        mockMvc.perform(put("/api/progress")
+        mockMvc.perform(put("/api/v1/progress")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -233,7 +233,7 @@ class StudentProgressControllerSecurityIT {
                 .currentGpa(9.2)
                 .build();
 
-        mockMvc.perform(put("/api/progress/admin")
+        mockMvc.perform(put("/api/v1/progress/admin")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -247,7 +247,7 @@ class StudentProgressControllerSecurityIT {
                 .totalCreditsEarned(30)
                 .build();
 
-        mockMvc.perform(put("/api/progress/admin")
+        mockMvc.perform(put("/api/v1/progress/admin")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -261,7 +261,7 @@ class StudentProgressControllerSecurityIT {
                 .graduationEligible(true)
                 .build();
 
-        mockMvc.perform(put("/api/progress/admin")
+        mockMvc.perform(put("/api/v1/progress/admin")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -276,7 +276,7 @@ class StudentProgressControllerSecurityIT {
                 .currentSemester(4)
                 .build();
 
-        mockMvc.perform(put("/api/progress/admin")
+        mockMvc.perform(put("/api/v1/progress/admin")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -292,7 +292,7 @@ class StudentProgressControllerSecurityIT {
                 .currentSemester(3)
                 .build();
 
-        mockMvc.perform(put("/api/progress")
+        mockMvc.perform(put("/api/v1/progress")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -303,7 +303,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void getProgress_Student_OwnProgress_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/progress")
+        mockMvc.perform(get("/api/v1/progress")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -313,7 +313,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void getProgress_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/progress")
+        mockMvc.perform(get("/api/v1/progress")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -322,7 +322,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void markCourseCompleted_Student_OwnProgress_ReturnsOk() throws Exception {
-        mockMvc.perform(patch("/api/progress/complete/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/progress/complete/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -332,7 +332,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void markCourseCompleted_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(patch("/api/progress/complete/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/progress/complete/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -346,7 +346,7 @@ class StudentProgressControllerSecurityIT {
         testProgress.setTotalCreditsEarned(4);
         studentProgressRepository.save(testProgress);
 
-        mockMvc.perform(patch("/api/progress/remove/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/progress/remove/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -356,7 +356,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void removeCompletedCourse_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(patch("/api/progress/remove/" + testCourse.getId())
+        mockMvc.perform(patch("/api/v1/progress/remove/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
@@ -365,7 +365,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void getProgressByStudent_SuperAdmin_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/progress/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/progress/student/" + studentUser.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -374,7 +374,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void getProgressByStudent_Student_ReturnsForbidden() throws Exception {
-        mockMvc.perform(get("/api/progress/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/progress/student/" + studentUser.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
@@ -382,7 +382,7 @@ class StudentProgressControllerSecurityIT {
 
     @Test
     void getProgressByStudent_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/progress/student/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/progress/student/" + studentUser.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }

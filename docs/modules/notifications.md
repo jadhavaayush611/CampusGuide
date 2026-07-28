@@ -32,7 +32,7 @@ The Scheduled Notification module (`com.campusguide.personal.notification`) mana
    - `READ`: Terminal state. Cannot transition back to `SCHEDULED` or `DELIVERED`.
 
 ## Architecture & Layering
-- **Controller**: `ScheduledNotificationController` (`/api/v1/notifications`) handles REST API endpoints thin and delegating.
+- **Controller**: `ScheduledNotificationController` (`/api/v1/scheduled-notifications`) handles REST API endpoints thin and delegating.
 - **Service**: `ScheduledNotificationService` enforces business flow, transaction context, and user security checks.
 - **Validator**: `ScheduledNotificationValidator` enforces domain invariants and state machine rules.
 - **Mapper**: `ScheduledNotificationMapper` isolates Entity <-> DTO conversions.

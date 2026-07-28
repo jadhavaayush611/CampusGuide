@@ -12,6 +12,7 @@ import com.campusguide.campus.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -29,8 +30,8 @@ public class NoticeService {
     public static final Comparator<Notice> NOTICE_COMPARATOR = Comparator
             .comparing((Notice n) -> Boolean.TRUE.equals(n.getIsPinned()), Comparator.reverseOrder())
             .thenComparing(Notice::getPriority, NoticePriority.byWeightDesc())
-            .thenComparing(n -> n.getPublishedAt() != null ? n.getPublishedAt() : n.getCreatedAt(), Comparator.nullsLast(Comparator.reverseOrder()))
-            .thenComparing(Notice::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder()));
+            .thenComparing(n -> n.getPublishedAt() != null ? n.getPublishedAt() : (n.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(n.getCreatedAt(), java.time.ZoneId.systemDefault()) : null), Comparator.nullsLast(Comparator.reverseOrder()))
+            .thenComparing(n -> n.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(n.getCreatedAt(), java.time.ZoneId.systemDefault()) : null, Comparator.nullsLast(Comparator.reverseOrder()));
 
     public NoticeResponse createNotice(CreateNoticeRequest request) {
         if (noticeRepository.existsBySlug(request.getSlug())) {
@@ -50,7 +51,8 @@ public class NoticeService {
         LocalDateTime now = LocalDateTime.now();
         List<Notice> notices;
 
-        if (Boolean.TRUE.equals(includeUnpublished)) {
+        boolean allowUnpublished = Boolean.TRUE.equals(includeUnpublished) && isCurrentUserAdmin();
+        if (allowUnpublished) {
             notices = noticeRepository.findAll();
         } else {
             notices = noticeRepository.findByIsPublishedTrue().stream()
@@ -61,6 +63,15 @@ public class NoticeService {
 
         notices.sort(NOTICE_COMPARATOR);
         return noticeMapper.toResponseList(notices);
+    }
+
+    private boolean isCurrentUserAdmin() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+        return auth.getAuthorities().stream().anyMatch(a ->
+                "ROLE_SUPER_ADMIN".equals(a.getAuthority()) || "ROLE_COUNCIL_ADMIN".equals(a.getAuthority()));
     }
 
     public NoticeResponse getNoticeById(UUID id) {
@@ -102,7 +113,7 @@ public class NoticeService {
         if (targetPublished && notice.getPublishedAt() == null) {
             notice.setPublishedAt(LocalDateTime.now());
         }
-        notice.setUpdatedAt(LocalDateTime.now());
+        notice.setUpdatedAt(Instant.now());
 
         validateDates(notice.getPublishedAt(), notice.getExpiresAt());
 
@@ -116,7 +127,7 @@ public class NoticeService {
 
         boolean targetPinned = request == null || request.getIsPinned() == null || Boolean.TRUE.equals(request.getIsPinned());
         notice.setIsPinned(targetPinned);
-        notice.setUpdatedAt(LocalDateTime.now());
+        notice.setUpdatedAt(Instant.now());
 
         Notice updated = noticeRepository.save(notice);
         return noticeMapper.toResponse(updated);

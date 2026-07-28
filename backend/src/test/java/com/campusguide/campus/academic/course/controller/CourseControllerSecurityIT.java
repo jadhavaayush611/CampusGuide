@@ -97,7 +97,7 @@ class CourseControllerSecurityIT {
                 .elective(false)
                 .build();
 
-        mockMvc.perform(post("/api/courses")
+        mockMvc.perform(post("/api/v1/courses")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -117,11 +117,11 @@ class CourseControllerSecurityIT {
                 .elective(false)
                 .build();
 
-        mockMvc.perform(post("/api/courses")
+        mockMvc.perform(post("/api/v1/courses")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -135,10 +135,10 @@ class CourseControllerSecurityIT {
                 .elective(false)
                 .build();
 
-        mockMvc.perform(post("/api/courses")
+        mockMvc.perform(post("/api/v1/courses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isUnauthorized());
     }
 
     // --- UPDATE COURSE SEC TESTS ---
@@ -150,7 +150,7 @@ class CourseControllerSecurityIT {
                 .credits(3)
                 .build();
 
-        mockMvc.perform(put("/api/courses/" + testCourse.getId())
+        mockMvc.perform(put("/api/v1/courses/" + testCourse.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -165,11 +165,11 @@ class CourseControllerSecurityIT {
                 .courseName("Intro to Computer Science v2")
                 .build();
 
-        mockMvc.perform(put("/api/courses/" + testCourse.getId())
+        mockMvc.perform(put("/api/v1/courses/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -178,39 +178,39 @@ class CourseControllerSecurityIT {
                 .courseName("Intro to Computer Science v2")
                 .build();
 
-        mockMvc.perform(put("/api/courses/" + testCourse.getId())
+        mockMvc.perform(put("/api/v1/courses/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     // --- DELETE COURSE SEC TESTS ---
 
     @Test
     void deleteCourse_SuperAdmin_ReturnsNoContent() throws Exception {
-        mockMvc.perform(delete("/api/courses/" + testCourse.getId())
+        mockMvc.perform(delete("/api/v1/courses/" + testCourse.getId())
                         .with(user(adminDetails)))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void deleteCourse_Student_Permitted() throws Exception {
-        mockMvc.perform(delete("/api/courses/" + testCourse.getId())
+        mockMvc.perform(delete("/api/v1/courses/" + testCourse.getId())
                         .with(user(studentDetails)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void deleteCourse_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(delete("/api/courses/" + testCourse.getId()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/v1/courses/" + testCourse.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
     // --- GET COURSES SEC TESTS ---
 
     @Test
     void getAllCourses_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/courses")
+        mockMvc.perform(get("/api/v1/courses")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -218,15 +218,15 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void getAllCourses_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(get("/api/courses")
+    void getAllCourses_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/courses")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getCourseById_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/courses/" + testCourse.getId())
+        mockMvc.perform(get("/api/v1/courses/" + testCourse.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -234,15 +234,15 @@ class CourseControllerSecurityIT {
     }
 
     @Test
-    void getCourseById_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(get("/api/courses/" + testCourse.getId())
+    void getCourseById_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/courses/" + testCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getByDepartment_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/courses/department/CS")
+        mockMvc.perform(get("/api/v1/courses/department/CS")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -251,7 +251,7 @@ class CourseControllerSecurityIT {
 
     @Test
     void getBySemester_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/courses/semester/1")
+        mockMvc.perform(get("/api/v1/courses/semester/1")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -272,7 +272,7 @@ class CourseControllerSecurityIT {
                 .build();
         courseRepository.save(electiveCourse);
 
-        mockMvc.perform(get("/api/courses/electives")
+        mockMvc.perform(get("/api/v1/courses/electives")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -281,7 +281,7 @@ class CourseControllerSecurityIT {
 
     @Test
     void getMandatoryCourses_Student_ReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/courses/mandatory")
+        mockMvc.perform(get("/api/v1/courses/mandatory")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

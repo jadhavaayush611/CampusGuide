@@ -2,7 +2,7 @@ package com.campusguide.platform.auth.mapper;
 
 import com.campusguide.platform.auth.dto.request.RegisterRequest;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,7 +17,7 @@ public class UserMapper {
                 .email(request.getEmail())
                 .username(request.getUsername())
                 .passwordHash(passwordHash)
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .enabled(true)
                 .emailVerified(false)
                 .build();

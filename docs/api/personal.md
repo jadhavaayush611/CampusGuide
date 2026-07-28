@@ -279,9 +279,24 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ---
 
-## Scheduled Notification API Contract
+## User Inbox Notification API Contract
 
 ### Base Endpoint: `/api/v1/notifications`
+
+Manages delivered user in-app notifications and inbox status.
+
+- **GET `/api/v1/notifications`**: List user notifications (Paginated, default sort `createdAt DESC`)
+- **GET `/api/v1/notifications/unread`**: List unread user notifications
+- **GET `/api/v1/notifications/unread/count`**: Get count of unread notifications (`{"count": N}`)
+- **PATCH `/api/v1/notifications/{id}/read`**: Mark specific notification as read
+- **PATCH `/api/v1/notifications/read-all`**: Mark all notifications as read
+- **DELETE `/api/v1/notifications/{id}`**: Delete notification from inbox
+
+---
+
+## Scheduled Notification API Contract
+
+### Base Endpoint: `/api/v1/scheduled-notifications`
 
 All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bearer JWT token must be provided in `Authorization` header.
 
@@ -289,7 +304,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 1. Create Scheduled Notification
 - **HTTP Method**: `POST`
-- **Path**: `/api/v1/notifications`
+- **Path**: `/api/v1/scheduled-notifications`
 - **Request Body**:
 ```json
 {
@@ -313,9 +328,9 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ---
 
-### 2. Get All User Notifications
+### 2. Get All Scheduled Notifications
 - **HTTP Method**: `GET`
-- **Path**: `/api/v1/notifications`
+- **Path**: `/api/v1/scheduled-notifications`
 - **Response Status**: `200 OK`
 - **Response Body**: `List<ScheduledNotificationResponse>` (sorted by `scheduledFor` ascending)
 
@@ -323,7 +338,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 3. Get Pending Notifications
 - **HTTP Method**: `GET`
-- **Path**: `/api/v1/notifications/pending`
+- **Path**: `/api/v1/scheduled-notifications/pending`
 - **Response Status**: `200 OK`
 - **Response Body**: `List<ScheduledNotificationResponse>` (returns pending notifications where `status=SCHEDULED` and `scheduledFor <= now`)
 
@@ -331,7 +346,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 4. Get Notification by ID
 - **HTTP Method**: `GET`
-- **Path**: `/api/v1/notifications/{id}`
+- **Path**: `/api/v1/scheduled-notifications/{id}`
 - **Path Parameters**: `id` (UUID)
 - **Response Status**: `200 OK`
 - **Response Body**: `ScheduledNotificationResponse`
@@ -340,7 +355,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 5. Update Notification Status
 - **HTTP Method**: `PATCH`
-- **Path**: `/api/v1/notifications/{id}/status`
+- **Path**: `/api/v1/scheduled-notifications/{id}/status`
 - **Path Parameters**: `id` (UUID)
 - **Request Body**:
 ```json
@@ -355,7 +370,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 6. Update Scheduled Notification
 - **HTTP Method**: `PUT`
-- **Path**: `/api/v1/notifications/{id}`
+- **Path**: `/api/v1/scheduled-notifications/{id}`
 - **Path Parameters**: `id` (UUID)
 - **Request Body**:
 ```json
@@ -382,7 +397,7 @@ All endpoints require authentication (`@PreAuthorize("isAuthenticated()")`). Bea
 
 ### 7. Delete Scheduled Notification
 - **HTTP Method**: `DELETE`
-- **Path**: `/api/v1/notifications/{id}`
+- **Path**: `/api/v1/scheduled-notifications/{id}`
 - **Path Parameters**: `id` (UUID)
 - **Response Status**: `204 No Content`
 

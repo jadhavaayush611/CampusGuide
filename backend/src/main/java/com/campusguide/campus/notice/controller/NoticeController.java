@@ -20,7 +20,7 @@ public class NoticeController {
     private final NoticeService noticeService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
     public ResponseEntity<NoticeResponse> createNotice(@Valid @RequestBody CreateNoticeRequest request) {
         NoticeResponse response = noticeService.createNotice(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -49,7 +49,7 @@ public class NoticeController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
     public ResponseEntity<NoticeResponse> updateNotice(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateNoticeRequest request) {
@@ -58,7 +58,7 @@ public class NoticeController {
     }
 
     @PatchMapping("/{id}/publish")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
     public ResponseEntity<NoticeResponse> publishNotice(
             @PathVariable UUID id,
             @RequestBody(required = false) PublishNoticeRequest request) {
@@ -67,7 +67,7 @@ public class NoticeController {
     }
 
     @PatchMapping("/{id}/pin")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
     public ResponseEntity<NoticeResponse> pinNotice(
             @PathVariable UUID id,
             @RequestBody(required = false) PinNoticeRequest request) {
@@ -76,7 +76,7 @@ public class NoticeController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COUNCIL_ADMIN')")
     public ResponseEntity<Void> deleteNotice(@PathVariable UUID id) {
         noticeService.deleteNotice(id);
         return ResponseEntity.noContent().build();

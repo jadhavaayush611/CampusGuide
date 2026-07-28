@@ -14,13 +14,11 @@ import com.campusguide.personal.achievement.exception.AchievementNotFoundExcepti
 import com.campusguide.personal.achievement.mapper.AchievementProgressMapper;
 import com.campusguide.personal.achievement.repository.AchievementProgressRepository;
 import com.campusguide.personal.achievement.validation.AchievementValidator;
-import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -33,10 +31,10 @@ public class AchievementProgressService {
     private final AchievementProgressRepository achievementProgressRepository;
     private final AchievementProgressMapper achievementProgressMapper;
     private final AchievementValidator achievementValidator;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     public AchievementProgressResponse createAchievement(UserDetails userDetails, CreateAchievementRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         achievementValidator.validateCreate(request);
 
         if (achievementProgressRepository.existsByUserIdAndAchievementCode(userId, request.getAchievementCode())) {
@@ -60,8 +58,6 @@ public class AchievementProgressService {
                 .earnedAt(earnedAt)
                 .evidenceUrl(request.getEvidenceUrl())
                 .metadata(request.getMetadata())
-                .createdAt(now)
-                .updatedAt(now)
                 .build();
 
         AchievementProgress saved = achievementProgressRepository.save(achievement);
@@ -69,7 +65,7 @@ public class AchievementProgressService {
     }
 
     public List<AchievementProgressResponse> getAchievements(UserDetails userDetails, AchievementCategory category, AchievementStatus status) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         List<AchievementProgress> achievements;
 
         if (category != null && status != null) {
@@ -88,13 +84,13 @@ public class AchievementProgressService {
     }
 
     public AchievementProgressResponse getAchievementById(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         AchievementProgress achievement = findAndVerifyOwnership(id, userId);
         return achievementProgressMapper.toResponse(achievement);
     }
 
     public AchievementProgressResponse updateAchievement(UserDetails userDetails, UUID id, UpdateAchievementRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         AchievementProgress achievement = findAndVerifyOwnership(id, userId);
 
         achievementValidator.validateUpdate(achievement, request);
@@ -116,13 +112,12 @@ public class AchievementProgressService {
             }
         }
 
-        achievement.setUpdatedAt(now);
         AchievementProgress saved = achievementProgressRepository.save(achievement);
         return achievementProgressMapper.toResponse(saved);
     }
 
     public AchievementProgressResponse updateProgress(UserDetails userDetails, UUID id, UpdateAchievementProgressRequest request) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         AchievementProgress achievement = findAndVerifyOwnership(id, userId);
 
         achievementValidator.validateProgressUpdate(achievement, request);
@@ -137,18 +132,17 @@ public class AchievementProgressService {
             achievement.setEarnedAt(now);
         }
 
-        achievement.setUpdatedAt(now);
         AchievementProgress saved = achievementProgressRepository.save(achievement);
         return achievementProgressMapper.toResponse(saved);
     }
 
     public void deleteAchievement(UserDetails userDetails, UUID id) {
-        UUID userId = resolveUserId(userDetails);
+        String userId = resolveUserId(userDetails);
         AchievementProgress achievement = findAndVerifyOwnership(id, userId);
         achievementProgressRepository.delete(achievement);
     }
 
-    public AchievementProgress findAndVerifyOwnership(UUID id, UUID userId) {
+    public AchievementProgress findAndVerifyOwnership(UUID id, String userId) {
         AchievementProgress achievement = achievementProgressRepository.findById(id)
                 .orElseThrow(() -> new AchievementNotFoundException("Achievement progress not found with id: " + id));
 
@@ -172,26 +166,7 @@ public class AchievementProgressService {
         return AchievementStatus.LOCKED;
     }
 
-    public UUID resolveUserId(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseGet(() -> userRepository.findByUsername(userDetails.getUsername())
-                        .orElseThrow(() -> new UnauthorisedException("User not found: " + userDetails.getUsername())));
-
-        return parseUserId(user.getId());
-    }
-
-    private UUID parseUserId(String idStr) {
-        if (idStr == null) {
-            throw new UnauthorisedException("User ID is missing");
-        }
-        try {
-            return UUID.fromString(idStr);
-        } catch (IllegalArgumentException e) {
-            return UUID.nameUUIDFromBytes(idStr.getBytes(StandardCharsets.UTF_8));
-        }
+    public String resolveUserId(UserDetails userDetails) {
+        return currentUserService.getCurrentUserId(userDetails);
     }
 }

@@ -24,8 +24,8 @@ class ScheduledNotificationRepositoryIT {
     @Autowired
     private ScheduledNotificationRepository repository;
 
-    private UUID userId1;
-    private UUID userId2;
+    private String userId1;
+    private String userId2;
     private ScheduledNotification notif1;
     private ScheduledNotification notif2;
     private ScheduledNotification pendingNotif;
@@ -34,8 +34,8 @@ class ScheduledNotificationRepositoryIT {
     void setUp() {
         repository.deleteAll();
 
-        userId1 = UUID.randomUUID();
-        userId2 = UUID.randomUUID();
+        userId1 = UUID.randomUUID().toString();
+        userId2 = UUID.randomUUID().toString();
 
         LocalDateTime now = LocalDateTime.now();
 

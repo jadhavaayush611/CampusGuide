@@ -29,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class EventRegistrationServiceTest {
 
@@ -36,7 +38,7 @@ class EventRegistrationServiceTest {
     private EventRepository eventRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private NotificationService notificationService;
@@ -65,6 +67,8 @@ class EventRegistrationServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(studentUserDetails)).thenReturn(studentUser);
+
         activeEvent = Event.builder()
                 .id(eventId)
                 .title("Annual Hackathon")
@@ -84,7 +88,6 @@ class EventRegistrationServiceTest {
     @Test
     void registerForEvent_Successful() {
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(activeEvent));
-        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
         when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
         EventResponse response = registrationService.registerForEvent(eventId, studentUserDetails);
@@ -96,6 +99,7 @@ class EventRegistrationServiceTest {
 
     @Test
     void registerForEvent_ThrowsUnauthorisedException_WhenNullUserDetails() {
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () -> registrationService.registerForEvent(eventId, null));
     }
 

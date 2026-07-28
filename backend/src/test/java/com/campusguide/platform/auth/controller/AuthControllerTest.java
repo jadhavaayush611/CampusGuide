@@ -3,9 +3,9 @@ package com.campusguide.platform.auth.controller;
 import com.campusguide.platform.auth.dto.AuthResponse;
 import com.campusguide.platform.auth.dto.request.LoginRequest;
 import com.campusguide.platform.auth.dto.request.RegisterRequest;
+import com.campusguide.platform.auth.service.AuthenticationService;
 import com.campusguide.platform.user.dto.UserResponse;
-import com.campusguide.platform.auth.service.AuthService;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,14 +16,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -40,7 +39,7 @@ class AuthControllerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
-    private AuthService authService;
+    private AuthenticationService authenticationService;
 
     @InjectMocks
     private AuthController authController;
@@ -70,14 +69,14 @@ class AuthControllerTest {
         authResponse = AuthResponse.builder()
                 .token("mocked-jwt-token")
                 .email("test@campusguide.com")
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .build();
 
         userResponse = UserResponse.builder()
                 .id("user123")
                 .email("test@campusguide.com")
                 .username("test")
-                .role(UserRole.STUDENT)
+                .role(Role.STUDENT)
                 .enabled(true)
                 .emailVerified(false)
                 .build();
@@ -85,9 +84,9 @@ class AuthControllerTest {
 
     @Test
     void register_Success() throws Exception {
-        when(authService.register(any(RegisterRequest.class))).thenReturn(authResponse);
+        when(authenticationService.register(any(RegisterRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/api/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
@@ -98,9 +97,9 @@ class AuthControllerTest {
 
     @Test
     void login_Success() throws Exception {
-        when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
+        when(authenticationService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
-        mockMvc.perform(post("/api/auth/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -119,10 +118,10 @@ class AuthControllerTest {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        when(authService.getCurrentUser("test@campusguide.com")).thenReturn(userResponse);
+        when(authenticationService.getCurrentUser("test@campusguide.com")).thenReturn(userResponse);
 
         try {
-            mockMvc.perform(get("/api/auth/me")
+            mockMvc.perform(get("/api/v1/auth/me")
                             .principal(auth)
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -137,7 +136,7 @@ class AuthControllerTest {
 
     @Test
     void me_Unauthenticated_ReturnsUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/auth/me")
+        mockMvc.perform(get("/api/v1/auth/me")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }

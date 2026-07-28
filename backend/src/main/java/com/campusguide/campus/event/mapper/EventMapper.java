@@ -7,6 +7,7 @@ import com.campusguide.campus.event.entity.Event;
 import com.campusguide.campus.event.entity.EventStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,7 @@ public class EventMapper {
             return null;
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         EventStatus status = request.getStatus() != null ? request.getStatus() : EventStatus.DRAFT;
         Boolean regRequired = request.getRegistrationRequired() != null ? request.getRegistrationRequired() : false;
 
@@ -71,7 +72,7 @@ public class EventMapper {
         event.setBannerUrl(trim(request.getBannerUrl()));
         event.setContactEmail(trim(request.getContactEmail()));
         event.setContactNumber(trim(request.getContactNumber()));
-        event.setUpdatedAt(LocalDateTime.now());
+        event.setUpdatedAt(Instant.now());
     }
 
     public EventResponse toResponse(Event event) {
@@ -98,8 +99,8 @@ public class EventMapper {
                 .bannerUrl(event.getBannerUrl())
                 .contactEmail(event.getContactEmail())
                 .contactNumber(event.getContactNumber())
-                .createdAt(event.getCreatedAt())
-                .updatedAt(event.getUpdatedAt())
+                .createdAt(event.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(event.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(event.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(event.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

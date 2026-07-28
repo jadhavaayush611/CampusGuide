@@ -101,7 +101,7 @@ class CalendarEntryAuthorizationIT {
 
         user2Entry = CalendarEntry.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(user2.getId()))
+                .userId(user2.getId())
                 .title("User 2 Private Entry")
                 .type(CalendarEntryType.PERSONAL)
                 .startTime(start)

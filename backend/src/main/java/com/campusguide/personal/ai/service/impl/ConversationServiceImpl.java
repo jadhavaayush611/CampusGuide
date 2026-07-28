@@ -12,7 +12,7 @@ import com.campusguide.personal.ai.mapper.AiMapper;
 import com.campusguide.personal.ai.repository.ConversationRepository;
 import com.campusguide.personal.ai.service.interfaces.ConversationService;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class ConversationServiceImpl implements ConversationService {
 
     private final ConversationRepository conversationRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final AiMapper aiMapper;
 
     @Override
@@ -95,10 +95,6 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     private User getUser(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        return currentUserService.getCurrentUser(userDetails);
     }
 }

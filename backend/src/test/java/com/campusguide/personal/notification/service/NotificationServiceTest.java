@@ -22,7 +22,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 
@@ -38,7 +42,7 @@ class NotificationServiceTest {
     private NotificationRepository notificationRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private NotificationMapper notificationMapper;
@@ -77,6 +81,9 @@ class NotificationServiceTest {
                 .email("other@campusguide.com")
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(userDetails)).thenReturn(user);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
+
         notification = Notification.builder()
                 .id("noti-123")
                 .userId("user-123")
@@ -85,7 +92,7 @@ class NotificationServiceTest {
                 .type(NotificationType.ACADEMIC)
                 .priority(NotificationPriority.NORMAL)
                 .read(false)
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .build();
 
         notificationResponse = NotificationResponse.builder()
@@ -95,7 +102,7 @@ class NotificationServiceTest {
                 .type(NotificationType.ACADEMIC)
                 .priority(NotificationPriority.NORMAL)
                 .read(false)
-                .createdAt(notification.getCreatedAt())
+                .createdAt(LocalDateTime.ofInstant(notification.getCreatedAt(), ZoneId.systemDefault()))
                 .build();
     }
 
@@ -140,7 +147,6 @@ class NotificationServiceTest {
 
     @Test
     void testMarkAsRead_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findById("noti-123")).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(notificationMapper.toResponse(any(Notification.class))).thenReturn(notificationResponse);
@@ -153,7 +159,6 @@ class NotificationServiceTest {
 
     @Test
     void testMarkAsRead_NotFound() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findById("noti-123")).thenReturn(Optional.empty());
 
         assertThrows(NotificationNotFoundException.class, () -> {
@@ -165,7 +170,6 @@ class NotificationServiceTest {
     void testMarkAsRead_OwnershipValidationFailed() {
         notification.setUserId("user-456"); // mismatch
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findById("noti-123")).thenReturn(Optional.of(notification));
 
         assertThrows(AccessDeniedException.class, () -> {
@@ -175,7 +179,6 @@ class NotificationServiceTest {
 
     @Test
     void testMarkAllAsRead() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findByUserIdAndRead("user-123", false)).thenReturn(List.of(notification));
 
         notificationService.markAllAsRead(userDetails);
@@ -185,7 +188,6 @@ class NotificationServiceTest {
 
     @Test
     void testCountUnreadNotifications() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.countByUserIdAndRead("user-123", false)).thenReturn(5L);
 
         long count = notificationService.countUnreadNotifications(userDetails);
@@ -195,7 +197,6 @@ class NotificationServiceTest {
 
     @Test
     void testDeleteNotification_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findById("noti-123")).thenReturn(Optional.of(notification));
 
         notificationService.deleteNotification(userDetails, "noti-123");
@@ -207,7 +208,6 @@ class NotificationServiceTest {
     void testDeleteNotification_OwnershipValidationFailed() {
         notification.setUserId("user-456"); // mismatch
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(notificationRepository.findById("noti-123")).thenReturn(Optional.of(notification));
 
         assertThrows(AccessDeniedException.class, () -> {

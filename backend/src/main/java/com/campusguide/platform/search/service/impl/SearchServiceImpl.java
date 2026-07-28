@@ -20,7 +20,7 @@ import com.campusguide.platform.search.mapper.SearchMapper;
 import com.campusguide.platform.search.service.interfaces.SearchService;
 import com.campusguide.platform.search.util.SearchUtil;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +42,7 @@ public class SearchServiceImpl implements SearchService {
     private final CommunityRepository communityRepository;
     private final EventRepository eventRepository;
     private final ResourceRepository resourceRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final SearchMapper searchMapper;
 
     @Override
@@ -51,13 +51,8 @@ public class SearchServiceImpl implements SearchService {
             throw new BadRequestException("Search query cannot be blank");
         }
 
-        if (userDetails == null) {
-            throw new ResourceNotFoundException("User not authenticated");
-        }
-
         // Verify user exists to respect "authenticated access"
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         String query = request.getQuery().trim();
 

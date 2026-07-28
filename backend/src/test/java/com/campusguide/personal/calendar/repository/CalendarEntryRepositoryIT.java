@@ -21,8 +21,8 @@ class CalendarEntryRepositoryIT {
     @Autowired
     private CalendarEntryRepository calendarEntryRepository;
 
-    private UUID userId1;
-    private UUID userId2;
+    private String userId1;
+    private String userId2;
     private CalendarEntry entry1;
     private CalendarEntry entry2;
     private CalendarEntry entry3;
@@ -31,8 +31,8 @@ class CalendarEntryRepositoryIT {
     void setUp() {
         calendarEntryRepository.deleteAll();
 
-        userId1 = UUID.randomUUID();
-        userId2 = UUID.randomUUID();
+        userId1 = UUID.randomUUID().toString();
+        userId2 = UUID.randomUUID().toString();
 
         LocalDateTime base = LocalDateTime.of(2026, 8, 10, 10, 0);
 

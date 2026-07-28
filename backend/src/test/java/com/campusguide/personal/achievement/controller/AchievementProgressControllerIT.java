@@ -120,7 +120,7 @@ class AchievementProgressControllerIT {
     void testGetAchievements_Success() throws Exception {
         AchievementProgress achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .achievementCode("CODE_CAMPUS_RUN")
                 .title("5K Campus Run")
                 .category(AchievementCategory.CAMPUS_LIFE)
@@ -142,7 +142,7 @@ class AchievementProgressControllerIT {
     void testGetAchievementById_Success() throws Exception {
         AchievementProgress achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .achievementCode("CODE_SINGLE")
                 .title("Single Achievement")
                 .category(AchievementCategory.PERSONAL)
@@ -164,7 +164,7 @@ class AchievementProgressControllerIT {
     void testUpdateAchievement_Success() throws Exception {
         AchievementProgress achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .achievementCode("CODE_UPD")
                 .title("Initial Title")
                 .category(AchievementCategory.SKILLS)
@@ -195,7 +195,7 @@ class AchievementProgressControllerIT {
     void testPatchAchievementProgress_Success() throws Exception {
         AchievementProgress achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .achievementCode("CODE_PATCH")
                 .title("Patch Test")
                 .category(AchievementCategory.CAREER)
@@ -224,7 +224,7 @@ class AchievementProgressControllerIT {
     void testDeleteAchievement_Success() throws Exception {
         AchievementProgress achievement = AchievementProgress.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .achievementCode("CODE_DEL")
                 .title("Delete Me")
                 .category(AchievementCategory.GENERAL)

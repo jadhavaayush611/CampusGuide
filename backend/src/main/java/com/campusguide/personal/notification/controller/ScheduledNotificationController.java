@@ -18,8 +18,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Controller for managing scheduled notifications and future reminders.
+ * Manages creation of scheduled alerts linked to tasks, events, and calendar entries, as well as pending triggers and status updates.
+ * Unambiguously distinct from NotificationController (/api/v1/notifications).
+ */
 @RestController
-@RequestMapping("/api/v1/notifications")
+@RequestMapping("/api/v1/scheduled-notifications")
 @RequiredArgsConstructor
 @Validated
 public class ScheduledNotificationController {

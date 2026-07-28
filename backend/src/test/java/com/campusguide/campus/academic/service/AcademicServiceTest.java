@@ -35,11 +35,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class AcademicServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private StudentProgressRepository studentProgressRepository;
@@ -73,6 +75,8 @@ class AcademicServiceTest {
                 .password("password")
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(any())).thenReturn(studentUser);
 
         progress = StudentProgress.builder()
                 .id("progress-1")
@@ -114,7 +118,7 @@ class AcademicServiceTest {
         Course course201 = Course.builder().id("course-201").courseCode("CS201").department("CS").credits(4).active(true).build();
         Course course301 = Course.builder().id("course-301").courseCode("CS301").department("CS").credits(4).active(true).build();
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(studentUser.getId())).thenReturn(List.of(plan));
@@ -139,7 +143,7 @@ class AcademicServiceTest {
 
     @Test
     void getDashboard_MissingProgress() {
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> academicService.getDashboard(userDetails));
@@ -147,7 +151,7 @@ class AcademicServiceTest {
 
     @Test
     void getDashboard_MissingRoadmap() {
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.empty());
 
@@ -158,7 +162,7 @@ class AcademicServiceTest {
     void getDashboard_MissingSemesterPlan() {
         Course course101 = Course.builder().id("course-101").courseCode("CS101").department("CS").credits(4).active(true).build();
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(studentUser.getId())).thenReturn(Collections.emptyList());
@@ -176,7 +180,7 @@ class AcademicServiceTest {
     void getProgress_CompletionCalculations() {
         progress.setTotalCreditsEarned(30);
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(semesterPlanRepository.findByStudentIdOrderBySemesterNumberAsc(studentUser.getId())).thenReturn(Collections.emptyList());
@@ -204,7 +208,7 @@ class AcademicServiceTest {
                 .prerequisiteCourseIds(List.of("CS101"))
                 .build();
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2)).thenReturn(List.of(recommendedCourse));
@@ -235,7 +239,7 @@ class AcademicServiceTest {
                 .courseCode("CS101")
                 .build();
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2)).thenReturn(List.of(recommendedCourse));
@@ -265,7 +269,7 @@ class AcademicServiceTest {
                 .prerequisiteCourseIds(Collections.emptyList())
                 .build();
 
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2)).thenReturn(List.of(recommendedCourse));
@@ -281,7 +285,7 @@ class AcademicServiceTest {
     void getRecommendedSemester_InactiveCoursesExcluded() {
         // Because courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2) only returns active courses
         // (inactive courses are not returned in candidate courses).
-        when(userRepository.findByEmail(studentUser.getEmail())).thenReturn(Optional.of(studentUser));
+
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(progress));
         when(roadmapRepository.findById(progress.getRoadmapId())).thenReturn(Optional.of(roadmap));
         when(courseRepository.findBySemesterAndActiveTrueOrderByCourseCodeAsc(2)).thenReturn(Collections.emptyList());

@@ -12,13 +12,18 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 
 @Document(collection = "achievement_progress")
 @CompoundIndexes({
-    @CompoundIndex(name = "user_achievement_code_idx", def = "{'userId': 1, 'achievementCode': 1}", unique = true)
+    @CompoundIndex(name = "user_achievement_code_idx", def = "{'userId': 1, 'achievementCode': 1}", unique = true),
+    @CompoundIndex(name = "user_category_idx", def = "{'userId': 1, 'category': 1}"),
+    @CompoundIndex(name = "user_status_idx", def = "{'userId': 1, 'status': 1}"),
+    @CompoundIndex(name = "user_category_status_idx", def = "{'userId': 1, 'category': 1, 'status': 1}")
 })
 @Data
 @NoArgsConstructor
@@ -30,7 +35,7 @@ public class AchievementProgress {
     private UUID id;
 
     @Indexed
-    private UUID userId;
+    private String userId;
 
     @Indexed
     private String achievementCode;
@@ -52,8 +57,30 @@ public class AchievementProgress {
     private Map<String, Object> metadata;
 
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
+
+    public static class AchievementProgressBuilder {
+        public AchievementProgressBuilder createdAt(Instant instant) {
+            this.createdAt = instant;
+            return this;
+        }
+
+        public AchievementProgressBuilder createdAt(LocalDateTime dateTime) {
+            this.createdAt = dateTime != null ? dateTime.atZone(ZoneId.systemDefault()).toInstant() : null;
+            return this;
+        }
+
+        public AchievementProgressBuilder updatedAt(Instant instant) {
+            this.updatedAt = instant;
+            return this;
+        }
+
+        public AchievementProgressBuilder updatedAt(LocalDateTime dateTime) {
+            this.updatedAt = dateTime != null ? dateTime.atZone(ZoneId.systemDefault()).toInstant() : null;
+            return this;
+        }
+    }
 }

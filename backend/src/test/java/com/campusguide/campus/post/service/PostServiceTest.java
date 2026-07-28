@@ -30,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
@@ -40,7 +42,7 @@ class PostServiceTest {
     private CommunityRepository communityRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @InjectMocks
     private PostService postService;
@@ -91,6 +93,11 @@ class PostServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(studentUserDetails)).thenReturn(studentUser);
+        lenient().when(currentUserService.getCurrentUser(superAdminUserDetails)).thenReturn(superAdminUser);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
+        lenient().when(currentUserService.getUserByIdentifier(anyString())).thenReturn(studentUser);
+
         createRequest = CreatePostRequest.builder()
                 .title("Test Post Title")
                 .content("This is test post content.")
@@ -135,7 +142,6 @@ class PostServiceTest {
     @Test
     void createPost_Successful() {
         when(communityRepository.existsById("comm-123")).thenReturn(true);
-        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PostResponse response = postService.createPost(studentUserDetails, createRequest);
@@ -151,7 +157,6 @@ class PostServiceTest {
         assertEquals(0, response.getCommentCount());
 
         verify(communityRepository).existsById("comm-123");
-        verify(userRepository).findByEmail("student@campusguide.com");
         verify(postRepository).save(any(Post.class));
     }
 
@@ -162,19 +167,15 @@ class PostServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> postService.createPost(studentUserDetails, createRequest));
 
         verify(communityRepository).existsById("comm-123");
-        verify(userRepository, never()).findByEmail(anyString());
         verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
     void createPost_ThrowsResourceNotFoundException_WhenUserDoesNotExist() {
-        when(communityRepository.existsById("comm-123")).thenReturn(true);
-        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.empty());
+        when(currentUserService.getCurrentUser(studentUserDetails)).thenThrow(new ResourceNotFoundException("User not found"));
 
         assertThrows(ResourceNotFoundException.class, () -> postService.createPost(studentUserDetails, createRequest));
 
-        verify(communityRepository).existsById("comm-123");
-        verify(userRepository).findByEmail("student@campusguide.com");
         verify(postRepository, never()).save(any(Post.class));
     }
 
@@ -183,7 +184,6 @@ class PostServiceTest {
     @Test
     void updatePost_Successful_AsAuthor() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PostResponse response = postService.updatePost(studentUserDetails, "post-789", updateRequest);
@@ -194,14 +194,12 @@ class PostServiceTest {
         assertTrue(response.getIsEdited());
 
         verify(postRepository).findById("post-789");
-        verify(userRepository).findByEmail("student@campusguide.com");
         verify(postRepository).save(any(Post.class));
     }
 
     @Test
     void updatePost_Successful_AsSuperAdmin() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("admin@campusguide.com")).thenReturn(Optional.of(superAdminUser));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PostResponse response = postService.updatePost(superAdminUserDetails, "post-789", updateRequest);
@@ -211,18 +209,15 @@ class PostServiceTest {
         assertTrue(response.getIsEdited());
 
         verify(postRepository).findById("post-789");
-        verify(userRepository).findByEmail("admin@campusguide.com");
     }
 
     @Test
     void updatePost_ThrowsAccessDeniedException_WhenNotAuthorAndNotAdmin() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("other@campusguide.com")).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> postService.updatePost(otherUserDetails, "post-789", updateRequest));
 
         verify(postRepository).findById("post-789");
-        verify(userRepository).findByEmail("other@campusguide.com");
         verify(postRepository, never()).save(any(Post.class));
     }
 
@@ -241,7 +236,6 @@ class PostServiceTest {
     @Test
     void deletePost_Successful_AsAuthor() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("student@campusguide.com")).thenReturn(Optional.of(studentUser));
 
         postService.deletePost(studentUserDetails, "post-789");
 
@@ -253,7 +247,6 @@ class PostServiceTest {
     @Test
     void deletePost_Successful_AsSuperAdmin() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("admin@campusguide.com")).thenReturn(Optional.of(superAdminUser));
 
         postService.deletePost(superAdminUserDetails, "post-789");
 
@@ -265,7 +258,6 @@ class PostServiceTest {
     @Test
     void deletePost_ThrowsAccessDeniedException_WhenNotAuthorAndNotAdmin() {
         when(postRepository.findById("post-789")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("other@campusguide.com")).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> postService.deletePost(otherUserDetails, "post-789"));
 
@@ -318,7 +310,7 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthor_Successful() {
-        when(userRepository.existsById("user-student")).thenReturn(true);
+        when(currentUserService.getUserByIdentifier("user-student")).thenReturn(studentUser);
         when(postRepository.findByAuthorIdAndIsDeletedFalse("user-student")).thenReturn(List.of(activePost));
 
         List<PostSummaryResponse> responses = postService.getPostsByAuthor("user-student");
@@ -330,9 +322,9 @@ class PostServiceTest {
 
     @Test
     void getPostsByAuthor_ThrowsResourceNotFoundException_WhenAuthorDoesNotExist() {
-        when(userRepository.existsById("user-student")).thenReturn(false);
+        when(currentUserService.getUserByIdentifier("non-existent")).thenThrow(new ResourceNotFoundException("User not found"));
 
-        assertThrows(ResourceNotFoundException.class, () -> postService.getPostsByAuthor("user-student"));
+        assertThrows(ResourceNotFoundException.class, () -> postService.getPostsByAuthor("non-existent"));
     }
 
     // --- getAllActivePosts() Tests ---

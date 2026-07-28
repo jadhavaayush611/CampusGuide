@@ -6,12 +6,14 @@ import com.campusguide.personal.notification.entity.ScheduledNotification;
 import com.campusguide.personal.notification.enums.NotificationStatus;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Component
 public class ScheduledNotificationMapper {
 
-    public ScheduledNotification toEntity(CreateScheduledNotificationRequest request, UUID userId) {
+    public ScheduledNotification toEntity(CreateScheduledNotificationRequest request, String userId) {
         if (request == null) {
             return null;
         }
@@ -37,6 +39,13 @@ public class ScheduledNotificationMapper {
         if (entity == null) {
             return null;
         }
+        LocalDateTime createdAt = entity.getCreatedAt() != null
+                ? LocalDateTime.ofInstant(entity.getCreatedAt(), ZoneId.systemDefault())
+                : null;
+        LocalDateTime updatedAt = entity.getUpdatedAt() != null
+                ? LocalDateTime.ofInstant(entity.getUpdatedAt(), ZoneId.systemDefault())
+                : null;
+
         return ScheduledNotificationResponse.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
@@ -54,8 +63,8 @@ public class ScheduledNotificationMapper {
                 .channel(entity.getChannel())
                 .priority(entity.getPriority())
                 .metadata(entity.getMetadata())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .build();
     }
 }

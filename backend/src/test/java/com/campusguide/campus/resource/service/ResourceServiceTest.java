@@ -31,6 +31,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
 
@@ -41,7 +43,7 @@ class ResourceServiceTest {
     private CommunityRepository communityRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @InjectMocks
     private ResourceService resourceService;
@@ -93,6 +95,10 @@ class ResourceServiceTest {
                 .email("other@campusguide.com")
                 .role(Role.STUDENT)
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(uploaderUserDetails)).thenReturn(uploaderUser);
+        lenient().when(currentUserService.getCurrentUser(adminUserDetails)).thenReturn(adminUser);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
 
         createRequest = CreateResourceRequest.builder()
                 .title("Lecture Notes")
@@ -155,7 +161,7 @@ class ResourceServiceTest {
 
     @Test
     void createResource_Success_WithCommunity() {
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.of(uploaderUser));
+
         when(communityRepository.existsById("community-xyz")).thenReturn(true);
         when(resourceRepository.save(any(Resource.class))).thenReturn(activeResource);
 
@@ -192,7 +198,7 @@ class ResourceServiceTest {
                 .isDeleted(false)
                 .build();
 
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.of(uploaderUser));
+
         when(resourceRepository.save(any(Resource.class))).thenReturn(savedResourceWithNulls);
 
         ResourceResponse response = resourceService.createResource(uploaderUserDetails, requestWithNulls);
@@ -205,21 +211,22 @@ class ResourceServiceTest {
 
     @Test
     void createResource_Unauthenticated() {
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () -> 
                 resourceService.createResource(null, createRequest));
     }
 
     @Test
     void createResource_UserNotFound() {
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.empty());
+        when(currentUserService.getCurrentUser(uploaderUserDetails)).thenThrow(new ResourceNotFoundException("User not found"));
 
-        assertThrows(ResourceNotFoundException.class, () -> 
+        assertThrows(ResourceNotFoundException.class, () ->
                 resourceService.createResource(uploaderUserDetails, createRequest));
     }
 
     @Test
     void createResource_InvalidCommunity() {
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.of(uploaderUser));
+
         when(communityRepository.existsById("community-xyz")).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class, () -> 
@@ -233,7 +240,7 @@ class ResourceServiceTest {
     @Test
     void updateResource_OwnerSuccess() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.of(uploaderUser));
+
 
         Resource updatedResource = Resource.builder()
                 .id("resource-123")
@@ -257,7 +264,6 @@ class ResourceServiceTest {
     @Test
     void updateResource_AdminSuccess() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
 
         Resource updatedResource = Resource.builder()
                 .id("resource-123")
@@ -279,7 +285,6 @@ class ResourceServiceTest {
     @Test
     void updateResource_NonOwnerForbidden() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(otherUserDetails.getUsername())).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> 
                 resourceService.updateResource(otherUserDetails, "resource-123", updateRequest));
@@ -316,7 +321,7 @@ class ResourceServiceTest {
     @Test
     void deleteResource_OwnerSuccess() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(uploaderUserDetails.getUsername())).thenReturn(Optional.of(uploaderUser));
+
 
         resourceService.deleteResource(uploaderUserDetails, "resource-123");
 
@@ -327,7 +332,6 @@ class ResourceServiceTest {
     @Test
     void deleteResource_AdminSuccess() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
 
         resourceService.deleteResource(adminUserDetails, "resource-123");
 
@@ -338,7 +342,6 @@ class ResourceServiceTest {
     @Test
     void deleteResource_NonOwnerForbidden() {
         when(resourceRepository.findById("resource-123")).thenReturn(Optional.of(activeResource));
-        when(userRepository.findByEmail(otherUserDetails.getUsername())).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> 
                 resourceService.deleteResource(otherUserDetails, "resource-123"));

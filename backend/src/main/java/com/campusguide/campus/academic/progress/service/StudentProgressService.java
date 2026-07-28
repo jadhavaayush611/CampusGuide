@@ -10,14 +10,15 @@ import com.campusguide.campus.academic.progress.dto.*;
 import com.campusguide.campus.academic.progress.entity.StudentProgress;
 import com.campusguide.campus.academic.progress.repository.StudentProgressRepository;
 import com.campusguide.campus.academic.roadmap.service.RoadmapService;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
 public class StudentProgressService {
 
     private final StudentProgressRepository studentProgressRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final CourseService courseService;
     private final RoadmapService roadmapService;
 
@@ -40,12 +41,7 @@ public class StudentProgressService {
      * @return the created StudentProgressResponse
      */
     public StudentProgressResponse createProgress(UserDetails userDetails, CreateStudentProgressRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         // Enforce one progress record per student
         if (studentProgressRepository.findByStudentId(user.getId()).isPresent()) {
@@ -63,8 +59,8 @@ public class StudentProgressService {
                 .totalCreditsEarned(0)
                 .currentGpa(0.0)
                 .graduationEligible(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         progress = studentProgressRepository.save(progress);
@@ -81,12 +77,7 @@ public class StudentProgressService {
      * @return the updated StudentProgressResponse
      */
     public StudentProgressResponse updateProgress(UserDetails userDetails, UpdateStudentProgressRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         // Determine target student ID to update (admins can specify target studentId in body)
         String targetStudentId = request.getStudentId() != null ? request.getStudentId() : user.getId();
@@ -95,7 +86,7 @@ public class StudentProgressService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + targetStudentId));
 
         // Check authorization: Owner or SUPER_ADMIN only
-        if (!progress.getStudentId().equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
+        if (!progress.getStudentId().equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("You are not authorized to update this student progress");
         }
 
@@ -116,7 +107,7 @@ public class StudentProgressService {
         progress.setTotalCreditsEarned(calculateTotalCredits(progress));
         recalculateGraduationEligibility(progress);
 
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(Instant.now());
         progress = studentProgressRepository.save(progress);
         return toStudentProgressResponse(progress);
     }
@@ -130,14 +121,9 @@ public class StudentProgressService {
      * @return the updated StudentProgressResponse
      */
     public StudentProgressResponse adminUpdateProgress(UserDetails userDetails, AdminUpdateStudentProgressRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
-
-        if (user.getRole() != UserRole.ADMIN) {
+        if (user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN is authorized to perform administrative academic updates");
         }
 
@@ -174,7 +160,7 @@ public class StudentProgressService {
         progress.setTotalCreditsEarned(calculateTotalCredits(progress));
         recalculateGraduationEligibility(progress);
 
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(Instant.now());
         progress = studentProgressRepository.save(progress);
         return toStudentProgressResponse(progress);
     }
@@ -213,17 +199,12 @@ public class StudentProgressService {
      * @return the updated StudentProgressResponse
      */
     public StudentProgressResponse markCourseCompleted(UserDetails userDetails, String courseId, String targetStudentId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         String studentId = targetStudentId != null ? targetStudentId : user.getId();
 
         // Check authorization: Owner or SUPER_ADMIN
-        if (!studentId.equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
+        if (!studentId.equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("You are not authorized to modify this student progress");
         }
 
@@ -247,7 +228,7 @@ public class StudentProgressService {
         // Recalculate total credits and graduation eligibility
         progress.setTotalCreditsEarned(calculateTotalCredits(progress));
         recalculateGraduationEligibility(progress);
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(Instant.now());
 
         progress = studentProgressRepository.save(progress);
         return toStudentProgressResponse(progress);
@@ -263,17 +244,12 @@ public class StudentProgressService {
      * @return the updated StudentProgressResponse
      */
     public StudentProgressResponse removeCompletedCourse(UserDetails userDetails, String courseId, String targetStudentId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         String studentId = targetStudentId != null ? targetStudentId : user.getId();
 
         // Check authorization: Owner or SUPER_ADMIN
-        if (!studentId.equals(user.getId()) && user.getRole() != UserRole.ADMIN) {
+        if (!studentId.equals(user.getId()) && user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("You are not authorized to modify this student progress");
         }
 
@@ -293,7 +269,7 @@ public class StudentProgressService {
         // Recalculate total credits and graduation eligibility
         progress.setTotalCreditsEarned(calculateTotalCredits(progress));
         recalculateGraduationEligibility(progress);
-        progress.setUpdatedAt(LocalDateTime.now());
+        progress.setUpdatedAt(Instant.now());
 
         progress = studentProgressRepository.save(progress);
         return toStudentProgressResponse(progress);
@@ -306,12 +282,7 @@ public class StudentProgressService {
      * @return the StudentProgressResponse
      */
     public StudentProgressResponse getProgress(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         StudentProgress progress = studentProgressRepository.findByStudentId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + user.getId()));
@@ -327,14 +298,9 @@ public class StudentProgressService {
      * @return the StudentProgressResponse
      */
     public StudentProgressResponse getProgressByStudent(UserDetails userDetails, String studentId) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
-
-        if (user.getRole() != UserRole.ADMIN) {
+        if (user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can access another student's progress");
         }
 
@@ -351,14 +317,9 @@ public class StudentProgressService {
      * @return list of StudentProgressResponse
      */
     public List<StudentProgressResponse> getAllProgress(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
-
-        if (user.getRole() != UserRole.ADMIN) {
+        if (user.getRole() != Role.SUPER_ADMIN) {
             throw new AccessDeniedException("Only SUPER_ADMIN can access all progress records");
         }
 
@@ -397,8 +358,8 @@ public class StudentProgressService {
                 .totalCreditsEarned(progress.getTotalCreditsEarned())
                 .currentGpa(progress.getCurrentGpa())
                 .graduationEligible(progress.getGraduationEligible())
-                .createdAt(progress.getCreatedAt())
-                .updatedAt(progress.getUpdatedAt())
+                .createdAt(progress.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(progress.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(progress.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(progress.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

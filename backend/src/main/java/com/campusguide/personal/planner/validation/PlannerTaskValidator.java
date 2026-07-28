@@ -20,7 +20,7 @@ public class PlannerTaskValidator {
 
     private final EventRepository eventRepository;
 
-    public void validateCreate(CreatePlannerTaskRequest request, LocalDateTime createdAt) {
+    public void validateCreate(CreatePlannerTaskRequest request, java.time.Instant createdAt) {
         if (request.getTitle() == null || request.getTitle().isBlank()) {
             throw new PlannerTaskValidationException("Title is mandatory");
         }
@@ -70,9 +70,12 @@ public class PlannerTaskValidator {
         }
     }
 
-    public void validateDueAt(LocalDateTime dueAt, LocalDateTime createdAt) {
-        if (dueAt != null && createdAt != null && dueAt.isBefore(createdAt)) {
-            throw new PlannerTaskValidationException("dueAt cannot precede createdAt");
+    public void validateDueAt(LocalDateTime dueAt, java.time.Instant createdAt) {
+        if (dueAt != null && createdAt != null) {
+            LocalDateTime createdLdt = LocalDateTime.ofInstant(createdAt, java.time.ZoneId.systemDefault());
+            if (dueAt.isBefore(createdLdt)) {
+                throw new PlannerTaskValidationException("dueAt cannot precede createdAt");
+            }
         }
     }
 

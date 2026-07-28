@@ -38,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class AiServiceTest {
 
@@ -48,7 +50,7 @@ class AiServiceTest {
     private MessageRepository messageRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private ConversationContextBuilder conversationContextBuilder;
@@ -94,6 +96,9 @@ class AiServiceTest {
                 .email("other@campusguide.com")
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(userDetails)).thenReturn(user);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
+
         conversation = Conversation.builder()
                 .id("conv-123")
                 .userId("user-123")
@@ -127,7 +132,6 @@ class AiServiceTest {
                 .processingTime(0.3)
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(conversation));
         when(conversationContextBuilder.buildHistoryContext("conv-123")).thenReturn(new ArrayList<>());
         when(properties.isEnabled()).thenReturn(true);
@@ -151,7 +155,6 @@ class AiServiceTest {
 
     @Test
     void chat_GatewayUnavailable_ReturnsGracefulFallback() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(conversation));
         when(conversationContextBuilder.buildHistoryContext("conv-123")).thenReturn(new ArrayList<>());
         when(properties.isEnabled()).thenReturn(true);
@@ -172,7 +175,6 @@ class AiServiceTest {
 
     @Test
     void chat_ConversationNotFound_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-not-found", "user-123")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () ->
@@ -181,7 +183,6 @@ class AiServiceTest {
 
     @Test
     void chat_UnauthorizedConversationAccess_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(otherUserDetails.getUsername())).thenReturn(Optional.of(otherUser));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-456")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () ->

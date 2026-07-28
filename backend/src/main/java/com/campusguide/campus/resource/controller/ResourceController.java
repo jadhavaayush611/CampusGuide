@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/resources")
+@RequestMapping("/api/v1/resources")
 @RequiredArgsConstructor
 public class ResourceController {
 

@@ -35,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class SemesterPlanServiceTest {
 
@@ -42,7 +44,7 @@ class SemesterPlanServiceTest {
     private SemesterPlanRepository semesterPlanRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Mock
     private CourseService courseService;
@@ -109,6 +111,11 @@ class SemesterPlanServiceTest {
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(studentUserDetails)).thenReturn(studentUser);
+        lenient().when(currentUserService.getCurrentUser(adminUserDetails)).thenReturn(adminUser);
+        lenient().when(currentUserService.getCurrentUser(otherStudentUserDetails)).thenReturn(otherStudentUser);
+        lenient().when(currentUserService.getUserByIdentifier(anyString())).thenReturn(studentUser);
+
         createRequest = CreateSemesterPlanRequest.builder()
                 .roadmapId("roadmap-123")
                 .semesterNumber(1)
@@ -158,7 +165,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void createSemesterPlan_Success() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(roadmapService.getRoadmapById("roadmap-123")).thenReturn(RoadmapResponse.builder().id("roadmap-123").build());
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(semesterPlanRepository.findByStudentIdAndSemesterNumber(studentUser.getId(), 1)).thenReturn(Optional.empty());
@@ -177,7 +184,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void createSemesterPlan_Duplicate_ThrowsConflictException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(roadmapService.getRoadmapById("roadmap-123")).thenReturn(RoadmapResponse.builder().id("roadmap-123").build());
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.of(studentProgress));
         when(semesterPlanRepository.findByStudentIdAndSemesterNumber(studentUser.getId(), 1)).thenReturn(Optional.of(semesterPlan));
@@ -187,7 +194,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void createSemesterPlan_RoadmapNotFound_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(roadmapService.getRoadmapById("roadmap-123")).thenThrow(new ResourceNotFoundException("Roadmap not found"));
 
         assertThrows(ResourceNotFoundException.class, () -> semesterPlanService.createSemesterPlan(studentUserDetails, createRequest));
@@ -195,7 +202,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void createSemesterPlan_ProgressNotFound_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(roadmapService.getRoadmapById("roadmap-123")).thenReturn(RoadmapResponse.builder().id("roadmap-123").build());
         when(studentProgressRepository.findByStudentId(studentUser.getId())).thenReturn(Optional.empty());
 
@@ -206,7 +213,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void addCourse_PrerequisiteNotCompleted_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(courseService.getCourseById("course-123")).thenReturn(testCourse);
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
@@ -216,7 +223,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void addCourse_PrerequisiteCompleted_Success() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(courseService.getCourseById("course-123")).thenReturn(testCourse);
         
@@ -235,7 +242,7 @@ class SemesterPlanServiceTest {
     void addCourse_DuplicateCourse_ThrowsConflictException() {
         semesterPlan.getPlannedCourseIds().add("course-123");
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(courseService.getCourseById("course-123")).thenReturn(testCourse);
 
@@ -244,7 +251,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void addCourse_WithoutPrerequisites_Success() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(courseService.getCourseById("course-prereq")).thenReturn(prereqCourse);
         when(studentProgressRepository.findByStudentId("student-123")).thenReturn(Optional.of(studentProgress));
@@ -264,7 +271,7 @@ class SemesterPlanServiceTest {
         semesterPlan.getPlannedCourseIds().add("course-prereq");
         semesterPlan.setTotalPlannedCredits(3);
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(courseService.getCourseById("course-prereq")).thenReturn(prereqCourse);
         when(semesterPlanRepository.save(any(SemesterPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -278,7 +285,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void removeCourse_MissingCourse_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
 
         assertThrows(BadRequestException.class, () -> semesterPlanService.removeCourse(studentUserDetails, "plan-123", "course-prereq"));
@@ -291,7 +298,7 @@ class SemesterPlanServiceTest {
         semesterPlan.getPlannedCourseIds().add("course-prereq");
         semesterPlan.setTotalPlannedCredits(3);
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(semesterPlanRepository.save(any(SemesterPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -303,7 +310,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void finalizeSemesterPlan_EmptyPlan_ThrowsBadRequestException() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
 
         assertThrows(BadRequestException.class, () -> semesterPlanService.finalizeSemesterPlan(studentUserDetails, "plan-123"));
@@ -315,7 +322,7 @@ class SemesterPlanServiceTest {
     void updateSemesterPlan_Finalized_ThrowsBadRequestException() {
         semesterPlan.setFinalized(true);
 
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
 
         UpdateSemesterPlanRequest updateReq = UpdateSemesterPlanRequest.builder().semesterNumber(2).build();
@@ -325,7 +332,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void updateSemesterPlan_CreditCalculations_Success() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(studentProgressRepository.findByStudentId(semesterPlan.getStudentId())).thenReturn(Optional.of(studentProgress));
         when(courseService.getCourseById("course-prereq")).thenReturn(prereqCourse);
@@ -345,7 +352,7 @@ class SemesterPlanServiceTest {
 
     @Test
     void updateSemesterPlan_Owner_Success() {
-        when(userRepository.findByEmail(studentUserDetails.getUsername())).thenReturn(Optional.of(studentUser));
+
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(semesterPlanRepository.save(any(SemesterPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -359,7 +366,6 @@ class SemesterPlanServiceTest {
 
     @Test
     void updateSemesterPlan_Admin_Success() {
-        when(userRepository.findByEmail(adminUserDetails.getUsername())).thenReturn(Optional.of(adminUser));
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
         when(semesterPlanRepository.save(any(SemesterPlan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -373,7 +379,6 @@ class SemesterPlanServiceTest {
 
     @Test
     void updateSemesterPlan_OtherStudent_ThrowsAccessDeniedException() {
-        when(userRepository.findByEmail(otherStudentUserDetails.getUsername())).thenReturn(Optional.of(otherStudentUser));
         when(semesterPlanRepository.findById("plan-123")).thenReturn(Optional.of(semesterPlan));
 
         UpdateSemesterPlanRequest updateReq = UpdateSemesterPlanRequest.builder().semesterNumber(2).build();

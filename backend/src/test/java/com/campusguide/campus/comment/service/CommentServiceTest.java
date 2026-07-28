@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
 
@@ -41,7 +43,7 @@ class CommentServiceTest {
     private PostRepository postRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @InjectMocks
     private CommentService commentService;
@@ -98,6 +100,11 @@ class CommentServiceTest {
                 .role(Role.STUDENT)
                 .build();
 
+        lenient().when(currentUserService.getCurrentUser(authorUserDetails)).thenReturn(authorUser);
+        lenient().when(currentUserService.getCurrentUser(adminUserDetails)).thenReturn(adminUser);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
+        lenient().when(currentUserService.getUserByIdentifier(anyString())).thenReturn(authorUser);
+
         activePost = Post.builder()
                 .id("post-123")
                 .title("Active Post")
@@ -149,7 +156,6 @@ class CommentServiceTest {
     @Test
     void createComment_Successful() {
         when(postRepository.findById("post-123")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("author@campusguide.com")).thenReturn(Optional.of(authorUser));
         when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> {
             Comment c = inv.getArgument(0);
             c.setId("new-comment-id");
@@ -170,7 +176,6 @@ class CommentServiceTest {
         assertEquals(3, activePost.getCommentCount());
 
         verify(postRepository).findById("post-123");
-        verify(userRepository).findByEmail("author@campusguide.com");
         verify(commentRepository).save(any(Comment.class));
         verify(postRepository).save(activePost);
     }
@@ -182,7 +187,6 @@ class CommentServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> commentService.createComment(authorUserDetails, createRequest));
 
         verify(postRepository).findById("post-123");
-        verify(userRepository, never()).findByEmail(anyString());
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
@@ -197,23 +201,20 @@ class CommentServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> commentService.createComment(authorUserDetails, request));
 
         verify(postRepository).findById("post-deleted");
-        verify(userRepository, never()).findByEmail(anyString());
     }
 
     @Test
     void createComment_ThrowsResourceNotFoundException_WhenUserDoesNotExist() {
-        when(postRepository.findById("post-123")).thenReturn(Optional.of(activePost));
-        when(userRepository.findByEmail("author@campusguide.com")).thenReturn(Optional.empty());
+        when(currentUserService.getCurrentUser(authorUserDetails)).thenThrow(new ResourceNotFoundException("User not found"));
 
         assertThrows(ResourceNotFoundException.class, () -> commentService.createComment(authorUserDetails, createRequest));
 
-        verify(postRepository).findById("post-123");
-        verify(userRepository).findByEmail("author@campusguide.com");
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
     @Test
     void createComment_ThrowsUnauthorisedException_WhenUserDetailsIsNull() {
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () -> commentService.createComment(null, createRequest));
     }
 
@@ -222,7 +223,6 @@ class CommentServiceTest {
     @Test
     void updateComment_Successful_AsOwner() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("author@campusguide.com")).thenReturn(Optional.of(authorUser));
         when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CommentResponse response = commentService.updateComment(authorUserDetails, "comment-1", updateRequest);
@@ -232,14 +232,12 @@ class CommentServiceTest {
         assertTrue(response.getIsEdited());
 
         verify(commentRepository).findById("comment-1");
-        verify(userRepository).findByEmail("author@campusguide.com");
         verify(commentRepository).save(activeComment);
     }
 
     @Test
     void updateComment_Successful_AsSuperAdmin() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("admin@campusguide.com")).thenReturn(Optional.of(adminUser));
         when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CommentResponse response = commentService.updateComment(adminUserDetails, "comment-1", updateRequest);
@@ -249,19 +247,16 @@ class CommentServiceTest {
         assertTrue(response.getIsEdited());
 
         verify(commentRepository).findById("comment-1");
-        verify(userRepository).findByEmail("admin@campusguide.com");
         verify(commentRepository).save(activeComment);
     }
 
     @Test
     void updateComment_ThrowsAccessDeniedException_WhenNotOwnerAndNotAdmin() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("other@campusguide.com")).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> commentService.updateComment(otherUserDetails, "comment-1", updateRequest));
 
         verify(commentRepository).findById("comment-1");
-        verify(userRepository).findByEmail("other@campusguide.com");
         verify(commentRepository, never()).save(any(Comment.class));
     }
 
@@ -280,7 +275,6 @@ class CommentServiceTest {
     @Test
     void deleteComment_Successful_AsOwner() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("author@campusguide.com")).thenReturn(Optional.of(authorUser));
         when(postRepository.findById("post-123")).thenReturn(Optional.of(activePost));
 
         commentService.deleteComment(authorUserDetails, "comment-1");
@@ -289,7 +283,6 @@ class CommentServiceTest {
         assertEquals(1, activePost.getCommentCount()); // decremented from 2 to 1
 
         verify(commentRepository).findById("comment-1");
-        verify(userRepository).findByEmail("author@campusguide.com");
         verify(commentRepository).save(activeComment);
         verify(postRepository).findById("post-123");
         verify(postRepository).save(activePost);
@@ -298,7 +291,6 @@ class CommentServiceTest {
     @Test
     void deleteComment_Successful_AsSuperAdmin() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("admin@campusguide.com")).thenReturn(Optional.of(adminUser));
         when(postRepository.findById("post-123")).thenReturn(Optional.of(activePost));
 
         commentService.deleteComment(adminUserDetails, "comment-1");
@@ -307,7 +299,6 @@ class CommentServiceTest {
         assertEquals(1, activePost.getCommentCount());
 
         verify(commentRepository).findById("comment-1");
-        verify(userRepository).findByEmail("admin@campusguide.com");
         verify(commentRepository).save(activeComment);
         verify(postRepository).findById("post-123");
         verify(postRepository).save(activePost);
@@ -316,7 +307,6 @@ class CommentServiceTest {
     @Test
     void deleteComment_ThrowsAccessDeniedException_WhenNotOwnerAndNotAdmin() {
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("other@campusguide.com")).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> commentService.deleteComment(otherUserDetails, "comment-1"));
 
@@ -338,7 +328,6 @@ class CommentServiceTest {
     void deleteComment_PreventsNegativeCommentCount() {
         activePost.setCommentCount(0); // set to 0 to test negative prevention
         when(commentRepository.findById("comment-1")).thenReturn(Optional.of(activeComment));
-        when(userRepository.findByEmail("author@campusguide.com")).thenReturn(Optional.of(authorUser));
         when(postRepository.findById("post-123")).thenReturn(Optional.of(activePost));
 
         commentService.deleteComment(authorUserDetails, "comment-1");
@@ -403,7 +392,7 @@ class CommentServiceTest {
 
     @Test
     void getCommentsByAuthor_Successful() {
-        when(userRepository.existsById("user-author")).thenReturn(true);
+        when(currentUserService.getUserByIdentifier("user-author")).thenReturn(authorUser);
         when(commentRepository.findByAuthorIdAndIsDeletedFalse("user-author"))
                 .thenReturn(List.of(activeComment));
 
@@ -413,17 +402,17 @@ class CommentServiceTest {
         assertEquals(1, responses.size());
         assertEquals("comment-1", responses.get(0).getId());
 
-        verify(userRepository).existsById("user-author");
+        verify(currentUserService).getUserByIdentifier("user-author");
         verify(commentRepository).findByAuthorIdAndIsDeletedFalse("user-author");
     }
 
     @Test
     void getCommentsByAuthor_ThrowsResourceNotFoundException_WhenUserDoesNotExist() {
-        when(userRepository.existsById("user-author")).thenReturn(false);
+        when(currentUserService.getUserByIdentifier("non-existent")).thenThrow(new ResourceNotFoundException("User not found"));
 
-        assertThrows(ResourceNotFoundException.class, () -> commentService.getCommentsByAuthor("user-author"));
+        assertThrows(ResourceNotFoundException.class, () -> commentService.getCommentsByAuthor("non-existent"));
 
-        verify(userRepository).existsById("user-author");
+        verify(currentUserService).getUserByIdentifier("non-existent");
         verify(commentRepository, never()).findByAuthorIdAndIsDeletedFalse(anyString());
     }
 }

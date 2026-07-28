@@ -83,29 +83,13 @@ class SearchControllerSecurityIT {
     }
 
     @Test
-    void search_Unauthenticated_Permitted() throws Exception {
+    void search_Unauthenticated_ReturnsUnauthorized() throws Exception {
         GlobalSearchRequest request = GlobalSearchRequest.builder().query("Java").build();
 
-        GlobalSearchResponse mockResponse = GlobalSearchResponse.builder()
-                .query("Java")
-                .totalResults(1)
-                .results(List.of(SearchResultResponse.builder()
-                        .id("c1")
-                        .title("Java Course")
-                        .description("Intro to Java")
-                        .searchType(SearchType.COURSE)
-                        .relevanceScore(1.0)
-                        .metadata(Collections.emptyMap())
-                        .build()))
-                .build();
-
-        when(searchService.search(any(), any(GlobalSearchRequest.class), any(Pageable.class)))
-                .thenReturn(mockResponse);
-
-        mockMvc.perform(post("/api/search")
+        mockMvc.perform(post("/api/v1/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -128,7 +112,7 @@ class SearchControllerSecurityIT {
         when(searchService.search(any(UserDetails.class), any(GlobalSearchRequest.class), any(Pageable.class)))
                 .thenReturn(mockResponse);
 
-        mockMvc.perform(post("/api/search")
+        mockMvc.perform(post("/api/v1/search")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -143,7 +127,7 @@ class SearchControllerSecurityIT {
     void search_BlankQuery_ReturnsBadRequest() throws Exception {
         GlobalSearchRequest request = GlobalSearchRequest.builder().query("   ").build();
 
-        mockMvc.perform(post("/api/search")
+        mockMvc.perform(post("/api/v1/search")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

@@ -121,7 +121,7 @@ class PlannerTaskControllerIT {
     void testGetAllPlannerTasks_Success() throws Exception {
         PlannerTask task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .title("Read Book")
                 .type(TaskType.STUDY)
                 .priority(TaskPriority.LOW)
@@ -142,7 +142,7 @@ class PlannerTaskControllerIT {
     void testGetPlannerTaskById_Success() throws Exception {
         PlannerTask task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .title("Single Task")
                 .type(TaskType.TODO)
                 .priority(TaskPriority.MEDIUM)
@@ -163,7 +163,7 @@ class PlannerTaskControllerIT {
     void testUpdatePlannerTask_Success() throws Exception {
         PlannerTask task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .title("Old Title")
                 .type(TaskType.TODO)
                 .priority(TaskPriority.LOW)
@@ -196,7 +196,7 @@ class PlannerTaskControllerIT {
     void testUpdateTaskStatus_Success() throws Exception {
         PlannerTask task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .title("Status Task")
                 .type(TaskType.TODO)
                 .priority(TaskPriority.MEDIUM)
@@ -223,7 +223,7 @@ class PlannerTaskControllerIT {
     void testDeletePlannerTask_Success() throws Exception {
         PlannerTask task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(userEntity.getId()))
+                .userId(userEntity.getId())
                 .title("Delete Task")
                 .type(TaskType.TODO)
                 .priority(TaskPriority.MEDIUM)

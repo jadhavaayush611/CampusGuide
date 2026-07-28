@@ -77,7 +77,7 @@ class CommunityControllerSecurityIT {
                 .bannerUrl("http://example.com/banner.png")
                 .build();
 
-        mockMvc.perform(post("/api/communities")
+        mockMvc.perform(post("/api/v1/communities")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -87,18 +87,18 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void createCommunity_StudentRole_Permitted() throws Exception {
+    void createCommunity_StudentRole_Forbidden() throws Exception {
         CreateCommunityRequest request = CreateCommunityRequest.builder()
-                .name("Coding Community Student")
-                .description("Test Coding Community")
+                .name("Student Created Community")
+                .description("Description")
                 .councilId("council-123")
                 .build();
 
-        mockMvc.perform(post("/api/communities")
+        mockMvc.perform(post("/api/v1/communities")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -120,7 +120,7 @@ class CommunityControllerSecurityIT {
                 .councilId("council-123")
                 .build();
 
-        mockMvc.perform(post("/api/communities")
+        mockMvc.perform(post("/api/v1/communities")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -145,7 +145,7 @@ class CommunityControllerSecurityIT {
                 .isActive(false)
                 .build();
 
-        mockMvc.perform(put("/api/communities/" + existing.getId())
+        mockMvc.perform(put("/api/v1/communities/" + existing.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -155,7 +155,7 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void updateCommunity_StudentRole_Permitted() throws Exception {
+    void updateCommunity_StudentRole_Forbidden() throws Exception {
         Community existing = Community.builder()
                 .name("Original Community Student")
                 .description("Original Description")
@@ -170,11 +170,11 @@ class CommunityControllerSecurityIT {
                 .description("Updated Description")
                 .build();
 
-        mockMvc.perform(put("/api/communities/" + existing.getId())
+        mockMvc.perform(put("/api/v1/communities/" + existing.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -189,22 +189,22 @@ class CommunityControllerSecurityIT {
                 .build();
         comm = communityRepository.save(comm);
 
-        // GET /api/communities
-        mockMvc.perform(get("/api/communities")
+        // GET /api/v1/communities
+        mockMvc.perform(get("/api/v1/communities")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/communities/{communityId}
-        mockMvc.perform(get("/api/communities/" + comm.getId())
+        // GET /api/v1/communities/{communityId}
+        mockMvc.perform(get("/api/v1/communities/" + comm.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Public Community"));
 
-        // GET /api/communities/councils/{councilId}/communities
-        mockMvc.perform(get("/api/communities/councils/council-123/communities")
+        // GET /api/v1/communities/councils/{councilId}/communities
+        mockMvc.perform(get("/api/v1/communities/councils/council-123/communities")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -212,13 +212,13 @@ class CommunityControllerSecurityIT {
     }
 
     @Test
-    void getEndpoints_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(get("/api/communities")
+    void getEndpoints_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/communities")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/api/communities/councils/some-council/communities")
+        mockMvc.perform(get("/api/v1/communities/councils/some-council/communities")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isUnauthorized());
     }
 }

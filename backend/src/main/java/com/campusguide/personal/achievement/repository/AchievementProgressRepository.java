@@ -13,19 +13,19 @@ import java.util.UUID;
 @Repository
 public interface AchievementProgressRepository extends MongoRepository<AchievementProgress, UUID> {
 
-    List<AchievementProgress> findByUserId(UUID userId);
+    List<AchievementProgress> findByUserId(String userId);
 
-    List<AchievementProgress> findByUserIdAndCategory(UUID userId, AchievementCategory category);
+    List<AchievementProgress> findByUserIdAndCategory(String userId, AchievementCategory category);
 
-    List<AchievementProgress> findByUserIdAndStatus(UUID userId, AchievementStatus status);
+    List<AchievementProgress> findByUserIdAndStatus(String userId, AchievementStatus status);
 
-    List<AchievementProgress> findByUserIdAndCategoryAndStatus(UUID userId, AchievementCategory category, AchievementStatus status);
+    List<AchievementProgress> findByUserIdAndCategoryAndStatus(String userId, AchievementCategory category, AchievementStatus status);
 
-    Optional<AchievementProgress> findByIdAndUserId(UUID id, UUID userId);
+    Optional<AchievementProgress> findByIdAndUserId(UUID id, String userId);
 
-    Optional<AchievementProgress> findByUserIdAndAchievementCode(UUID userId, String achievementCode);
+    Optional<AchievementProgress> findByUserIdAndAchievementCode(String userId, String achievementCode);
 
-    boolean existsByUserIdAndAchievementCode(UUID userId, String achievementCode);
+    boolean existsByUserIdAndAchievementCode(String userId, String achievementCode);
 
-    boolean existsByUserIdAndAchievementCodeAndIdNot(UUID userId, String achievementCode, UUID id);
+    boolean existsByUserIdAndAchievementCodeAndIdNot(String userId, String achievementCode, UUID id);
 }

@@ -14,6 +14,7 @@ import com.campusguide.personal.calendar.validation.CalendarEntryValidator;
 import com.campusguide.personal.planner.repository.PlannerTaskRepository;
 import com.campusguide.platform.user.entity.User;
 import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +50,7 @@ class CalendarEntryServiceTest {
     private EventRepository eventRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     private CalendarEntryValidator calendarEntryValidator;
     private CalendarEntryService calendarEntryService;
@@ -65,7 +66,7 @@ class CalendarEntryServiceTest {
     @BeforeEach
     void setUp() {
         calendarEntryValidator = new CalendarEntryValidator(plannerTaskRepository, eventRepository);
-        calendarEntryService = new CalendarEntryService(calendarEntryRepository, calendarEntryMapper, calendarEntryValidator, userRepository);
+        calendarEntryService = new CalendarEntryService(calendarEntryRepository, calendarEntryMapper, calendarEntryValidator, currentUserService);
 
         userId = UUID.randomUUID();
         entryId = UUID.randomUUID();
@@ -83,9 +84,11 @@ class CalendarEntryServiceTest {
                 .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .build();
 
+        lenient().when(currentUserService.getCurrentUserId(any())).thenReturn(userId.toString());
+
         existingEntry = CalendarEntry.builder()
                 .id(entryId)
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Sample Entry")
                 .description("Sample Description")
                 .type(CalendarEntryType.PERSONAL)
@@ -99,7 +102,7 @@ class CalendarEntryServiceTest {
 
     @Test
     void createEntry_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         when(calendarEntryRepository.save(any(CalendarEntry.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CreateCalendarEntryRequest request = CreateCalendarEntryRequest.builder()
@@ -113,14 +116,14 @@ class CalendarEntryServiceTest {
 
         assertNotNull(response);
         assertEquals("New Entry", response.getTitle());
-        assertEquals(userId, response.getUserId());
+        assertEquals(userId.toString(), response.getUserId());
         verify(calendarEntryRepository, times(1)).save(any(CalendarEntry.class));
     }
 
     @Test
     void getAllEntries_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
-        when(calendarEntryRepository.findByUserIdOrderByStartTimeAscEndTimeAsc(userId))
+
+        when(calendarEntryRepository.findByUserIdOrderByStartTimeAscEndTimeAsc(userId.toString()))
                 .thenReturn(List.of(existingEntry));
 
         List<CalendarEntryResponse> responses = calendarEntryService.getAllEntries(userDetails);
@@ -131,7 +134,7 @@ class CalendarEntryServiceTest {
 
     @Test
     void getEntryById_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         when(calendarEntryRepository.findById(entryId)).thenReturn(Optional.of(existingEntry));
 
         CalendarEntryResponse response = calendarEntryService.getEntryById(userDetails, entryId);
@@ -142,7 +145,7 @@ class CalendarEntryServiceTest {
 
     @Test
     void getEntryById_NotFound_ThrowsException() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         when(calendarEntryRepository.findById(entryId)).thenReturn(Optional.empty());
 
         assertThrows(CalendarEntryNotFoundException.class, () -> calendarEntryService.getEntryById(userDetails, entryId));
@@ -150,9 +153,9 @@ class CalendarEntryServiceTest {
 
     @Test
     void getEntryById_AccessDenied_ThrowsException() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         UUID otherUserId = UUID.randomUUID();
-        existingEntry.setUserId(otherUserId);
+        existingEntry.setUserId(otherUserId.toString());
         when(calendarEntryRepository.findById(entryId)).thenReturn(Optional.of(existingEntry));
 
         assertThrows(CalendarEntryAccessDeniedException.class, () -> calendarEntryService.getEntryById(userDetails, entryId));
@@ -160,10 +163,10 @@ class CalendarEntryServiceTest {
 
     @Test
     void getEntriesInRange_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         LocalDateTime rangeStart = start.minusHours(1);
         LocalDateTime rangeEnd = end.plusHours(1);
-        when(calendarEntryRepository.findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeAscEndTimeAsc(userId, rangeEnd, rangeStart))
+        when(calendarEntryRepository.findByUserIdAndStartTimeBeforeAndEndTimeAfterOrderByStartTimeAscEndTimeAsc(userId.toString(), rangeEnd, rangeStart))
                 .thenReturn(List.of(existingEntry));
 
         List<CalendarEntryResponse> responses = calendarEntryService.getEntriesInRange(userDetails, rangeStart, rangeEnd);
@@ -174,7 +177,7 @@ class CalendarEntryServiceTest {
 
     @Test
     void updateEntry_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         when(calendarEntryRepository.findById(entryId)).thenReturn(Optional.of(existingEntry));
         when(calendarEntryRepository.save(any(CalendarEntry.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -194,7 +197,7 @@ class CalendarEntryServiceTest {
 
     @Test
     void deleteEntry_Success() {
-        when(userRepository.findByEmail("student@calendar.com")).thenReturn(Optional.of(testUser));
+
         when(calendarEntryRepository.findById(entryId)).thenReturn(Optional.of(existingEntry));
 
         assertDoesNotThrow(() -> calendarEntryService.deleteEntry(userDetails, entryId));

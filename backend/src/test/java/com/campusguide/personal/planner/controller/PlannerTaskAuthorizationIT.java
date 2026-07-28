@@ -100,7 +100,7 @@ class PlannerTaskAuthorizationIT {
 
         user2Task = PlannerTask.builder()
                 .id(UUID.randomUUID())
-                .userId(UUID.fromString(user2.getId()))
+                .userId(user2.getId())
                 .title("User 2 Private Task")
                 .type(TaskType.PERSONAL)
                 .priority(TaskPriority.HIGH)

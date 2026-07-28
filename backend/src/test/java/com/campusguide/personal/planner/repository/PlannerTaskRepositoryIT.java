@@ -23,8 +23,8 @@ class PlannerTaskRepositoryIT {
     @Autowired
     private PlannerTaskRepository plannerTaskRepository;
 
-    private UUID userId1;
-    private UUID userId2;
+    private String userId1;
+    private String userId2;
     private PlannerTask task1;
     private PlannerTask task2;
 
@@ -32,8 +32,8 @@ class PlannerTaskRepositoryIT {
     void setUp() {
         plannerTaskRepository.deleteAll();
 
-        userId1 = UUID.randomUUID();
-        userId2 = UUID.randomUUID();
+        userId1 = UUID.randomUUID().toString();
+        userId2 = UUID.randomUUID().toString();
 
         LocalDateTime now = LocalDateTime.now();
 

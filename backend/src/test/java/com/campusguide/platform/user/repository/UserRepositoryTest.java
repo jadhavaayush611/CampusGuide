@@ -1,7 +1,6 @@
 package com.campusguide.platform.user.repository;
 
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.entity.UserRole;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

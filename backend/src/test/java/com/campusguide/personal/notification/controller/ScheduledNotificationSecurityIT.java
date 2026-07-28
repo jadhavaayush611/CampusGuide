@@ -101,7 +101,7 @@ class ScheduledNotificationSecurityIT {
 
         student1Notif = ScheduledNotification.builder()
                 .id(UUID.randomUUID())
-                .userId(u1Id)
+                .userId(u1Id.toString())
                 .title("Student 1 Private Notif")
                 .message("Message")
                 .type(NotificationType.REMINDER)
@@ -123,13 +123,13 @@ class ScheduledNotificationSecurityIT {
 
     @Test
     void testUnauthenticatedAccess_ForbiddenOrUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications"))
+        mockMvc.perform(get("/api/v1/scheduled-notifications"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void testAccessOtherUserNotification_Forbidden() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications/" + student1Notif.getId())
+        mockMvc.perform(get("/api/v1/scheduled-notifications/" + student1Notif.getId())
                         .with(user(student2Details)))
                 .andExpect(status().isForbidden());
     }
@@ -138,7 +138,7 @@ class ScheduledNotificationSecurityIT {
     void testUpdateStatusOtherUserNotification_Forbidden() throws Exception {
         UpdateNotificationStatusRequest statusReq = new UpdateNotificationStatusRequest(NotificationStatus.DELIVERED);
 
-        mockMvc.perform(patch("/api/v1/notifications/" + student1Notif.getId() + "/status")
+        mockMvc.perform(patch("/api/v1/scheduled-notifications/" + student1Notif.getId() + "/status")
                         .with(user(student2Details))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(statusReq)))
@@ -147,7 +147,7 @@ class ScheduledNotificationSecurityIT {
 
     @Test
     void testDeleteOtherUserNotification_Forbidden() throws Exception {
-        mockMvc.perform(delete("/api/v1/notifications/" + student1Notif.getId())
+        mockMvc.perform(delete("/api/v1/scheduled-notifications/" + student1Notif.getId())
                         .with(user(student2Details)))
                 .andExpect(status().isForbidden());
     }

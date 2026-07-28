@@ -18,7 +18,7 @@ import com.campusguide.personal.planner.repository.PlannerTaskRepository;
 import com.campusguide.personal.planner.validation.PlannerTaskValidator;
 import com.campusguide.platform.user.entity.User;
 
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +52,7 @@ class PlannerTaskServiceTest {
     private EventRepository eventRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     private PlannerTaskValidator plannerTaskValidator;
     private PlannerTaskService plannerTaskService;
@@ -66,7 +66,7 @@ class PlannerTaskServiceTest {
     @BeforeEach
     void setUp() {
         plannerTaskValidator = new PlannerTaskValidator(eventRepository);
-        plannerTaskService = new PlannerTaskService(plannerTaskRepository, plannerTaskMapper, plannerTaskValidator, userRepository);
+        plannerTaskService = new PlannerTaskService(plannerTaskRepository, plannerTaskMapper, plannerTaskValidator, currentUserService);
 
         userId = UUID.randomUUID();
         taskId = UUID.randomUUID();
@@ -79,12 +79,14 @@ class PlannerTaskServiceTest {
 
         userDetails = org.springframework.security.core.userdetails.User.withUsername("user@example.com")
                 .password("password")
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")))
                 .build();
+
+        lenient().when(currentUserService.getCurrentUserId(any())).thenReturn(userId.toString());
 
         existingTask = PlannerTask.builder()
                 .id(taskId)
-                .userId(userId)
+                .userId(userId.toString())
                 .title("Sample Task")
                 .description("Sample Description")
                 .type(TaskType.TODO)
@@ -97,7 +99,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void createTask_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         LocalDateTime now = LocalDateTime.now();
@@ -115,13 +117,13 @@ class PlannerTaskServiceTest {
         assertNotNull(response);
         assertEquals("New Task", response.getTitle());
         assertEquals(TaskStatus.TODO, response.getStatus());
-        assertEquals(userId, response.getUserId());
+        assertEquals(userId.toString(), response.getUserId());
         verify(plannerTaskRepository, times(1)).save(any(PlannerTask.class));
     }
 
     @Test
     void createTask_LinkedEventNotFound_ThrowsException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         UUID linkedEventId = UUID.randomUUID();
         when(eventRepository.existsById(linkedEventId)).thenReturn(false);
 
@@ -137,7 +139,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void createTask_DueAtBeforeCreatedAt_ThrowsException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
 
         LocalDateTime dueAtInPast = LocalDateTime.now().minusDays(2);
         CreatePlannerTaskRequest request = CreatePlannerTaskRequest.builder()
@@ -152,7 +154,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void createTask_ReminderAtAfterDueAt_ThrowsException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
 
         LocalDateTime now = LocalDateTime.now();
         CreatePlannerTaskRequest request = CreatePlannerTaskRequest.builder()
@@ -168,8 +170,8 @@ class PlannerTaskServiceTest {
 
     @Test
     void getAllTasks_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
-        when(plannerTaskRepository.findByUserIdOrderByDueAtAsc(userId)).thenReturn(List.of(existingTask));
+
+        when(plannerTaskRepository.findByUserIdOrderByDueAtAsc(userId.toString())).thenReturn(List.of(existingTask));
 
         List<PlannerTaskResponse> responses = plannerTaskService.getAllTasks(userDetails);
 
@@ -179,7 +181,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void getTaskById_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
 
         PlannerTaskResponse response = plannerTaskService.getTaskById(userDetails, taskId);
@@ -190,7 +192,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void getTaskById_NotFound_ThrowsPlannerTaskNotFoundException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.empty());
 
         assertThrows(PlannerTaskNotFoundException.class, () -> plannerTaskService.getTaskById(userDetails, taskId));
@@ -198,10 +200,10 @@ class PlannerTaskServiceTest {
 
     @Test
     void getTaskById_OtherUser_ThrowsPlannerTaskAccessDeniedException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         PlannerTask otherUserTask = PlannerTask.builder()
                 .id(taskId)
-                .userId(UUID.randomUUID())
+                .userId(UUID.randomUUID().toString())
                 .title("Other User Task")
                 .build();
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(otherUserTask));
@@ -211,7 +213,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void updateTask_TransitionToCompleted_SetsCompletedAt() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -231,7 +233,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void updateTask_TransitionToCancelled_ClearsReminderAt() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         existingTask.setReminderAt(LocalDateTime.now().plusHours(2));
         existingTask.setDueAt(LocalDateTime.now().plusDays(1));
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
@@ -255,7 +257,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void updateTask_TaskAlreadyCompleted_ModifyingNonNotes_ThrowsException() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         existingTask.setStatus(TaskStatus.COMPLETED);
         existingTask.setCompletedAt(LocalDateTime.now().minusHours(1));
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
@@ -273,7 +275,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void updateTask_TaskAlreadyCompleted_ModifyingNotes_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         existingTask.setStatus(TaskStatus.COMPLETED);
         existingTask.setCompletedAt(LocalDateTime.now().minusHours(1));
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
@@ -295,7 +297,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void updateTaskStatus_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -310,7 +312,7 @@ class PlannerTaskServiceTest {
 
     @Test
     void deleteTask_Success() {
-        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(testUser));
+
         when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
 
         plannerTaskService.deleteTask(userDetails, taskId);

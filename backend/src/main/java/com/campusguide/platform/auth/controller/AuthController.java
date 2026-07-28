@@ -3,7 +3,7 @@ package com.campusguide.platform.auth.controller;
 import com.campusguide.platform.auth.dto.AuthResponse;
 import com.campusguide.platform.auth.dto.request.LoginRequest;
 import com.campusguide.platform.auth.dto.request.RegisterRequest;
-import com.campusguide.platform.auth.service.AuthService;
+import com.campusguide.platform.auth.service.AuthenticationService;
 import com.campusguide.platform.user.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,20 +14,20 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+        return ResponseEntity.ok(authenticationService.login(request));
     }
 
     @GetMapping("/me")
@@ -35,7 +35,7 @@ public class AuthController {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        UserResponse response = authService.getCurrentUser(userDetails.getUsername());
+        UserResponse response = authenticationService.getCurrentUser(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
 }

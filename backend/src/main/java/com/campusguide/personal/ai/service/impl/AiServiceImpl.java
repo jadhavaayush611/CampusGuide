@@ -20,7 +20,7 @@ import com.campusguide.personal.ai.service.interfaces.AiService;
 import com.campusguide.personal.ai.service.interfaces.ConversationContextBuilder;
 import com.campusguide.personal.ai.enums.AiProvider;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +37,7 @@ public class AiServiceImpl implements AiService {
 
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final ConversationContextBuilder conversationContextBuilder;
     private final PromptBuilder promptBuilder;
     private final AiGatewayClient aiGatewayClient;
@@ -138,10 +138,6 @@ public class AiServiceImpl implements AiService {
     }
 
     private User getUser(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        return currentUserService.getCurrentUser(userDetails);
     }
 }

@@ -12,13 +12,13 @@ import java.util.UUID;
 @Repository
 public interface PlannerTaskRepository extends MongoRepository<PlannerTask, UUID> {
 
-    List<PlannerTask> findByUserIdOrderByDueAtAsc(UUID userId);
+    List<PlannerTask> findByUserIdOrderByDueAtAsc(String userId);
 
-    List<PlannerTask> findByUserId(UUID userId);
+    List<PlannerTask> findByUserId(String userId);
 
-    Optional<PlannerTask> findByIdAndUserId(UUID id, UUID userId);
+    Optional<PlannerTask> findByIdAndUserId(UUID id, String userId);
 
-    List<PlannerTask> findByUserIdAndStatus(UUID userId, TaskStatus status);
+    List<PlannerTask> findByUserIdAndStatus(String userId, TaskStatus status);
 
-    boolean existsByIdAndUserId(UUID id, UUID userId);
+    boolean existsByIdAndUserId(UUID id, String userId);
 }

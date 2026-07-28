@@ -1,6 +1,6 @@
 package com.campusguide.platform.user.dto;
 
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +16,7 @@ public class UserResponse {
     private String id;
     private String email;
     private String username;
-    private UserRole role;
+    private Role role;
     private boolean enabled;
     private boolean emailVerified;
     private Instant createdAt;

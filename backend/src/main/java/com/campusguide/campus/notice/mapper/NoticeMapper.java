@@ -9,6 +9,7 @@ import com.campusguide.campus.notice.enums.NoticePriority;
 import com.campusguide.campus.notice.enums.NoticeVisibility;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +45,8 @@ public class NoticeMapper {
                 .expiresAt(request.getExpiresAt())
                 .isPinned(request.getIsPinned() != null ? request.getIsPinned() : false)
                 .isPublished(published)
-                .createdAt(now)
-                .updatedAt(now)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
     }
 
@@ -88,7 +89,7 @@ public class NoticeMapper {
         if (request.getIsPinned() != null) {
             notice.setIsPinned(request.getIsPinned());
         }
-        notice.setUpdatedAt(LocalDateTime.now());
+        notice.setUpdatedAt(Instant.now());
     }
 
     public NoticeResponse toResponse(Notice notice) {
@@ -110,8 +111,8 @@ public class NoticeMapper {
                 .expiresAt(notice.getExpiresAt())
                 .isPinned(notice.getIsPinned())
                 .isPublished(notice.getIsPublished())
-                .createdAt(notice.getCreatedAt())
-                .updatedAt(notice.getUpdatedAt())
+                .createdAt(notice.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(notice.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(notice.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(notice.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

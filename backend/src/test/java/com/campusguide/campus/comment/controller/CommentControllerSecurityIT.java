@@ -147,7 +147,7 @@ class CommentControllerSecurityIT {
                 .postId(testPost.getId())
                 .build();
 
-        mockMvc.perform(post("/api/comments")
+        mockMvc.perform(post("/api/v1/comments")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -166,7 +166,7 @@ class CommentControllerSecurityIT {
                 .postId(testPost.getId())
                 .build();
 
-        mockMvc.perform(post("/api/comments")
+        mockMvc.perform(post("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -189,7 +189,7 @@ class CommentControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/comments/" + comment.getId())
+        mockMvc.perform(put("/api/v1/comments/" + comment.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -214,7 +214,7 @@ class CommentControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/comments/" + comment.getId())
+        mockMvc.perform(put("/api/v1/comments/" + comment.getId())
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -239,7 +239,7 @@ class CommentControllerSecurityIT {
                 .content("Updated content")
                 .build();
 
-        mockMvc.perform(put("/api/comments/" + comment.getId())
+        mockMvc.perform(put("/api/v1/comments/" + comment.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -260,7 +260,7 @@ class CommentControllerSecurityIT {
                 .build();
         comment = commentRepository.save(comment);
 
-        mockMvc.perform(delete("/api/comments/" + comment.getId())
+        mockMvc.perform(delete("/api/v1/comments/" + comment.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
 
@@ -281,7 +281,7 @@ class CommentControllerSecurityIT {
                 .build();
         comment = commentRepository.save(comment);
 
-        mockMvc.perform(delete("/api/comments/" + comment.getId())
+        mockMvc.perform(delete("/api/v1/comments/" + comment.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("You are not authorized to delete this comment"));
@@ -303,7 +303,7 @@ class CommentControllerSecurityIT {
                 .build();
         comment = commentRepository.save(comment);
 
-        mockMvc.perform(delete("/api/comments/" + comment.getId())
+        mockMvc.perform(delete("/api/v1/comments/" + comment.getId())
                         .with(user(adminDetails)))
                 .andExpect(status().isNoContent());
 
@@ -311,17 +311,16 @@ class CommentControllerSecurityIT {
         assertTrue(updatedComment.getIsDeleted());
     }
 
-    // 9. GET endpoints permitted when unauthenticated.
     @Test
-    void getEndpoints_Unauthenticated_Permitted() throws Exception {
-        mockMvc.perform(get("/api/comments/some-id"))
-                .andExpect(status().isNotFound());
+    void getEndpoints_Unauthenticated_ReturnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/comments/some-id"))
+                .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/api/comments/post/" + testPost.getId()))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/comments/post/" + testPost.getId()))
+                .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(get("/api/comments/author/" + studentUser.getId()))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/comments/author/" + studentUser.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -336,17 +335,17 @@ class CommentControllerSecurityIT {
                 .build();
         comment = commentRepository.save(comment);
 
-        mockMvc.perform(get("/api/comments/" + comment.getId())
+        mockMvc.perform(get("/api/v1/comments/" + comment.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("Content"));
 
-        mockMvc.perform(get("/api/comments/post/" + testPost.getId())
+        mockMvc.perform(get("/api/v1/comments/post/" + testPost.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        mockMvc.perform(get("/api/comments/author/" + studentUser.getId())
+        mockMvc.perform(get("/api/v1/comments/author/" + studentUser.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
@@ -365,7 +364,7 @@ class CommentControllerSecurityIT {
                 .build();
         comment = commentRepository.save(comment);
 
-        mockMvc.perform(get("/api/comments/" + comment.getId())
+        mockMvc.perform(get("/api/v1/comments/" + comment.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNotFound());
     }

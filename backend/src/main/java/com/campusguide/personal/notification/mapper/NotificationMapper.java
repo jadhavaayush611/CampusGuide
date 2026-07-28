@@ -21,7 +21,7 @@ public class NotificationMapper {
                 .type(notification.getType())
                 .priority(notification.getPriority())
                 .read(notification.isRead())
-                .createdAt(notification.getCreatedAt())
+                .createdAt(notification.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(notification.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

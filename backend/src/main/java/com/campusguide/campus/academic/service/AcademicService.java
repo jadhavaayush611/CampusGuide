@@ -16,7 +16,7 @@ import com.campusguide.campus.academic.roadmap.repository.RoadmapRepository;
 import com.campusguide.campus.academic.semesterplanner.entity.SemesterPlan;
 import com.campusguide.campus.academic.semesterplanner.repository.SemesterPlanRepository;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AcademicService {
 
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
     private final StudentProgressRepository studentProgressRepository;
     private final RoadmapRepository roadmapRepository;
     private final SemesterPlanRepository semesterPlanRepository;
@@ -44,12 +44,7 @@ public class AcademicService {
      * @return AcademicDashboardResponse containing all dashboard info
      */
     public AcademicDashboardResponse getDashboard(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         StudentProgress progress = studentProgressRepository.findByStudentId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + user.getId()));
@@ -130,12 +125,7 @@ public class AcademicService {
      * @return AcademicProgressResponse containing progress metrics
      */
     public AcademicProgressResponse getProgress(UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         StudentProgress progress = studentProgressRepository.findByStudentId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + user.getId()));
@@ -188,12 +178,7 @@ public class AcademicService {
      * @return RecommendedSemesterResponse containing recommendations and warnings
      */
     public RecommendedSemesterResponse getRecommendedSemester(UserDetails userDetails, Integer semesterNumber) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         StudentProgress progress = studentProgressRepository.findByStudentId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student progress not found for student: " + user.getId()));
@@ -297,8 +282,8 @@ public class AcademicService {
                 .prerequisiteCourseIds(course.getPrerequisiteCourseIds())
                 .elective(course.getElective())
                 .active(course.getActive())
-                .createdAt(course.getCreatedAt())
-                .updatedAt(course.getUpdatedAt())
+                .createdAt(course.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(course.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(course.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(course.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 }

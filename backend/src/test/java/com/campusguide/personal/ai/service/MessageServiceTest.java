@@ -27,6 +27,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import com.campusguide.platform.user.service.CurrentUserService;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,7 +48,7 @@ class MessageServiceTest {
     private ConversationRepository conversationRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Spy
     private AiMapper aiMapper;
@@ -69,6 +74,8 @@ class MessageServiceTest {
                 .id("user-123")
                 .email("student@campusguide.com")
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(any())).thenReturn(user);
 
         activeConversation = Conversation.builder()
                 .id("conv-123")
@@ -114,7 +121,6 @@ class MessageServiceTest {
                 .content("New Message")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(activeConversation));
         when(messageRepository.save(any(Message.class))).thenAnswer(invocation -> {
             Message saved = invocation.getArgument(0);
@@ -139,7 +145,6 @@ class MessageServiceTest {
                 .content("New Message")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-inactive", "user-123")).thenReturn(Optional.of(inactiveConversation));
 
         assertThrows(ResourceNotFoundException.class, () -> 
@@ -148,7 +153,6 @@ class MessageServiceTest {
 
     @Test
     void getConversationHistory_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(activeConversation));
         when(messageRepository.findByConversationIdOrderByTimestampAsc("conv-123")).thenReturn(List.of(msg1, msg2));
 
@@ -165,7 +169,6 @@ class MessageServiceTest {
 
     @Test
     void deleteConversationMessages_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(activeConversation));
 
         messageService.deleteConversationMessages(userDetails, "conv-123");

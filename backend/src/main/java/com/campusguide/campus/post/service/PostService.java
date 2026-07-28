@@ -9,14 +9,15 @@ import com.campusguide.campus.post.dto.PostSummaryResponse;
 import com.campusguide.campus.post.dto.UpdatePostRequest;
 import com.campusguide.campus.post.entity.Post;
 import com.campusguide.campus.post.repository.PostRepository;
-import com.campusguide.platform.user.entity.UserRole;
+import com.campusguide.platform.user.entity.Role;
 import com.campusguide.platform.user.entity.User;
-import com.campusguide.platform.user.repository.UserRepository;
+import com.campusguide.platform.user.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommunityRepository communityRepository;
-    private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
     /**
      * Creates a new post.
@@ -37,16 +38,11 @@ public class PostService {
      * @throws ResourceNotFoundException if the community or user does not exist
      */
     public PostResponse createPost(UserDetails userDetails, CreatePostRequest request) {
-        if (userDetails == null) {
-            throw new UnauthorisedException("User is not authenticated");
-        }
+        User user = currentUserService.getCurrentUser(userDetails);
 
         if (!communityRepository.existsById(request.getCommunityId())) {
             throw new ResourceNotFoundException("Community not found with id: " + request.getCommunityId());
         }
-
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
         Post post = Post.builder()
                 .title(request.getTitle())
@@ -59,8 +55,8 @@ public class PostService {
                 .isPinned(false)
                 .isEdited(false)
                 .isDeleted(false)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         post = postRepository.save(post);
@@ -89,11 +85,10 @@ public class PostService {
             throw new ResourceNotFoundException("Post not found with id: " + postId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isAuthor = post.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to update this post");
@@ -110,7 +105,7 @@ public class PostService {
         }
 
         post.setIsEdited(true);
-        post.setUpdatedAt(LocalDateTime.now());
+        post.setUpdatedAt(Instant.now());
 
         post = postRepository.save(post);
         return toPostResponse(post);
@@ -136,18 +131,17 @@ public class PostService {
             throw new ResourceNotFoundException("Post not found with id: " + postId);
         }
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+        User user = currentUserService.getCurrentUser(userDetails);
 
         boolean isAuthor = post.getAuthorId().equals(user.getId());
-        boolean isSuperAdmin = user.getRole() == UserRole.ADMIN;
+        boolean isSuperAdmin = user.getRole() == Role.SUPER_ADMIN;
 
         if (!isAuthor && !isSuperAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this post");
         }
 
         post.setIsDeleted(true);
-        post.setUpdatedAt(LocalDateTime.now());
+        post.setUpdatedAt(Instant.now());
         postRepository.save(post);
     }
 
@@ -194,9 +188,7 @@ public class PostService {
      * @throws ResourceNotFoundException if the author does not exist
      */
     public List<PostSummaryResponse> getPostsByAuthor(String authorId) {
-        if (!userRepository.existsById(authorId)) {
-            throw new ResourceNotFoundException("User not found with id: " + authorId);
-        }
+        currentUserService.getUserByIdentifier(authorId);
 
         return postRepository.findByAuthorIdAndIsDeletedFalse(authorId).stream()
                 .map(this::toPostSummaryResponse)
@@ -229,8 +221,8 @@ public class PostService {
                 .commentCount(post.getCommentCount())
                 .isPinned(post.getIsPinned())
                 .isEdited(post.getIsEdited())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
+                .createdAt(post.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(post.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(post.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(post.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 
@@ -245,7 +237,7 @@ public class PostService {
                 .communityId(post.getCommunityId())
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
-                .createdAt(post.getCreatedAt())
+                .createdAt(post.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(post.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 }

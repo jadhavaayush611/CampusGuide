@@ -32,10 +32,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class RecommendationServiceTest {
 
-    @Mock private UserRepository userRepository;
+    @Mock private CurrentUserService currentUserService;
     @Mock private StudentProgressRepository studentProgressRepository;
     @Mock private CourseRepository courseRepository;
     @Mock private RoadmapRepository roadmapRepository;
@@ -66,8 +68,10 @@ class RecommendationServiceTest {
                 .email("student@campusguide.com")
                 .username("student123")
                 .passwordHash("password")
-                .role(com.campusguide.platform.user.entity.UserRole.STUDENT)
+                .role(com.campusguide.platform.user.entity.Role.STUDENT)
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(any())).thenReturn(user);
     }
 
     @Test
@@ -86,7 +90,7 @@ class RecommendationServiceTest {
                 .explanation("Ex")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(studentProgressRepository.findByStudentId(user.getId())).thenReturn(Optional.of(progress));
         when(courseRepository.findByActiveTrueOrderByCourseCodeAsc()).thenReturn(Collections.emptyList());
         when(roadmapRepository.findByIsDeletedFalseOrderByCreatedAtDesc()).thenReturn(Collections.emptyList());
@@ -110,7 +114,7 @@ class RecommendationServiceTest {
 
     @Test
     void getRecommendations_EmptyContextAndNoRecommendations() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(studentProgressRepository.findByStudentId(user.getId())).thenReturn(Optional.empty());
         when(recommendationEngine.generateAllRecommendations(any(RecommendationUserContext.class)))
                 .thenReturn(Collections.emptyList());
@@ -131,7 +135,7 @@ class RecommendationServiceTest {
                 .explanation("Matches event")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(studentProgressRepository.findByStudentId(user.getId())).thenReturn(Optional.empty());
         when(recommendationEngine.generateRecommendationsByType(any(RecommendationUserContext.class), eq(RecommendationType.EVENT)))
                 .thenReturn(List.of(recEvent));
@@ -149,13 +153,14 @@ class RecommendationServiceTest {
 
     @Test
     void getRecommendations_Unauthenticated_ThrowsUnauthorisedException() {
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
         assertThrows(UnauthorisedException.class, () ->
                 recommendationService.getRecommendations(null, null, null, null));
     }
 
     @Test
     void getRecommendations_UserNotFound_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.empty());
+        when(currentUserService.getCurrentUser(userDetails)).thenThrow(new ResourceNotFoundException("User not found"));
 
         assertThrows(ResourceNotFoundException.class, () ->
                 recommendationService.getRecommendations(userDetails, null, null, null));

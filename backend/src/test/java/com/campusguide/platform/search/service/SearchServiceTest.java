@@ -36,6 +36,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 @ExtendWith(MockitoExtension.class)
 class SearchServiceTest {
 
@@ -50,7 +52,7 @@ class SearchServiceTest {
     @Mock
     private ResourceRepository resourceRepository;
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Spy
     private SearchMapper searchMapper = new SearchMapper();
@@ -72,11 +74,13 @@ class SearchServiceTest {
                 .id("user-123")
                 .email("test@campusguide.com")
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(any())).thenReturn(user);
     }
 
     @Test
     void search_AllModules_Success() {
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+
 
         Course course = Course.builder().id("c1").courseName("Advanced Java").courseCode("CS201").description("Java programming").active(true).build();
         Roadmap roadmap = Roadmap.builder().id("rm1").title("Java Roadmap").description("Become Java expert").isDeleted(false).build();
@@ -107,7 +111,7 @@ class SearchServiceTest {
 
     @Test
     void search_IndividualModule_Success() {
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+
 
         Course course = Course.builder().id("c1").courseName("Advanced Java").courseCode("CS201").description("Java programming").active(true).build();
         when(courseRepository.findByActiveTrueAndCourseNameContainingIgnoreCaseOrActiveTrueAndCourseCodeContainingIgnoreCaseOrActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString(), anyString()))
@@ -129,7 +133,7 @@ class SearchServiceTest {
 
     @Test
     void search_EmptyResultSet_Success() {
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+
 
         when(courseRepository.findByActiveTrueAndCourseNameContainingIgnoreCaseOrActiveTrueAndCourseCodeContainingIgnoreCaseOrActiveTrueAndDescriptionContainingIgnoreCase(anyString(), anyString(), anyString()))
                 .thenReturn(Collections.emptyList());
@@ -159,7 +163,7 @@ class SearchServiceTest {
 
     @Test
     void search_RelevanceSorting_Success() {
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+
 
         Course courseExact = Course.builder().id("c1").courseName("Java").courseCode("CS201").description("Java programming").active(true).build();
         Roadmap roadmapContains = Roadmap.builder().id("rm1").title("Advanced Java Programming").description("Course description").isDeleted(false).build();
@@ -195,7 +199,7 @@ class SearchServiceTest {
 
     @Test
     void search_Pagination_Success() {
-        when(userRepository.findByEmail("test@campusguide.com")).thenReturn(Optional.of(user));
+
 
         List<Course> courses = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {

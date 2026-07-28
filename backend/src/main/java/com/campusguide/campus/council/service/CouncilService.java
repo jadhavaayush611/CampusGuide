@@ -16,6 +16,7 @@ import com.campusguide.campus.resource.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -124,7 +125,7 @@ public class CouncilService {
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with ID: " + id));
 
         council.setIsActive(request.getIsActive());
-        council.setUpdatedAt(LocalDateTime.now());
+        council.setUpdatedAt(Instant.now());
 
         Council updated = councilRepository.save(council);
         return councilMapper.toResponse(updated);

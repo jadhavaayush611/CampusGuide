@@ -132,7 +132,7 @@ class RoadmapControllerSecurityIT {
                 .expectedGraduationYear(2028)
                 .build();
 
-        mockMvc.perform(post("/api/roadmaps")
+        mockMvc.perform(post("/api/v1/roadmaps")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -153,7 +153,7 @@ class RoadmapControllerSecurityIT {
                 .expectedGraduationYear(2027)
                 .build();
 
-        mockMvc.perform(post("/api/roadmaps")
+        mockMvc.perform(post("/api/v1/roadmaps")
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -174,7 +174,7 @@ class RoadmapControllerSecurityIT {
                 .expectedGraduationYear(2028)
                 .build();
 
-        mockMvc.perform(post("/api/roadmaps")
+        mockMvc.perform(post("/api/v1/roadmaps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -203,7 +203,7 @@ class RoadmapControllerSecurityIT {
                 .description("Updated description")
                 .build();
 
-        mockMvc.perform(put("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(put("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -232,7 +232,7 @@ class RoadmapControllerSecurityIT {
                 .title("Updated Title")
                 .build();
 
-        mockMvc.perform(put("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(put("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -260,7 +260,7 @@ class RoadmapControllerSecurityIT {
                 .title("Updated Title By Admin")
                 .build();
 
-        mockMvc.perform(put("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(put("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(adminDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -283,7 +283,7 @@ class RoadmapControllerSecurityIT {
                 .title("Updated Title")
                 .build();
 
-        mockMvc.perform(put("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(put("/api/v1/roadmaps/" + roadmap.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -302,7 +302,7 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        mockMvc.perform(delete("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(delete("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
 
@@ -321,7 +321,7 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        mockMvc.perform(delete("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(delete("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("You are not authorized to delete this roadmap"));
@@ -341,7 +341,7 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        mockMvc.perform(delete("/api/roadmaps/" + roadmap.getId())
+        mockMvc.perform(delete("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(adminDetails)))
                 .andExpect(status().isNoContent());
 
@@ -360,7 +360,7 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        mockMvc.perform(delete("/api/roadmaps/" + roadmap.getId()))
+        mockMvc.perform(delete("/api/v1/roadmaps/" + roadmap.getId()))
                 .andExpect(status().isUnauthorized());
 
         Roadmap notDeletedRoadmap = roadmapRepository.findById(roadmap.getId()).orElseThrow();
@@ -374,7 +374,7 @@ class RoadmapControllerSecurityIT {
         Roadmap roadmap = Roadmap.builder()
                 .title("Special CSE Roadmap")
                 .description("CSE description")
-                .degreeProgram("B.Tech")
+                .degreeProgram("BTech")
                 .department("Computer Science")
                 .totalCredits(180)
                 .expectedGraduationYear(2028)
@@ -385,43 +385,43 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        // GET /api/roadmaps (Get all)
-        mockMvc.perform(get("/api/roadmaps")
+        // GET /api/v1/roadmaps (Get all)
+        mockMvc.perform(get("/api/v1/roadmaps")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/roadmaps/{roadmapId} (Get by ID)
-        mockMvc.perform(get("/api/roadmaps/" + roadmap.getId())
+        // GET /api/v1/roadmaps/{roadmapId} (Get by ID)
+        mockMvc.perform(get("/api/v1/roadmaps/" + roadmap.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Special CSE Roadmap"));
 
-        // GET /api/roadmaps/creator/{userId} (Get by creator)
-        mockMvc.perform(get("/api/roadmaps/creator/" + studentUser.getId())
+        // GET /api/v1/roadmaps/creator/{userId} (Get by creator)
+        mockMvc.perform(get("/api/v1/roadmaps/creator/" + studentUser.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/roadmaps/degree/{degreeProgram} (Get by degree program)
-        mockMvc.perform(get("/api/roadmaps/degree/B.Tech")
+        // GET /api/v1/roadmaps/degree/{degreeProgram} (Get by degree program)
+        mockMvc.perform(get("/api/v1/roadmaps/degree/BTech")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        // GET /api/roadmaps/department/{department} (Get by department)
-        mockMvc.perform(get("/api/roadmaps/department/Computer Science")
+        // GET /api/v1/roadmaps/department/{department} (Get by department)
+        mockMvc.perform(get("/api/v1/roadmaps/department/Computer Science")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
 
     @Test
-    void retrievalEndpoints_Unauthenticated_Permitted() throws Exception {
+    void retrievalEndpoints_Unauthenticated_ReturnsUnauthorized() throws Exception {
         Roadmap roadmap = Roadmap.builder()
                 .title("Special CSE Roadmap")
                 .description("CSE description")
-                .degreeProgram("B.Tech")
+                .degreeProgram("BTech")
                 .department("Computer Science")
                 .totalCredits(180)
                 .expectedGraduationYear(2028)
@@ -432,24 +432,24 @@ class RoadmapControllerSecurityIT {
                 .build();
         roadmap = roadmapRepository.save(roadmap);
 
-        // GET /api/roadmaps (Get all)
-        mockMvc.perform(get("/api/roadmaps"))
-                .andExpect(status().isOk());
+        // GET /api/v1/roadmaps (Get all)
+        mockMvc.perform(get("/api/v1/roadmaps"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/roadmaps/{roadmapId} (Get by ID)
-        mockMvc.perform(get("/api/roadmaps/" + roadmap.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/roadmaps/{roadmapId} (Get by ID)
+        mockMvc.perform(get("/api/v1/roadmaps/" + roadmap.getId()))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/roadmaps/creator/{userId} (Get by creator)
-        mockMvc.perform(get("/api/roadmaps/creator/" + studentUser.getId()))
-                .andExpect(status().isOk());
+        // GET /api/v1/roadmaps/creator/{userId} (Get by creator)
+        mockMvc.perform(get("/api/v1/roadmaps/creator/" + studentUser.getId()))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/roadmaps/degree/{degreeProgram} (Get by degree program)
-        mockMvc.perform(get("/api/roadmaps/degree/B.Tech"))
-                .andExpect(status().isOk());
+        // GET /api/v1/roadmaps/degree/{degreeProgram} (Get by degree program)
+        mockMvc.perform(get("/api/v1/roadmaps/degree/B.Tech"))
+                .andExpect(status().isUnauthorized());
 
-        // GET /api/roadmaps/department/{department} (Get by department)
-        mockMvc.perform(get("/api/roadmaps/department/Computer Science"))
-                .andExpect(status().isOk());
+        // GET /api/v1/roadmaps/department/{department} (Get by department)
+        mockMvc.perform(get("/api/v1/roadmaps/department/Computer Science"))
+                .andExpect(status().isUnauthorized());
     }
 }

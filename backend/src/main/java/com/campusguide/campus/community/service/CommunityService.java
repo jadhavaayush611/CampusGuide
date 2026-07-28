@@ -11,6 +11,7 @@ import com.campusguide.campus.community.repository.CommunityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,8 +40,8 @@ public class CommunityService {
                 .councilId(request.getCouncilId())
                 .memberCount(0)
                 .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         community = communityRepository.save(community);
@@ -69,7 +70,7 @@ public class CommunityService {
             community.setIsActive(request.getIsActive());
         }
 
-        community.setUpdatedAt(LocalDateTime.now());
+        community.setUpdatedAt(Instant.now());
         community = communityRepository.save(community);
         return toCommunityResponse(community);
     }
@@ -123,8 +124,8 @@ public class CommunityService {
                 .councilId(community.getCouncilId())
                 .memberCount(community.getMemberCount())
                 .isActive(community.getIsActive())
-                .createdAt(community.getCreatedAt())
-                .updatedAt(community.getUpdatedAt())
+                .createdAt(community.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(community.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)
+                .updatedAt(community.getUpdatedAt() != null ? java.time.LocalDateTime.ofInstant(community.getUpdatedAt(), java.time.ZoneId.systemDefault()) : null)
                 .build();
     }
 

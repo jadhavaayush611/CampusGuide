@@ -124,7 +124,7 @@ class ConversationControllerSecurityIT {
                 .type(ConversationType.GENERAL_CHAT)
                 .build();
 
-        mockMvc.perform(post("/api/ai/conversations")
+        mockMvc.perform(post("/api/v1/ai/conversations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
@@ -137,7 +137,7 @@ class ConversationControllerSecurityIT {
                 .type(ConversationType.GENERAL_CHAT)
                 .build();
 
-        mockMvc.perform(post("/api/ai/conversations")
+        mockMvc.perform(post("/api/v1/ai/conversations")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -163,7 +163,7 @@ class ConversationControllerSecurityIT {
                 .build();
         conversationRepository.save(inactiveConv);
 
-        mockMvc.perform(get("/api/ai/conversations")
+        mockMvc.perform(get("/api/v1/ai/conversations")
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -178,7 +178,7 @@ class ConversationControllerSecurityIT {
                 .title("Renamed Academic Chat")
                 .build();
 
-        mockMvc.perform(put("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(put("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -195,7 +195,7 @@ class ConversationControllerSecurityIT {
                 .title("Malicious Rename")
                 .build();
 
-        mockMvc.perform(put("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(put("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -205,7 +205,7 @@ class ConversationControllerSecurityIT {
     // 4. Soft Delete tests
     @Test
     void deleteConversation_Owner_ReturnsNoContent() throws Exception {
-        mockMvc.perform(delete("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(delete("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isNoContent());
 
@@ -215,7 +215,7 @@ class ConversationControllerSecurityIT {
 
     @Test
     void deleteConversation_NonOwner_ReturnsNotFound() throws Exception {
-        mockMvc.perform(delete("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(delete("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isNotFound());
 
@@ -231,7 +231,7 @@ class ConversationControllerSecurityIT {
                 .content("What is my GPA?")
                 .build();
 
-        mockMvc.perform(post("/api/ai/conversations/" + studentConversation.getId() + "/messages")
+        mockMvc.perform(post("/api/v1/ai/conversations/" + studentConversation.getId() + "/messages")
                         .with(user(studentDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -251,7 +251,7 @@ class ConversationControllerSecurityIT {
                 .content("Attempt access")
                 .build();
 
-        mockMvc.perform(post("/api/ai/conversations/" + studentConversation.getId() + "/messages")
+        mockMvc.perform(post("/api/v1/ai/conversations/" + studentConversation.getId() + "/messages")
                         .with(user(otherDetails))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -275,7 +275,7 @@ class ConversationControllerSecurityIT {
                 .build();
         messageRepository.saveAll(List.of(msg1, msg2));
 
-        mockMvc.perform(get("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(get("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(studentDetails)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.conversation.id").value(studentConversation.getId()))
@@ -286,7 +286,7 @@ class ConversationControllerSecurityIT {
 
     @Test
     void getConversationHistory_NonOwner_ReturnsNotFound() throws Exception {
-        mockMvc.perform(get("/api/ai/conversations/" + studentConversation.getId())
+        mockMvc.perform(get("/api/v1/ai/conversations/" + studentConversation.getId())
                         .with(user(otherDetails)))
                 .andExpect(status().isNotFound());
     }

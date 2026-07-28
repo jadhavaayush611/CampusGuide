@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.campusguide.platform.user.service.CurrentUserService;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -39,7 +41,7 @@ class ConversationServiceTest {
     private ConversationRepository conversationRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private CurrentUserService currentUserService;
 
     @Spy
     private AiMapper aiMapper;
@@ -78,12 +80,15 @@ class ConversationServiceTest {
         conversation = Conversation.builder()
                 .id("conv-123")
                 .userId("user-123")
-                .title("Original Title")
+                .title("Test Conversation")
                 .type(ConversationType.GENERAL_CHAT)
                 .status(ConversationStatus.ACTIVE)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
+
+        lenient().when(currentUserService.getCurrentUser(userDetails)).thenReturn(user);
+        lenient().when(currentUserService.getCurrentUser(otherUserDetails)).thenReturn(otherUser);
     }
 
     @Test
@@ -93,7 +98,7 @@ class ConversationServiceTest {
                 .type(ConversationType.GENERAL_CHAT)
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.save(any(Conversation.class))).thenAnswer(invocation -> {
             Conversation saved = invocation.getArgument(0);
             saved.setId("conv-new");
@@ -118,6 +123,8 @@ class ConversationServiceTest {
                 .type(ConversationType.GENERAL_CHAT)
                 .build();
 
+        when(currentUserService.getCurrentUser(null)).thenThrow(new UnauthorisedException("User is not authenticated"));
+
         assertThrows(UnauthorisedException.class, () -> conversationService.createConversation(null, request));
     }
 
@@ -127,7 +134,7 @@ class ConversationServiceTest {
                 .title("Updated Title")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(conversation));
         when(conversationRepository.save(any(Conversation.class))).thenReturn(conversation);
 
@@ -144,7 +151,7 @@ class ConversationServiceTest {
                 .title("Updated Title")
                 .build();
 
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> 
@@ -153,7 +160,7 @@ class ConversationServiceTest {
 
     @Test
     void deleteConversation_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(conversation));
         when(conversationRepository.save(any(Conversation.class))).thenReturn(conversation);
 
@@ -165,19 +172,18 @@ class ConversationServiceTest {
 
     @Test
     void getConversation_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.findByIdAndUserId("conv-123", "user-123")).thenReturn(Optional.of(conversation));
 
         ConversationResponse response = conversationService.getConversation(userDetails, "conv-123");
 
         assertNotNull(response);
         assertEquals("conv-123", response.getId());
-        assertEquals("Original Title", response.getTitle());
+        assertEquals("Test Conversation", response.getTitle());
     }
 
     @Test
     void getConversation_UnauthorizedAccess_ThrowsResourceNotFoundException() {
-        when(userRepository.findByEmail(otherUserDetails.getUsername())).thenReturn(Optional.of(otherUser));
         when(conversationRepository.findByIdAndUserId("conv-123", "user-456")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> 
@@ -186,7 +192,7 @@ class ConversationServiceTest {
 
     @Test
     void listConversations_Success() {
-        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(Optional.of(user));
+
         when(conversationRepository.findByUserIdAndStatus("user-123", ConversationStatus.ACTIVE)).thenReturn(List.of(conversation));
 
         List<ConversationSummaryResponse> list = conversationService.listConversations(userDetails);
@@ -194,6 +200,6 @@ class ConversationServiceTest {
         assertNotNull(list);
         assertEquals(1, list.size());
         assertEquals("conv-123", list.get(0).getId());
-        assertEquals("Original Title", list.get(0).getTitle());
+        assertEquals("Test Conversation", list.get(0).getTitle());
     }
 }

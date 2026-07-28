@@ -13,12 +13,12 @@ import java.util.UUID;
 @Repository
 public interface ScheduledNotificationRepository extends MongoRepository<ScheduledNotification, UUID> {
 
-    List<ScheduledNotification> findByUserIdOrderByScheduledForAsc(UUID userId);
+    List<ScheduledNotification> findByUserIdOrderByScheduledForAsc(String userId);
 
-    Optional<ScheduledNotification> findByIdAndUserId(UUID id, UUID userId);
+    Optional<ScheduledNotification> findByIdAndUserId(UUID id, String userId);
 
     List<ScheduledNotification> findByUserIdAndStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(
-            UUID userId, NotificationStatus status, LocalDateTime now);
+            String userId, NotificationStatus status, LocalDateTime now);
 
     List<ScheduledNotification> findByStatusAndScheduledForLessThanEqualOrderByScheduledForAsc(
             NotificationStatus status, LocalDateTime now);

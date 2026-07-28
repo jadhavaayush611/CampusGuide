@@ -7,12 +7,13 @@ import com.campusguide.personal.planner.entity.TaskStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Component
 public class PlannerTaskMapper {
 
-    public PlannerTask toEntity(CreatePlannerTaskRequest request, UUID userId) {
+    public PlannerTask toEntity(CreatePlannerTaskRequest request, String userId) {
         if (request == null) {
             return null;
         }
@@ -38,6 +39,13 @@ public class PlannerTaskMapper {
         if (task == null) {
             return null;
         }
+        LocalDateTime createdAt = task.getCreatedAt() != null
+                ? LocalDateTime.ofInstant(task.getCreatedAt(), ZoneId.systemDefault())
+                : null;
+        LocalDateTime updatedAt = task.getUpdatedAt() != null
+                ? LocalDateTime.ofInstant(task.getUpdatedAt(), ZoneId.systemDefault())
+                : null;
+
         return PlannerTaskResponse.builder()
                 .id(task.getId())
                 .userId(task.getUserId())
@@ -51,8 +59,8 @@ public class PlannerTaskMapper {
                 .completedAt(task.getCompletedAt())
                 .reminderAt(task.getReminderAt())
                 .notes(task.getNotes())
-                .createdAt(task.getCreatedAt())
-                .updatedAt(task.getUpdatedAt())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .build();
     }
 }

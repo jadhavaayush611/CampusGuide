@@ -6,12 +6,13 @@ import com.campusguide.personal.calendar.entity.CalendarEntry;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Component
 public class CalendarEntryMapper {
 
-    public CalendarEntry toEntity(CreateCalendarEntryRequest request, UUID userId) {
+    public CalendarEntry toEntity(CreateCalendarEntryRequest request, String userId) {
         if (request == null) {
             return null;
         }
@@ -40,6 +41,13 @@ public class CalendarEntryMapper {
         if (entry == null) {
             return null;
         }
+        LocalDateTime createdAt = entry.getCreatedAt() != null
+                ? LocalDateTime.ofInstant(entry.getCreatedAt(), ZoneId.systemDefault())
+                : null;
+        LocalDateTime updatedAt = entry.getUpdatedAt() != null
+                ? LocalDateTime.ofInstant(entry.getUpdatedAt(), ZoneId.systemDefault())
+                : null;
+
         return CalendarEntryResponse.builder()
                 .id(entry.getId())
                 .userId(entry.getUserId())
@@ -54,8 +62,8 @@ public class CalendarEntryMapper {
                 .isAllDay(entry.isAllDay())
                 .color(entry.getColor())
                 .notes(entry.getNotes())
-                .createdAt(entry.getCreatedAt())
-                .updatedAt(entry.getUpdatedAt())
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
                 .build();
     }
 }

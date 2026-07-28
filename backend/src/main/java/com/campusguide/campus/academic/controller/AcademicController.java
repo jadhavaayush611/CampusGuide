@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/academic")
+@RequestMapping("/api/v1/academic")
 @RequiredArgsConstructor
 @Validated
 public class AcademicController {
