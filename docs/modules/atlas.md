@@ -197,6 +197,141 @@ Plug-and-play RAG extension points in `com.campusguide.personal.ai.atlas.context
 
 ---
 
+## Knowledge Ingestion & Vector Infrastructure (Phase 3.3 — Batch 3.3.1)
+
+### 1. Universal Retrieval Abstraction (`KnowledgeArtifact`)
+`KnowledgeArtifact` is the universal, provider-independent retrieval abstraction across all Atlas knowledge and RAG ingestion pipelines. All loaders, parsers, chunkers, embedding generators, and vector indices operate exclusively on `KnowledgeArtifact` instances.
+
+Key components of `KnowledgeArtifact`:
+- `id` (`ArtifactIdentifier`): Unique string identifier formatted as `art_<uuid>` or deterministic chunk ID `parentId_chk_<index>`.
+- `type` (`ArtifactType`): Artifact classification (`DOCUMENT`, `CHUNK`, `PDF`, `DOCX`, `MARKDOWN`, `TEXT`, `FAQ`, `WEB_PAGE`, `API_SCHEMA`, `CUSTOM`).
+- `content`: String representation of normalized text content.
+- `metadata` (`ArtifactMetadata`): Preserves document name, category, domain, language, size in bytes, and key-value attributes.
+- `source` (`ArtifactSource`): Preserves provenance including `sourceUri`, `sourceType`, `title`, `author`, `startOffset`, and `endOffset`.
+- `version` (`ArtifactVersion`): Tracks `versionNumber`, SHA-256 `checksum`, and creation timestamp.
+- `references` (`List<ArtifactReference>`): Preserves hierarchical and sequential lineage (`PARENT`, `CHILD`, `PREVIOUS_CHUNK`, `NEXT_CHUNK`, `RELATED`, `REPLACEMENT`).
+- `embedding` (`ArtifactEmbedding`): Provider-independent vector representation (`float[] vector`, `provider`, `model`, `dimension`).
+- `lifecycleState` (`ArtifactLifecycleState`): Tracks lifecycle state transitions (`DISCOVERED`, `INGESTING`, `PARSED`, `CHUNKED`, `EMBEDDED`, `INDEXED`, `FAILED`, `ARCHIVED`).
+
+### 2. Knowledge Ingestion Pipeline
+`KnowledgeIngestionService` orchestrates end-to-end document ingestion:
+1. **Document Loading**: `DocumentLoader` loads raw content into `RawDocument` wrappers from text, byte arrays, files, or paths.
+2. **Parsing**: `DocumentParser` strategy implementations (`PdfDocumentParser`, `DocxDocumentParser`, `MarkdownDocumentParser`, `TextDocumentParser`) extract normalized content, metadata, page boundaries, and section hierarchies.
+3. **Artifact Construction**: `ArtifactBuilder` constructs root `KnowledgeArtifact` instances.
+4. **Chunking**: `ChunkingEngine` applies requested chunking strategies (`FIXED_SIZE`, `SLIDING_WINDOW`, `SEMANTIC`) and produces deterministic chunk artifacts linked via lineage references.
+5. **Embedding Generation**: `EmbeddingService` generates vector embeddings in batch via `EmbeddingProvider` implementations (`OpenAIEmbeddingProvider`, `MockEmbeddingProvider`, `LocalEmbeddingProvider`) with caching and retries.
+6. **Vector Storage**: `VectorRepository` indexes chunk artifacts into `VectorStore` instances (`InMemoryVectorStore` and provider stubs).
+7. **Knowledge Cataloging**: `KnowledgeCatalog` registers entries, tracks checksums, updates lifecycle states, and exposes catalog metrics.
+
+### 3. Chunking Strategies
+- `FixedSizeChunker`: Fixed character-size chunking with configurable window size and overlap.
+- `SlidingWindowChunker`: Word token sliding window chunking.
+- `SemanticChunker`: Section and heading aware semantic chunking preserving heading context and paragraph boundaries.
+- **Deterministic Chunk IDs**: Generated using `ArtifactIdentifier.generateChunkId(parentId, index)` -> `<parentId>_chk_<index>`.
+
+### 4. Embedding Infrastructure
+- `EmbeddingProvider` interface: Provider-independent embedding interface (`getProviderName()`, `getDimension()`, `embed()`).
+- `OpenAIEmbeddingProvider`: Provider implementation supporting `text-embedding-3-small` (1536 dim) and `text-embedding-3-large` (3072 dim), falling back to deterministic mock when API keys are unconfigured.
+- `MockEmbeddingProvider`: Deterministic SHA-256 unit-vector generator for offline execution and zero-dependency unit/integration testing.
+- `EmbeddingService`: Manages batch partitioning (default batch size 32), SHA-256 content caching, exponential backoff retries (3 attempts), and Micrometer latency metrics.
+
+### 5. Vector Store Architecture
+- `VectorStore` Interface: Core operations (`index`, `indexAll`, `search`, `get`, `delete`, `clear`, `count`).
+- `InMemoryVectorStore`: Concurrent, thread-safe in-memory vector store with cosine similarity ranking and metadata filtering.
+- Extension Provider Interfaces: Pluggable stubs for `PgVectorStore`, `PineconeVectorStore`, `QdrantVectorStore`, `WeaviateVectorStore`, and `MilvusVectorStore`.
+
+### 6. Knowledge Catalog & Observability
+- `KnowledgeCatalog`: Tracks document lifecycle, versioning, indexing status, total document/chunk counts, and checksum deduplication (skips ingestion if checksum already indexed).
+- **Privacy & Observability**:
+  - `AtlasMetrics` records latency (`atlas.latency.orchestration`, `atlas.latency.provider`), token usage, and request counts.
+  - Zero raw document content logging: Loggers emit only document URIs, checksums, document IDs, chunk counts, durations, and error messages.
+
+### 7. Extension Points
+### 8. Extension Points (Batch 3.3.1)
+- **Custom Document Parsers**: Implement `DocumentParser` and register as Spring `@Component`.
+- **Custom Chunking Strategies**: Implement `ChunkingStrategy` and register with `ChunkingEngine`.
+- **Custom Embedding Providers**: Implement `EmbeddingProvider` and register with `EmbeddingService`.
+- **Custom Vector Stores**: Implement `VectorStore` and register with `VectorRepository`.
+
+---
+
+## Semantic Retrieval & Hybrid Knowledge Engine (Phase 3.3 — Batch 3.3.2)
+
+### 1. Knowledge Collections Boundary Architecture
+KnowledgeCollections serve as the provider-independent retrieval boundary across Atlas, replacing global corpus searching with scoped, permission-aware boundaries. Every `KnowledgeArtifact` belongs to exactly one `KnowledgeCollection`.
+
+Key components:
+- `KnowledgeCollection`: Core boundary domain model encapsulating `collectionId`, `name`, `type`, `scope`, `lifecycleState`, `version`, `metadata`, `statistics`, and `updateHistory`.
+- `KnowledgeCollectionMetadata`: Defines ownership (`ownerId`, `ownerType`), access authorization (`allowedRoles`, `allowedUsers`, `isPublic`), domain classification, and collection weights.
+- `KnowledgeCollectionType`: Structural classification enum (`PUBLIC_KNOWLEDGE`, `ACADEMIC`, `DEPARTMENTAL`, `FACULTY_ONLY`, `USER_MEMORY`, `PRIVATE_USER`, `SYSTEM`).
+- `KnowledgeCollectionScope`: Access scope enum (`GLOBAL`, `SYSTEM`, `PUBLIC`, `DEPARTMENT`, `FACULTY`, `USER`, `PRIVATE`, `ROLE_BASED`).
+- `KnowledgeCollectionRegistry`: Thread-safe Spring `@Component` holding active collections, managing lifecycle transitions, and pre-seeding default collections (`public_campus_knowledge`, `academic_catalog`, `department_docs`, `user_memories`, `default_collection`).
+
+### 2. Collection Lifecycle Management
+Tracks collection evolution and status transitions across six states:
+1. `DISCOVERED`: Collection identified or declared.
+2. `INDEXING`: Vector embedding generation or storage indexing in progress.
+3. `ACTIVE`: Ready for semantic and hybrid retrieval queries.
+4. `UPDATING`: Incremental re-indexing or version upgrade in progress.
+5. `ARCHIVED`: Archived from active search boundary.
+6. `FAILED`: Ingestion or indexing failure.
+
+Collection statistics (`totalArtifactCount`, `totalChunkCount`, `totalVectorCount`, `byteSize`, `lastIndexedAt`, `lastUpdatedAt`) and update records (`CollectionUpdateRecord`) provide full auditability of version history and updates.
+
+### 3. Collection-Aware Retrieval
+- `CollectionSelector`: Evaluates `QueryContext` (intent, domain, extracted entities), user identity, and roles against registered collections to select active retrieval candidates with dynamic relevance weighting.
+- `CollectionRetrievalPolicy`: Configurable policy setting default scopes, max candidate bounds, confidence thresholds, and fallback collection strategies (`fallbackCollectionIds`).
+- `CollectionFilter`: Flexible predicate filtering collections by allowed types, scopes, role access, and priority thresholds.
+
+### 4. Semantic Retrieval Infrastructure
+- `SemanticRetriever`: Executes vector similarity search using `EmbeddingService` query vector generation and `VectorRetriever`, enforcing configurable cosine similarity thresholds and metadata filters.
+- `VectorRetriever`: Executes dense vector searches against `VectorStore` implementations.
+- `ArtifactRetriever`: Resolves full `KnowledgeArtifact` payloads by identifier or batch lookup.
+
+### 5. Hybrid Retrieval & Multi-Search Fusion
+- `HybridRetriever`: Combines vector similarity search, structured metadata matching (category, domain, source type), keyword matching (BM25 token overlap + title matching bonus), and collection-scoped retrieval.
+- `HybridRankingEngine`: Fuses vector similarity ($50\%$), keyword overlap ($35\%$), and structured metadata match ($15\%$) into a unified hybrid score.
+
+### 6. Multi-Dimensional Artifact Ranking Engine
+- `ArtifactRankingService`: Evaluates candidate artifacts across 7 weighted dimensions:
+  1. `semanticSimilarity` ($35\%$): Dense vector cosine similarity score.
+  2. `keywordOverlap` ($20\%$): Normalized query term overlap + title match bonus.
+  3. `freshnessScore` ($10\%$): Recency decay based on artifact update timestamp.
+  4. `evidenceQuality` ($10\%$): Content completeness, heading metadata, and lineage references.
+  5. `sourceAuthority` ($10\%$): Source type priority (e.g. PDF/Official Catalog > Docx/Text > Web/FAQ).
+  6. `collectionPriority` ($10\%$): Priority weight assigned to the target `KnowledgeCollection`.
+  7. `retrievalConfidence` ($5\%$): Query understanding confidence score.
+- `ArtifactScore`: Encapsulates total score and enforces deterministic ordering: `totalScore` descending $\rightarrow$ `collectionPriority` descending $\rightarrow$ `artifactId` ascending.
+
+### 7. Citation Engine
+- `CitationGenerator`: Transforms top ranked artifacts into structured `Citation` instances carrying citation marks (e.g., `[1]`, `[2]`), source references (`SourceReference`), document references (`DocumentReference`), section/chunk references (`SectionReference`), and content snippets.
+- Structured Citation Models:
+  - `Citation`: Unique `citationId`, `citationMark`, snippet, and confidence score.
+  - `SourceReference`: URI, sourceType, title, author.
+  - `DocumentReference`: documentId, title, collectionId, category.
+  - `SectionReference`: sectionTitle, start/end byte offsets, chunkIndex.
+
+### 8. Context Intelligence Integration Pipeline
+- `KnowledgeRetrievalEngine`: Orchestrates the complete end-to-end RAG pipeline:
+  $$\text{QueryContext} \rightarrow \text{CollectionSelector} \rightarrow \text{HybridRetriever} \rightarrow \text{ArtifactRankingService} \rightarrow \text{CitationGenerator} \rightarrow \text{KnowledgeRetrievalResult}$$
+- Evidence Conversion: Transforms ranked `KnowledgeArtifact`s and `Citation`s into `RetrievalEvidence` objects (`EvidenceType.RAG`, `EvidenceSource.KNOWLEDGE_BASE`) with citation metadata, bridging seamlessly into the Context Intelligence Layer (`AtlasContext`, `ContextIntelligenceEngine`, `ContextFusionEngine`, `ConflictResolver`, `ContextPrioritizer`).
+- `AtlasKnowledgeRetrievalAdapter`: Adapts `KnowledgeRetrievalEngine` to legacy RAG strategy interfaces (`VectorRetrievalProvider`, `SemanticRetrievalProvider`, `HybridRetrievalProvider`).
+
+### 9. Future Memory & Permissions Architecture
+Knowledge Collections naturally support future memory and security expansion without modifying retrieval architecture:
+- `USER_MEMORY`: User-scoped memories (`scope = USER`, `ownerId = userId`).
+- `DEPARTMENTAL`: Department-scoped knowledge (`scope = DEPARTMENT`, `allowedRoles = {"CS_FACULTY", "STUDENT"}`).
+- `FACULTY_ONLY`: Restrictive faculty guides (`scope = FACULTY`, `allowedRoles = {"FACULTY", "ADMIN"}`).
+- `PRIVATE_USER`: Private personal notes (`scope = PRIVATE`, `ownerId = userId`).
+- `PUBLIC_KNOWLEDGE`: Open campus guides and public FAQs (`scope = PUBLIC`).
+
+### 10. Extension Points (Batch 3.3.2)
+- **Custom Collection Filters**: Extend `CollectionFilter` or supply custom predicates to `CollectionSelector`.
+- **Custom Hybrid Scoring Rules**: Extend `HybridRankingEngine` to include domain-specific keyword algorithms.
+- **Custom Citation Formatters**: Implement custom citation marking strategies in `CitationGenerator`.
+
+---
+
 ## Error Handling Matrix
 
 | Exception Class | Cause | Category | HTTP Status | Response Payload |
@@ -208,3 +343,4 @@ Plug-and-play RAG extension points in `com.campusguide.personal.ai.atlas.context
 | `AtlasTimeoutException` | Request execution time exceeds timeout threshold | `TIMEOUT` | `504 Gateway Timeout` | `{"error": "<message>"}` |
 | `AtlasProviderException` | General API error from model provider | `PROVIDER_PERMANENT` | `502 Bad Gateway` | `{"error": "<message>"}` |
 | `AtlasConfigurationException` | Invalid startup configuration | `SYSTEM_ERROR` | `500 Internal Server Error` | `{"error": "<message>"}` |
+
