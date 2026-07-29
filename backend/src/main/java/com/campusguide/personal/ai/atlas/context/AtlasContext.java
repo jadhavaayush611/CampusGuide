@@ -39,6 +39,12 @@ public class AtlasContext {
     private ContextMetrics metrics = new ContextMetrics();
 
     @Builder.Default
+    private Map<String, com.campusguide.personal.ai.atlas.context.evidence.EvidenceBundle> evidenceBundles = new ConcurrentHashMap<>();
+
+    @Builder.Default
+    private com.campusguide.personal.ai.atlas.context.intelligence.IntelligenceMetrics intelligenceMetrics = new com.campusguide.personal.ai.atlas.context.intelligence.IntelligenceMetrics();
+
+    @Builder.Default
     private Map<String, Object> contributions = new ConcurrentHashMap<>();
 
     @Builder.Default
@@ -51,9 +57,17 @@ public class AtlasContext {
         this.conversationId = conversationId;
         this.userId = userId;
         this.metrics = new ContextMetrics();
+        this.evidenceBundles = new ConcurrentHashMap<>();
+        this.intelligenceMetrics = new com.campusguide.personal.ai.atlas.context.intelligence.IntelligenceMetrics();
         this.contributions = new ConcurrentHashMap<>();
         this.placeholders = new ConcurrentHashMap<>();
         this.metadata = new ConcurrentHashMap<>();
+    }
+
+    public void addEvidenceBundle(com.campusguide.personal.ai.atlas.context.evidence.EvidenceBundle bundle) {
+        if (bundle != null && bundle.getTargetDomain() != null) {
+            this.evidenceBundles.put(bundle.getTargetDomain(), bundle);
+        }
     }
 
     public void addContribution(String contributorName, Object data) {

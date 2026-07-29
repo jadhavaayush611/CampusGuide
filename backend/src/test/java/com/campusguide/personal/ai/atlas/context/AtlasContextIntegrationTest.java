@@ -65,7 +65,7 @@ class AtlasContextIntegrationTest {
     void testEndToEndContextAggregationAndPromptRendering() {
         AtlasChatRequest request = AtlasChatRequest.builder()
                 .conversationId("conv-integration-1")
-                .prompt("What should I focus on today for {department}?")
+                .prompt("What should I focus on today for {department} at the campus library?")
                 .systemPrompt("You are Atlas AI assisting {student_name}.")
                 .contextPlaceholders(Map.of("student_name", "Sarah", "department", "Computer Science"))
                 .build();
@@ -114,6 +114,6 @@ class AtlasContextIntegrationTest {
         assertTrue(prompt.getSystemPrompt().contains("--- PLANNER CONTEXT ---"));
         assertTrue(prompt.getSystemPrompt().contains("--- CALENDAR CONTEXT ---"));
         assertTrue(prompt.getSystemPrompt().contains("--- CAMPUS CONTEXT ---"));
-        assertEquals("What should I focus on today for Computer Science?", prompt.getUserMessage());
+        assertEquals("What should I focus on today for Computer Science at the campus library?", prompt.getUserMessage());
     }
 }
