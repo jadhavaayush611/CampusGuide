@@ -218,6 +218,55 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasPromptValidationException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasPromptValidationException(com.campusguide.personal.ai.atlas.exception.AtlasPromptValidationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasRateLimitException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasRateLimitException(com.campusguide.personal.ai.atlas.exception.AtlasRateLimitException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasAuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasAuthenticationException(com.campusguide.personal.ai.atlas.exception.AtlasAuthenticationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasConfigurationException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasConfigurationException(com.campusguide.personal.ai.atlas.exception.AtlasConfigurationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasProviderUnavailableException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasProviderUnavailableException(com.campusguide.personal.ai.atlas.exception.AtlasProviderUnavailableException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasTimeoutException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasTimeoutException(com.campusguide.personal.ai.atlas.exception.AtlasTimeoutException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasProviderException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasProviderException(com.campusguide.personal.ai.atlas.exception.AtlasProviderException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex) {
         Map<String, String> error = new HashMap<>();
