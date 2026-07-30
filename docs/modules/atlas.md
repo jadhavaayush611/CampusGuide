@@ -726,6 +726,170 @@ Pluggable SPI interfaces designed for zero-redesign future runtime execution cap
 
 ---
 
+## Phase 3.6 — Batch 3.6.1: Execution Runtime Engine
+
+The Execution Runtime Engine safely executes validated `ExecutableWorkflow`s while remaining completely independent of planning engines and provider-specific tool implementations.
+
+### 1. Architectural Invariant & Contract
+- **Strict Input Consumption**: Consumes ONLY `ExecutionContext` and `ExecutableWorkflow`.
+- **Zero Direct Inspection Invariant**: The runtime engine NEVER inspects `ReasoningContext`, `DecisionContext`, `PlanningContext`, or `ExecutionPlan` directly.
+
+### 2. Workflow Runtime Architecture
+- `WorkflowRuntime`: Central facade and service implementing `ExecutionRuntime`. Manages workflow instantiation (`createInstance`), lifecycle management, session isolation (`WorkflowSession`), execution APIs (`executeWorkflow`, `executeInstance`), state persistence, pause (`pauseWorkflow`), resume (`resumeWorkflow`), and cancellation (`cancelWorkflow`).
+- `WorkflowInstance`: Aggregate tracking active and historical workflow executions encapsulating `instanceId`, `workflowId`, `contextId`, `WorkflowState`, `WorkflowSession`, `currentStageIndex`, `startTime`, `endTime`, `checkpoints`, and `executionLog`.
+- `WorkflowSession`: Manages runtime session state, variables, intermediate unit outputs (`ToolResult`), and isolation for active workflow execution in thread-safe concurrent maps.
+- `WorkflowLifecycle`: Interface defining execution lifecycle callbacks (`onStart`, `onStageStart`, `onStageComplete`, `onUnitStart`, `onUnitComplete`, `onWait`, `onResume`, `onFailure`, `onRollback`, `onCancel`, `onComplete`).
+
+### 3. Execution Engine & Dispatcher
+- `ExecutionCoordinator`: Coordinates stage-by-stage execution of workflow instances. Evaluates stage ordering, preconditions, and stage completion policies (`ALL_MUST_SUCCEED`, `ANY_MUST_SUCCEED`, `AT_LEAST_ONE`, `MAJORITY_MUST_SUCCEED`).
+- `ExecutionPipeline`: Orchestrates execution steps for each stage: Pre-stage Checkpoint -> Unit Execution -> Completion Policy Validation -> Post-stage Checkpoint.
+- `ExecutionDispatcher`: Dispatches execution units sequentially or concurrently in parallel (using `CompletableFuture` thread pools for parallel stages) to `ToolExecutor`.
+
+### 4. Provider-Independent Tool Execution
+- `ToolExecutor`: Core tool execution service validating security authorization via `ExecutionSecurityManager`, resolving appropriate `ToolAdapter` from `ToolRegistry`, executing invocations (`ToolInvocation`), and handling retries via `RetryEngine`.
+- `ToolAdapter` Interface & Implementations:
+  - `InternalServiceToolAdapter`: Invocations for internal platform and domain services (`internal.`, `campus.`, `academic.`, `calendar.`, `planner.`).
+  - `McpToolAdapter`: Model Context Protocol tool invocations (`mcp.`).
+  - `RestApiToolAdapter`: External REST API endpoints (`rest.`, `http.`, `api.`).
+  - `DatabaseToolAdapter`: Database operations (`db.`, `database.`, `sql.`).
+  - `LocalFunctionToolAdapter`: In-process local function execution (`local.`, `function.`, `fn.`).
+  - `ConnectorToolAdapter`: External connector integrations (`connector.`, `external.`).
+- `ToolRegistry`: Thread-safe registry holding registered `ToolAdapter` instances with fallback capability resolution.
+
+### 5. Runtime State Machine
+- `ExecutionStateMachine`: Enforces deterministic state transitions for `WorkflowInstance` and logs audit records.
+- `WorkflowState` Graph:
+  - Normal Flow: `CREATED` -> `VALIDATED` -> `READY` -> `RUNNING` -> `WAITING` / `PAUSED` -> `COMPLETED`
+  - Recovery & Terminal States: `FAILED`, `RETRYING`, `ROLLING_BACK`, `CANCELLED`
+- `TransitionValidator`: Enforces allowed transition matrix and validates state graph invariants.
+
+### 6. Checkpoint Runtime Engine
+- `CheckpointManager`: Thread-safe manager creating, storing, retrieving, and restoring checkpoints.
+- `RuntimeCheckpoint` & `StateSnapshot`: Captures immutable snapshot of `WorkflowSession` variables, completed unit IDs, stage index, and status at pre-stage (`PRE_STAGE`), post-stage (`POST_STAGE`), and failure points.
+- `CheckpointPolicy`: Policy defining automatic/manual checkpoint rules and limits.
+
+### 7. Retry Engine
+- `RetryEngine`: Evaluates retry decisions (`RetryDecision`), calculates backoff delays, and tracks unit failure counts.
+- `RetryStrategy`: Supports `FIXED`, `EXPONENTIAL_BACKOFF`, `CIRCUIT_BREAKER`, `IMMEDIATE`, and `NO_RETRY`.
+- Circuit Breaker: Automatically trips when consecutive failure threshold is exceeded to prevent cascading failures.
+
+### 8. Rollback Runtime Engine
+- `RollbackExecutor`: Facade consuming `RollbackPlan` from `ExecutableWorkflow` and executing compensating actions in reverse execution order.
+- `RollbackCoordinator`: Coordinates rollback processing, transitions instance state to `ROLLING_BACK`, invokes `CompensationExecutor`, restores latest checkpoints, and finalizes state to `CANCELLED` or `FAILED`.
+- `CompensationExecutor`: Executes individual compensating reverse units via `ToolExecutor`.
+
+### 9. Runtime Event System
+- `RuntimeEventBus`: In-memory thread-safe event bus supporting synchronous and asynchronous event publishing and subscription management.
+- `WorkflowEvent`: Published on lifecycle and state changes (`WORKFLOW_STARTED`, `WORKFLOW_COMPLETED`, `WORKFLOW_PAUSED`, `WORKFLOW_RESUMED`, `WORKFLOW_CANCELLED`, `WORKFLOW_ROLLBACK`).
+- `ExecutionEvent`: Published on granular stage and unit execution events (`UNIT_START`, `UNIT_EXECUTED`, `UNIT_RETRY`).
+
+### 10. Human Interaction & Control
+- `ExecutionControlService`: Service managing human interventions, manual approvals, pause, resume, cancel, retry, and parameter overrides.
+- `ApprovalWaitState`: Captures pending manual approval requirements, prompt messages, required roles, and timeouts.
+- `ManualIntervention`: Historical audit record tracking operator actions and intervention outcomes.
+
+### 11. Runtime Monitoring & Privacy
+- `ExecutionMonitor`: Listens to `WorkflowEvent` and `ExecutionEvent` to collect operational statistics (`WorkflowStatistics`) and report engine health (`HealthMonitor`).
+- `RuntimeMetrics`: Micrometer metrics capturing counters, timers, and gauges for workflow durations, unit executions, retries, and rollbacks.
+- **Privacy Guarantees**: Omits sensitive workflow payloads, parameters, and PII from all metrics and logs.
+
+### 12. Failure Recovery Engine
+- `RecoveryCoordinator`: Evaluates stage or unit failure, selects recovery strategy (`RETRY_UNIT`, `RESTORE_CHECKPOINT`, `ROLLBACK_WORKFLOW`, `WAIT_FOR_HUMAN`, `CANCEL`), restores checkpoints, or triggers rollback.
+
+### 13. Runtime Security Manager
+- `EdgeRuntimeExtension`: Edge node execution (Cloudflare Workers, Edge nodes).
+
+---
+
+## Multi-Agent Orchestration Architecture (Phase 3.6 - Batch 3.6.2)
+
+### 1. Overview & Architectural Principles
+The Multi-Agent Orchestration Layer coordinates specialized, autonomous agents over Atlas's existing Execution Runtime.
+- **Strict Invariant**: Reuses the Execution Runtime (`ExecutionRuntime`, `WorkflowRuntime`, `ExecutionCoordinator`) and does NOT duplicate execution logic.
+- **Provider Independence**: Operates on pure domain contracts (`AtlasAgent`, `AgentDescriptor`, `TaskAssignment`, `AgentMessage`) decoupled from vendor AI SDKs.
+- **Autonomous Coordination**: Enables capability discovery, load-balanced delegation, parallel synchronization barriers, shared memory leasing, dynamic replanning, and long-running workflow persistence.
+
+```
++-----------------------------------------------------------------------------------+
+|                        Multi-Agent Orchestration Layer                           |
+|  +-------------------+   +--------------------+   +----------------------------+  |
+|  |   AgentRuntime    |   |   AgentRegistry    |   |      DelegationEngine      |  |
+|  |   (AtlasAgent)    |   | (AgentDescriptor)  |   | (Capability/Load/Priority) |  |
+|  +---------+---------+   +---------+----------+   +-------------+--------------+  |
+|            |                       |                            |                 |
+|  +---------v---------+   +---------v----------+   +-------------v--------------+  |
+|  |  CommunicationBus |   |    SharedMemory    |   |     CoordinationEngine     |  |
+|  |  (AgentMessage)   |   | (MemoryCoordinator)|   |  (SynchronizationBarrier)  |  |
+|  +---------+---------+   +---------+----------+   +-------------+--------------+  |
+|            |                       |                            |                 |
+|  +---------v-----------------------v----------------------------v--------------+  |
+|  |                   DistributedWorkflowExecutor                              |  |
+|  |                 (PartitionStrategy & ResultMerger)                          |  |
+|  +---------------------------------+-------------------------------------------+  |
+|                                    | (Delegates execution)                        |
++------------------------------------+----------------------------------------------+
+                                     |
+                                     v
++-----------------------------------------------------------------------------------+
+|                            Atlas Execution Runtime                                |
+|         (WorkflowRuntime -> ExecutionCoordinator -> ExecutionPipeline)            |
++-----------------------------------------------------------------------------------+
+```
+
+### 2. Core Orchestration Components
+
+#### Agent Runtime & Lifecycle
+- `AtlasAgent`: Core autonomous agent entity encapsulating `AgentDescriptor`, `AgentState`, `AgentLifecycle`, and `AgentSession`. Delegates task execution directly to `ExecutionRuntime`.
+- `AgentRuntime`: Managed Spring service orchestrating agent registration, active agent instances, state transitions (`UNINITIALIZED`, `READY`, `RUNNING`, `PAUSED`, `STOPPED`, `TERMINATED`, `FAILED`), and delegated task launches.
+- `AgentSession`: Session context tracking active agent task executions and status transitions.
+
+#### Agent Registry & Discovery
+- `AgentRegistry`: Dynamic registry supporting agent registration, capability discovery (`findAgentsByCapability`), specialization domain queries (`findAgentsByDomain`), health tracking (`HEALTHY`, `DEGRADED`, `UNHEALTHY`), and version management.
+- `AgentDescriptor`, `AgentCapability`, `AgentMetadata`: Define capability requirements, cost weights, concurrency caps, domain tags, and metadata attributes.
+
+#### Delegation Engine
+- `DelegationEngine`: Evaluates task requirements against registered agents using configurable `DelegationPolicy` and `AssignmentStrategy` (`CAPABILITY_BASED`, `LOAD_BALANCED`, `PRIORITY_AWARE`, `LOCALITY_AWARE`, `HYBRID`).
+- `TaskAssignment`: Task assignment contract linking task ID, selected agent ID, priority, locality key, and structured explanation.
+
+#### Agent Communication & Negotiation
+- `CommunicationBus`: In-memory event bus facilitating asynchronous request/response, point-to-point channels (`AgentChannel`), broadcasts (`recipientAgentId = "*"`), multi-agent negotiations (`ConversationContext`), and cancellation signals.
+- `AgentMessage`: Structured message model carrying sender, recipient, conversation ID, message type (`REQUEST`, `RESPONSE`, `BROADCAST`, `NEGOTIATION`, `COORDINATION`, `CANCELLATION`, `HEARTBEAT`), priority, correlation ID, and payload.
+
+#### Shared Memory & Distributed Leasing
+- `SharedMemory`: Thread-safe, multi-tenant memory space (`namespace` -> `key` -> `SharedState`) supporting versioned cross-agent state sharing.
+- `MemoryCoordinator` & `MemoryLease`: Manages exclusive/shared leases (`acquireLease`, `releaseLease`, `updateStateWithLease`) ensuring safe concurrent access while keeping `ExecutionRuntime` as the authoritative source of truth.
+
+#### Coordination Engine & Synchronization Barriers
+- `CoordinationEngine`: Manages parallel agent synchronization, stage/task dependency enforcement, result merging, and conflict resolution using `CoordinationPolicy`.
+- `SynchronizationBarrier`: Barrier primitive allowing N parallel agents to arrive, publish results, and await collective release at workflow checkpoints.
+
+#### Distributed Workflow Execution
+- `DistributedWorkflowExecutor`: Partitions workflows into sub-workflows using `PartitionStrategy` (`STAGE_BASED`, `CAPABILITY_BASED`, `DATA_LOCALITY`, `BALANCED`), delegates partitions to specialized agents, executes them over `ExecutionRuntime`, and combines results via `ResultMerger`.
+
+#### Dynamic Replanning
+- `DynamicReplanner`: Listens for `ReplanningTrigger` events (`EXECUTION_FAILURE`, `UNAVAILABLE_CAPABILITY`, `ENVIRONMENTAL_CHANGE`, `USER_CONSTRAINT_CHANGE`, `POLICY_VIOLATION`), re-invokes `PlanningEngine` to generate an updated `ExecutionPlan`, re-invokes `ExecutionPreparationEngine` to build a replacement `ExecutableWorkflow`, and formulates a `ReplanningDecision`.
+
+#### Supervisor Runtime
+- `SupervisorAgent`: Specialized supervisor overseeing multi-agent execution.
+- `ExecutionAuditor`: Periodically audits agent execution, detecting stalled agents, deadlock risks, and unhealthy agents.
+- `RecoveryCoordinator`: Orchestrates multi-agent recovery, agent failovers, and escalation.
+- `PolicySupervisor`: Enforces governance policies, concurrency limits, and resource constraints across agents.
+
+#### Long-Running Workflows & Persistence
+- `WorkflowLease`: Lease model guaranteeing exclusive execution ownership for long-running workflows lasting hours, days, or weeks.
+- `WorkflowPersistence`: In-memory persistence store saving workflow execution snapshots (`WorkflowSnapshot`).
+- `SuspensionManager`: Manages workflow suspension, releasing live resources while persisting state.
+- `ResumeCoordinator`: Manages workflow resumption, renewing leases, restoring context, and restarting execution over `ExecutionRuntime`.
+
+#### Runtime Explainability
+- `OrchestrationExplanationEngine`: Generates human-readable and structured explanations for task delegation (`DelegationExplanation`), synchronization barriers (`CoordinationReason`), agent choices (`AgentDecision`), dynamic replanning, and supervisor interventions.
+
+#### Extension Interfaces & Observability
+- **Learning Hooks**: Provider extension interfaces (`ExecutionFeedback`, `AgentFeedback`, `PerformanceFeedback`, `LearningSignal`) for future adaptive optimization hooks without implementing adaptive ML logic.
+- `OrchestrationMetrics`: Micrometer telemetry provider capturing orchestration latency (`atlas.orchestration.latency`), agent utilization (`atlas.orchestration.agent.utilization`), delegation counts (`atlas.orchestration.delegation.count`), synchronization delays (`atlas.orchestration.synchronization.delay`), distributed executions (`atlas.orchestration.distributed.executions`), replanning frequency (`atlas.orchestration.replanning.frequency`), and supervisor interventions (`atlas.orchestration.supervisor.interventions`) while strictly omitting sensitive execution payload data.
+
+---
+
 ## Error Handling Matrix
 
 | Exception Class | Cause | Category | HTTP Status | Response Payload |
