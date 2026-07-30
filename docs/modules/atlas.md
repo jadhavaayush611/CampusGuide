@@ -332,6 +332,159 @@ Knowledge Collections naturally support future memory and security expansion wit
 
 ---
 
+## Provider-Independent Knowledge Graph Infrastructure (Phase 3.4 — Batch 3.4.1)
+
+### 1. Architectural Overview
+The Atlas Knowledge Graph Infrastructure provides a reusable, provider-independent graph data layer that models domain relationships between `KnowledgeArtifact`s, `KnowledgeCollection`s, and structured campus entities (`Person`, `Course`, `Building`, `Department`, `Event`, `Service`, `Document`) without embedding reasoning logic.
+
+The graph architecture is completely decoupled from underlying graph database providers, defining pure interfaces and in-memory structures compatible with Neo4j, JanusGraph, Apache TinkerPop, and Amazon Neptune.
+
+### 2. Node & Edge Data Infrastructure
+
+#### Nodes (`KnowledgeNode`)
+- `NodeIdentifier`: Value object wrapper for unique node keys (e.g. `node_123`, `course:CS101`, `artifact:art_456`, `collection:col_789`).
+- `NodeType`: Enum supporting `KnowledgeArtifact`, `KnowledgeCollection`, `Person`, `Course`, `Building`, `Department`, `Event`, `Service`, `Document`, and extensible `Custom` types.
+- `NodeAttributes`: Type-safe attribute map supporting typed property access (`getString`, `getInteger`, `getDouble`, `getBoolean`, `getList`), merging, and immutability projections.
+- `KnowledgeNode`: Core node entity maintaining identifier, node type, name/label, attributes, metadata, timestamps (`createdAt`, `updatedAt`), source collection ID, source artifact ID, and provenance tracking.
+
+#### Edges (`KnowledgeEdge`)
+- `RelationshipType`: Enum supporting standard relationship types:
+  - `BELONGS_TO`, `PART_OF`, `LOCATED_IN`, `TEACHES`, `ENROLLED_IN`, `REFERENCES`, `DEPENDS_ON`, `RELATED_TO`, `PREREQUISITE`, `NEXT`, `PREVIOUS`, `USES`, `CONTAINS`, `CUSTOM`.
+- `RelationshipStrength`: Value object modeling confidence/weight between 0.0 and 1.0 with standard constants (`WEAK` = 0.25, `MEDIUM` = 0.50, `STRONG` = 0.75, `DEFINITIVE` = 1.00) and max-weight combination rules.
+- `EdgeMetadata`: Encapsulates extractor name, provenance string, source artifact ID, timestamps, and custom properties.
+- `KnowledgeEdge`: Directed/undirected edge connecting source and target nodes with deterministic ID generation (`sourceId->relationshipType->targetId`).
+
+### 3. Relationship Extraction Pipeline
+- `RelationshipExtractor` Interface: Pluggable extraction strategies extracting structural and explicit relationships from artifacts, collections, and structured entities.
+- `RelationshipBuilder`: Fluent builder for constructing `KnowledgeEdge` instances cleanly.
+- `RelationshipRegistry`: Central component managing registered extractors in priority order and orchestrating multi-extractor execution.
+- Extractor Implementations:
+  - `ArtifactReferenceRelationshipExtractor`: Extracts explicit `REFERENCES`, `DEPENDS_ON`, `NEXT`, and `PREVIOUS` edges from artifact lineage and references.
+  - `CollectionRelationshipExtractor`: Extracts `CONTAINS` and `BELONGS_TO` edges between collections and contained artifacts.
+  - `MetadataRelationshipExtractor`: Extracts domain entity relationships (`TEACHES`, `ENROLLED_IN`, `LOCATED_IN`, `PREREQUISITE`, `USES`, `RELATED_TO`, `PART_OF`) from metadata fields (course codes, instructors, buildings, departments).
+
+### 4. Graph Construction Pipeline
+- `KnowledgeGraphBuilder`: Fluent builder for incremental `KnowledgeGraph` assembly.
+- `GraphConstructionService`: Service component orchestrating graph construction from artifacts or collections:
+  1. **Node Synthesis**: Transforms artifacts, collections, and metadata entity fields into `KnowledgeNode`s.
+  2. **Node Merging**: Merges attributes and metadata when nodes with duplicate identifiers are encountered.
+  3. **Edge Deduplication**: Combines parallel edges with identical source, target, and relationship type, upgrading relationship strength.
+  4. **Provenance Preservation**: Preserves source artifact and collection lineage on all nodes and edges.
+  5. **Consistency Validation**: Identifies and removes dangling edges pointing to missing nodes.
+
+### 5. Storage Abstraction (`GraphStore`)
+- `GraphStore` Interface: SPI defining graph storage operations (`save`, `findById`, `findAll`, `deleteById`, `existsById`, `createSnapshot`, `restoreSnapshot`).
+- `InMemoryGraphStore`: Concurrent, thread-safe in-memory graph store implementation.
+- `GraphSnapshot`: Point-in-time serializable snapshot wrapper for graph backup, export, and restoration.
+- `GraphRepository`: High-level repository abstraction facilitating domain querying and node/edge lookup.
+- Provider Compatibility: Storage SPI interfaces are designed for simple adapter mapping to Neo4j, JanusGraph, Apache TinkerPop, and Amazon Neptune.
+
+### 6. Graph Registry & Cataloging
+- `KnowledgeGraphRegistry`: Service tracking active knowledge graphs, graph lifecycle states, node/edge statistics, and catalog metadata.
+- `GraphCatalogEntry`: Catalog summary object containing `graphId`, `name`, `version`, `lifecycleState`, `nodeCount`, `edgeCount`, `sourceCollectionIds`, and `lastDiagnostics`.
+
+### 7. Traversal Engine & Policy Architecture
+- `TraversalPolicy`: Policy configuration defining `maxDepth`, direction (`OUTGOING`, `INCOMING`, `BOTH`), `allowedRelationshipTypes`, `allowedNodeTypes`, `detectCycles`, `maxNodes`, `maxPaths`, and `minStrength`.
+- `GraphTraversalEngine` Interface & Implementations:
+  - `BreadthFirstTraversal`: Deterministic BFS path finding returning `KnowledgePath` objects.
+  - `DepthFirstTraversal`: Deterministic DFS path finding with stack depth enforcement.
+  - `NeighborhoodTraversal`: Localized k-hop neighborhood extraction returning `KnowledgeSubgraph` projections.
+
+### 8. Graph Lifecycle Management
+Tracks Knowledge Graph status across six discrete lifecycle states:
+1. `DISCOVERED`: Initial declaration of graph requirement.
+2. `BUILDING`: Construction, node synthesis, and edge extraction in progress.
+3. `ACTIVE`: Graph ready for queries, traversals, and retrieval integration.
+4. `UPDATING`: Incremental node/edge updates or re-indexing in progress.
+5. `FAILED`: Construction or validation error state.
+6. `ARCHIVED`: Archived graph instance.
+
+Diagnostics (`GraphDiagnostics`) track build duration, node creation/merging counts, edge deduplication counts, and dangling edge cleanup stats.
+
+### 9. Observability & Privacy
+- `KnowledgeGraphMetrics`: Captures build latency (`atlas.graph.build.latency`), total nodes/edges (`atlas.graph.nodes.total`, `atlas.graph.edges.total`), traversal latency (`atlas.graph.traversal.latency`), and relationship extraction counters.
+- **Privacy Guarantees**: Loggers NEVER emit raw node or document text content. Only graph IDs, node IDs, node types, relationship types, counts, and timing metrics are logged.
+
+### 10. Extension Points (Batch 3.4.1)
+- **Custom Relationship Extractors**: Implement `RelationshipExtractor` and register with `RelationshipRegistry`.
+- **Custom Graph Store Adapters**: Implement `GraphStore` for Neo4j, JanusGraph, TinkerPop, or Neptune.
+- **Custom Traversal Strategies**: Extend `GraphTraversalEngine` or `TraversalPolicy` for specialized graph algorithm execution.
+
+---
+
+## Graph Reasoning & Explainability Engine (Batch 3.4.2)
+
+### 1. Overview & Architecture
+The Graph Reasoning Engine extends Atlas Knowledge Graph infrastructure with deterministic graph slicing, rule-based inference, path discovery, structured explainability, and multi-factor confidence scoring. The reasoning engine operates **exclusively on `KnowledgeGraphView`** instances rather than mutating full `KnowledgeGraph` structures directly.
+
+### 2. Graph Views & Projections
+- `KnowledgeGraphView`: Read-only view interface defining graph query, node, edge, and adjacency access methods.
+- `GraphProjection`: Immutable `KnowledgeGraphView` implementation representing a deterministic slice of a Knowledge Graph.
+- `GraphProjectionPolicy`: Configurable policy encapsulating depth limits (`maxDepth`), edge strength thresholds (`minEdgeStrength`), collection boundaries (`allowedCollections`), node type filters (`allowedNodeTypes`), relationship type filters (`allowedRelationshipTypes`), and security permissions (`requiredPermissions`).
+- `GraphProjectionBuilder`: Builder pattern executing deterministic graph slicing based on policy constraints and root seed nodes.
+- `GraphProjectionEngine`: Service orchestrating projection strategies (`NeighborhoodProjection`, `CollectionProjection`, `TraversalProjection`), computing node/edge retention ratios, and tracking projection latency metrics.
+
+### 3. GraphContext & Scope
+- `GraphContext`: Encapsulates root seed nodes, graph projection view (`KnowledgeGraphView`), traversal policy, reasoning objective (`ReasoningObjective`), active collection boundaries, security permission context (`PermissionContext`), maximum reasoning depth, and confidence threshold.
+- `ReasoningObjective`: Encapsulates objective type (`EXPLAIN_RELATIONSHIP`, `FIND_PATH`, `DISCOVER_INDIRECT_CONNECTIONS`, `VERIFY_INVARIANT`, `INFER_MISSING_LINKS`, `CONTEXT_GENERATION`, `CUSTOM`), description, and target node sets.
+- `ReasoningConstraints` & `ReasoningScope`: Encapsulate execution bounds, time budget, and domain scope boundaries.
+
+### 4. Non-Mutating Rule-Based Inference Engine
+- `InferenceEngine`: Evaluates declarative inference rules over a `KnowledgeGraphView` without mutating the underlying graph.
+- `InferenceRegistry`: Dynamic registry maintaining active `InferenceRule` instances.
+- `InferenceRule` Interface & Built-In Rules:
+  - `TransitiveRelationshipRule`: Infers indirect relationships (e.g. A -> C via `INFERRED_ACADEMIC_PEER` when A -> B and B -> C share compatible department relationships).
+  - `HierarchicalPrerequisiteRule`: Infers multi-hop course prerequisite dependencies (`INDIRECT_PREREQUISITE`).
+- `InferenceResult`: Returns non-persisted virtual inferred edges, applied rule counts, and execution metrics.
+
+### 5. Multi-Strategy Reasoning Path Finder
+- `ReasoningPathFinder`: Discovers candidate reasoning paths on a `KnowledgeGraphView` (including virtual inferred edges) across four strategies:
+  - `SHORTEST`: BFS hop minimization.
+  - `STRONGEST`: Maximizing cumulative edge relationship strength.
+  - `HIGHEST_CONFIDENCE`: Maximizing path confidence scores.
+  - `COLLECTION_AWARE`: Enforcing strict active collection boundaries.
+- `EvidencePath`: Ordered node/edge path representation with hop count, cumulative score, and confidence.
+- `ReasoningChain`: Step-by-step logical reasoning sequence with rationale and overall chain confidence score.
+
+### 6. Explainability Pipeline
+- `ExplanationEngine`: Transforms reasoning paths and inference outputs into structured human/LLM readable explanations.
+- `ReasoningExplanation`: Complete explanation result containing:
+  - Reasoning chain (`ReasoningChain`)
+  - Primary evidence path (`EvidencePath`)
+  - Deterministic confidence (`ReasoningConfidence`)
+  - Explicit assumptions (`List<String>`)
+  - Cited source artifacts (`List<String>`)
+  - Cited graph edges (`List<String>`)
+  - Step breakdown (`List<ExplanationStep>`)
+  - Evidence summary (`EvidenceSummary`)
+
+### 7. Multi-Factor Deterministic Confidence Model
+- `ConfidenceCalculator`: Deterministic scoring model combining:
+  - Relationship Strength (35% weight)
+  - Retrieval Confidence (25% weight)
+  - Evidence Quality (25% weight)
+  - Inference Confidence (15% weight)
+  - Traversal Depth Penalty (0.95^(depth-1))
+- `ReasoningConfidence`: Overall score, confidence level (`HIGH`, `MEDIUM`, `LOW`, `UNCERTAIN`), factor breakdown (`ConfidenceFactors`), and narrative explanation.
+
+### 8. Context Intelligence Layer Integration
+- `ReasoningEvidence`: Formatted evidence output containing objective description, confidence score, summary narrative, cited node names, and cited relationship types.
+- `GraphContextContributor`: Implements `ContextContributor` to enrich `AtlasContext` with `graphReasoning` evidence bundles for prompt pipeline assembly.
+
+### 9. Future Expansion & Extension Points
+Modular extension interfaces designed for zero-redesign future extension:
+- `PlanningReasoningExtension`: Goal-oriented multi-step planning.
+- `RecommendationReasoningExtension`: Personalized entity recommendations.
+- `TemporalReasoningExtension`: Temporal graph snapshot and validity reasoning.
+- `CausalReasoningExtension`: Root-cause and counterfactual analysis.
+- `MultiAgentReasoningExtension`: Multi-agent federated graph context consensus.
+
+### 10. Observability & Privacy Guarantees
+- `GraphReasoningMetrics`: Captures projection latency, reasoning latency, inference latency, path finder latency, explanation latency, path length distributions, and confidence score stats.
+- **Privacy Enforcement**: NEVER logs raw graph node payload text or user data. Only view IDs, node IDs, edge IDs, metric counts, and timing statistics are logged.
+
+---
+
 ## Error Handling Matrix
 
 | Exception Class | Cause | Category | HTTP Status | Response Payload |
@@ -343,4 +496,5 @@ Knowledge Collections naturally support future memory and security expansion wit
 | `AtlasTimeoutException` | Request execution time exceeds timeout threshold | `TIMEOUT` | `504 Gateway Timeout` | `{"error": "<message>"}` |
 | `AtlasProviderException` | General API error from model provider | `PROVIDER_PERMANENT` | `502 Bad Gateway` | `{"error": "<message>"}` |
 | `AtlasConfigurationException` | Invalid startup configuration | `SYSTEM_ERROR` | `500 Internal Server Error` | `{"error": "<message>"}` |
+
 
