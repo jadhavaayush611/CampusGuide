@@ -31,6 +31,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasNotFoundException(com.campusguide.personal.ai.atlas.exception.AtlasNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(com.campusguide.personal.ai.atlas.exception.AtlasForbiddenException.class)
+    public ResponseEntity<Map<String, String>> handleAtlasForbiddenException(com.campusguide.personal.ai.atlas.exception.AtlasForbiddenException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     @ExceptionHandler(com.campusguide.personal.notification.exception.NotificationNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotificationNotFoundException(com.campusguide.personal.notification.exception.NotificationNotFoundException ex) {
         Map<String, String> error = new HashMap<>();
@@ -79,8 +93,6 @@ public class GlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
-
-
 
     @ExceptionHandler(UnauthorisedException.class)
     public ResponseEntity<Map<String, String>> handleUnauthorisedException(UnauthorisedException ex) {

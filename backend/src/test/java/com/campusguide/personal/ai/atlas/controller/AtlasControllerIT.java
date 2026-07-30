@@ -3,6 +3,7 @@ package com.campusguide.personal.ai.atlas.controller;
 import com.campusguide.personal.ai.atlas.dto.AtlasChatRequest;
 import com.campusguide.personal.ai.atlas.dto.AtlasChatResponse;
 import com.campusguide.personal.ai.atlas.dto.AtlasUsageDto;
+import com.campusguide.personal.ai.atlas.dto.CapabilityResponse;
 import com.campusguide.personal.ai.atlas.exception.AtlasProviderUnavailableException;
 import com.campusguide.personal.ai.atlas.exception.AtlasTimeoutException;
 import com.campusguide.personal.ai.atlas.service.AtlasService;
@@ -11,9 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
@@ -22,12 +21,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,19 +40,10 @@ class AtlasControllerIT {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
+    @MockitoBean
     private AtlasService atlasService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        @Primary
-        public AtlasService mockAtlasService() {
-            return mock(AtlasService.class);
-        }
-    }
 
     @BeforeEach
     void setUp() {
@@ -151,5 +142,29 @@ class AtlasControllerIT {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isGatewayTimeout())
                 .andExpect(jsonPath("$.error").value("OpenAI request timed out"));
+    }
+
+    @Test
+    @WithMockUser(username = "student", roles = {"STUDENT"})
+    void testCapabilities_Authenticated_ReturnsOk() throws Exception {
+        CapabilityResponse mockCapability = CapabilityResponse.builder()
+                .atlasVersion("1.0.0")
+                .apiVersion("v1")
+                .status("OPERATIONAL")
+                .registeredCapabilities(List.of("PROVIDER_AGNOSTIC_CHAT", "WORKFLOW_ORCHESTRATION"))
+                .availableWorkflows(List.of("default_workflow"))
+                .supportedFeatures(List.of("token_budgeting"))
+                .supportedModels(List.of("gpt-4o-mini"))
+                .provider("OpenAI Provider")
+                .limits(Map.of("maxPromptLength", 4096))
+                .build();
+
+        when(atlasService.getCapabilities()).thenReturn(mockCapability);
+
+        mockMvc.perform(get("/api/v1/atlas/capabilities"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.atlasVersion").value("1.0.0"))
+                .andExpect(jsonPath("$.apiVersion").value("v1"))
+                .andExpect(jsonPath("$.status").value("OPERATIONAL"));
     }
 }
