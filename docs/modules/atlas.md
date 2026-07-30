@@ -485,6 +485,247 @@ Modular extension interfaces designed for zero-redesign future extension:
 
 ---
 
+## Phase 3.5 — Decision Intelligence Engine
+
+The Decision Intelligence Engine transforms `ReasoningEvidence` and `GraphContext` into deterministic, explainable `DecisionOutcome`s without introducing planning or execution logic.
+
+### 1. Decision Model Architecture
+- `Decision`: Core object encapsulating `decisionId`, `objective`, candidates list, `selectedCandidate`, confidence, `reasoningEvidence`, `decisionEvidence`, rationale, `policyCompliance`, and `DecisionMetadata`.
+- `DecisionCandidate`: Candidate action option specifying `candidateId`, `actionType`, `description`, `parameters`, `estimatedUtility`, `confidenceScore`, `feasibilityScore`, `rationale`, and `sourceStrategy`.
+- `DecisionOutcome`: Final outcome returned by `DecisionEngine` containing `outcomeId`, `decision`, `status` (`APPROVED`, `REJECTED`, `MODIFIED`, `DEGRADED`), `selectedAction`, `executionHints`, `recommendationBundle`, `explanation`, and `DecisionMetrics`.
+- `DecisionMetadata`: Audit container holding traceId, version, generatorId, evaluatorId, and environment metadata.
+
+### 2. Decision Context
+- `DecisionContext`: Aggregate context combining:
+  - `GraphContext` & `ReasoningEvidence`
+  - `AtlasContext` / `UserContext`
+  - `userId`, `roles`, `permissions`, and `activeCollections`
+  - `confidenceThreshold`
+  - `EnvironmentalSignals` (system load, time of day, network status, client capabilities, emergency mode)
+  - `RequestMetadata` (requestId, timestamp, requestType, sourceChannel, traceId, clientVersion)
+  - `DecisionObjective` (intent, primary goal, target domain, priority, expected outcome type)
+  - `DecisionConstraints` (maxLatencyMs, minConfidence, maxCandidates, requiredPermissions, timeWindowSeconds, safetyLevel)
+  - `DecisionScope` (domainFilter, maximumDepth, allowedActionTypes, restrictedActionTypes, systemBoundaries)
+
+### 3. Candidate Generation Pipeline
+- `DecisionCandidateGenerator`: Engine coordinating candidate strategy evaluation and deduplication.
+- `CandidateRegistry`: Registry component managing pluggable `CandidateStrategy` beans.
+- **Candidate Strategies**:
+  - `DirectAnswerCandidateStrategy`: Generates direct answer response candidates from reasoning evidence.
+  - `ActionRecommendationCandidateStrategy`: Generates interactive action candidates for cited entities.
+  - `ClarificationCandidateStrategy`: Generates clarification requests when reasoning confidence is ambiguous (0.15 - 0.60).
+  - `FallbackCandidateStrategy`: Baseline catch-all strategy ensuring candidate availability.
+
+### 4. Policy Engine
+- `DecisionPolicyEngine`: Evaluates candidates against active policy rules.
+- `PolicyRegistry`: Manages `PolicyRule` instances (permission, safety, user preference, organizational rules).
+- `PolicyComplianceResult`: Encapsulates overall compliance status, applied policy names, and candidate evaluation maps (`ALLOWED`, `DENIED`, `MODIFIED`).
+
+### 5. Constraint Engine
+- `ConstraintEngine`: Evaluates candidates against explicit operational constraints.
+- `ConstraintViolation`: Categorized as `HARD` or `SOFT` across `PERMISSION`, `CONFIDENCE`, `TEMPORAL`, `RESOURCE`, and `POLICY` types.
+
+### 6. Decision Evaluation & Utility Engine
+- `DecisionEvaluator`: Uses `EvaluationStrategy` (`DefaultEvaluationStrategy`) to calculate composite score breaking down reasoning confidence, evidence quality, policy compliance, contextual relevance, expected usefulness, and user impact.
+- `UtilityCalculator`: Combines confidence, relevance, urgency, importance, policy alignment, and user benefit into normalized utility scores (0.0 to 1.0).
+
+### 7. Decision Ranking & Recommendation Pipeline
+- `DecisionRanker`: Ranks candidates using `DeterministicRankingStrategy`:
+  1. Primary sort: Normalized Utility Score
+  2. Secondary sort: Reasoning Confidence Score
+  3. Final tie-breaker: CandidateId lexicographical sorting
+- `RecommendationEngine`: Produces `RecommendationBundle` containing:
+  - `primaryRecommendation`
+  - `alternativeRecommendations`
+  - `rejectedCandidates` & `rejectedReasons`
+  - `overallRationale`
+
+### 8. Decision Explainability
+- `DecisionExplanationEngine`: Synthesizes `DecisionExplanation` providing:
+  - Selected candidate rationale
+  - Alternative rejection reasons map
+  - Supporting evidence (`List<DecisionEvidence>`) adapted from `ReasoningEvidence`
+  - Applied policy rule names
+  - Confidence summary & utility factor breakdown
+  - Structured decision reasons (`DecisionReason`)
+
+### 9. Extension Points for Future Compatibility
+Pluggable interfaces supporting future advanced capabilities without mutating core decision models:
+- `AdaptivePolicyEngine`: Dynamic policy adaptation.
+- `PersonalizationProvider`: User preference weighting.
+- `ReinforcementFeedbackHandler`: Offline/online RL feedback recording.
+- `MultiObjectiveOptimizer`: Pareto frontier selection.
+- `CollaborativeDecisionResolver`: Multi-agent consensus resolution.
+
+### 10. Decision Observability & Privacy
+- `DecisionMetrics`: Captures decision latency (ms), total candidates generated, policies evaluated, rejected candidate counts, selected utility, and candidate action type distributions.
+- **Privacy Guarantee**: Never logs raw reasoning text, user profile data, or sensitive context details.
+
+---
+
+## Phase 3.5 — Batch 3.5.2: Planning Intelligence Engine
+
+The Planning Intelligence Engine transforms validated `DecisionOutcome`s into deterministic, explainable `ExecutionPlan`s without introducing execution logic.
+
+### 1. Planning Model Architecture
+- `ExecutionPlan`: Main aggregate object encapsulating `planId`, `goal`, `tasks`, `dependencies`, `schedule`, `confidence`, `rationale`, `explanation`, `metadata`, `metrics`, `status`, and timestamps (`createdAt`, `updatedAt`). Remains execution-independent.
+- `PlanningGoal`: Represents top-level goals with `goalId`, `title`, `description`, `priority`, `mandatory`, `parentGoalId`, `targetDomain`, `state`, and `subGoals`.
+- `PlanningTask`: Individual execution-independent task encapsulating `taskId`, `goalId`, `title`, `description`, `state` (`TaskState`), `estimatedDurationMinutes`, `mandatory`, `parallelizable`, `conditional`, `precondition`, `steps`, `executionPayload`, and `metadata`.
+- `PlanningStep`: Fine-grained step within a task specifying `stepId`, `taskId`, `title`, `orderIndex`, `stepType`, `mandatory`, `status`, and parameters map.
+- `PlanningMetadata`: Audit container preserving `planId`, `traceId`, `version`, `generatorId`, `strategyUsed`, `environment`, and creation/update timestamps.
+
+### 2. PlanningContext
+`PlanningContext` serves as the explicit contract between the Decision Engine and the Planning Engine:
+- Aggregates:
+  - `DecisionOutcome` & `DecisionObjective` & `DecisionContext`
+  - `userContext` / `userId`
+  - `availableResources` map
+  - `schedulingPreferences` (`preferredStartTime`, `deadline`, `maxParallelTasks`, `allowOverlappingTasks`, `strategyPreference`)
+  - `environmentalSignals` (time of day, network status, system load, emergency mode)
+  - `timeHorizon` (`startTime`, `endTime`, `maxDurationMinutes`)
+  - `permissionContext` (roles, allowed actions)
+  - `executionEnvironment` (`environmentName`, `supportedCapabilities`, `offlineMode`)
+  - `planningPreferences` (`optimizationGoal`, `maxTaskCount`, `includeOptionalTasks`, `riskTolerance`)
+  - `PlanningObjective`, `PlanningConstraints`, `PlanningScope`
+
+### 3. Recursive Hierarchical Goal Decomposition
+- `GoalDecomposer`: Decomposes `PlanningContext` and `DecisionOutcome` into recursive `GoalHierarchy` trees up to `maxDecompositionDepth`.
+- `GoalHierarchy`: Represents root goal and sub-goals with mandatory vs optional classification, depth calculation, and goal metrics.
+- `SubGoal`: Recursive sub-goal model holding `subGoalId`, `parentGoalId`, `title`, `priority`, `mandatory`, `fulfilled`, `weight`, and `childSubGoals`.
+- `GoalRegistry`: Thread-safe registry for goal decomposition templates and active plan hierarchies.
+
+### 4. Task Graph Generation & Invariants
+- `TaskGraph`: Deterministic Directed Acyclic Graph (DAG) holding `PlanningTask` nodes and `TaskDependency` directed edges.
+- Algorithms & Invariants:
+  - `topologicalSort()`: Kahn's algorithm for deterministic task ordering (lexicographical tie-breaking).
+  - `hasCycle()`: Cycle detection verifying DAG invariants.
+  - `getParallelBatches()`: Level-by-level parallel execution stage grouping.
+  - `calculateCriticalPath()`: Dynamic programming critical path duration and bottleneck task discovery.
+- `TaskDependency`: Connects predecessor and successor tasks with `DependencyType` (`HARD`, `SOFT`, `CONDITIONAL`, `TEMPORAL`) and lag duration.
+
+### 5. Constraint Solver
+- `PlanningConstraintSolver`: Evaluates candidate task graphs and schedules against operational constraints returning `ConstraintResolution`.
+- Supported Constraints:
+  - Temporal Constraints: Deadline bounds and max time horizon verification.
+  - Dependency Constraints: Cycle prevention and dangling dependency verification.
+  - Resource Constraints: Max parallel task capacity checks.
+  - Policy Constraints: Restricted action type enforcement.
+  - Scheduling Constraints: Prerequisite ordering verification.
+
+### 6. Multi-Strategy Task Scheduling
+- `Scheduler`: Central service coordinating task timeline allocation via `SchedulingStrategy` SPI implementations:
+  - `EarliestCompletionSchedulingStrategy`: Minimizes total makespan by scheduling tasks as early as predecessor finish times permit.
+  - `DeadlineAwareSchedulingStrategy`: Evaluates buffer margins against hard deadlines.
+  - `PriorityAwareSchedulingStrategy`: Prioritizes mandatory and high-priority tasks in earlier slots.
+  - `PreferenceAwareSchedulingStrategy`: Aligns schedule start times with user preferences.
+
+### 7. Plan Optimization Engine
+- `PlanOptimizer`: Applies `OptimizationStrategy` implementations to enhance execution efficiency:
+  - `CompletionTimeOptimizationStrategy`: Parallelizes independent tasks to compress total makespan.
+  - `DependencyReductionOptimizationStrategy`: Prunes soft or redundant dependencies.
+  - `ResourceUtilizationOptimizationStrategy`: Balances task load across available slots.
+  - `UserConvenienceOptimizationStrategy`: Batches tasks for user convenience.
+  - `PlanSimplicityOptimizationStrategy`: Consolidates fine steps and removes zero-impact optional steps.
+
+### 8. Explainability Engine
+- `PlanningExplanationEngine`: Synthesizes structured `PlanningExplanation` containing:
+  - Primary rationale and ordering rationale.
+  - Dependency reasoning for every link.
+  - Scheduling rationale and strategy description.
+  - Optimization rationale and time-saved metrics.
+  - Categorized reasons (`PlanningReason`) with impact assessment (`GOAL_DECOMPOSITION`, `TASK_ORDERING`, `DEPENDENCY`, `SCHEDULING`, `OPTIMIZATION`, `CONSTRAINT`).
+  - Supporting evidence (`PlanningEvidence`) adapted from DecisionOutcome.
+
+### 9. Future Compatibility & SPI Extensions
+Pluggable SPI interfaces designed for zero-redesign future capabilities:
+- `AdaptivePlanningExtension`: Dynamic plan adaptation based on environment deltas.
+- `ProbabilisticPlanningExtension`: Probabilistic risk and uncertainty evaluation.
+- `CollaborativePlanningExtension`: Multi-party collaborative plan resolution.
+- `DynamicReplanningHandler`: Runtime replanning upon task failure.
+- `MultiAgentPlanningResolver`: Multi-agent plan consensus and coordination.
+
+### 10. Observability & Privacy Guarantees
+- `PlanningMetrics`: Captures planning latency (ms), scheduling latency (ms), total task count, dependency count, critical path length, optimization effectiveness ratio, constraint violation count, plan complexity score, and task state distribution.
+- **Privacy Guarantees**: Never logs sensitive planning details, user inputs, or raw payload data.
+
+## Phase 3.5 — Batch 3.5.3: Execution Preparation Engine
+
+The Execution Preparation Engine transforms deterministic `ExecutionPlan`s into validated `ExecutableWorkflow`s without performing execution. It remains strictly decoupled from runtime execution engines.
+
+### 1. Execution Model Architecture
+- `ExecutableWorkflow`: Represents execution-ready workflows independent of runtime environments. Encapsulates `workflowId`, `planId`, `contextId`, `stages` (`List<ExecutionStage>`), `checkpoints` (`List<ExecutionCheckpoint>`), `contract` (`ExecutionContract`), `metadata` (`ExecutionMetadata`), `explanation` (`ExecutionExplanation`), `riskAssessment` (`ExecutionRisk`), `rollbackPlan` (`RollbackPlan`), `approvalRequirement` (`ApprovalRequirement`), `resourceRequirements` (`List<ResourceRequirement>`), and preparation status (`WorkflowStatus`).
+- `ExecutionStage`: Encapsulates pipeline stages containing ordered/parallel units with completion policy (`StageCompletionPolicy`) and preconditions.
+- `ExecutionUnit`: Granular execution unit derived from task/step specifications encapsulating `unitId`, `unitType` (`ExecutionUnitType`), `targetCapability`, payload parameters, timeout, retry policy (`ExecutionRetryPolicy`), rollback policy (`ExecutionRollbackPolicy`), and status.
+- `ExecutionCheckpoint`: Pre-stage and post-stage state validation & monitoring checkpoints (`CheckpointType`).
+- `ExecutionMetadata`: Audit container preserving workflow versioning, checksums, preparation timestamps, and generator identity.
+
+### 2. ExecutionContext Aggregate Contract
+`ExecutionContext` serves as the explicit contract between Planning and Execution Preparation:
+- Aggregates:
+  - `ExecutionPlan`
+  - `PlanningContext`
+  - `DecisionOutcome`
+  - `UserContext` / `userId`
+  - Available tools map & registered capabilities (`List<ToolCapability>`)
+  - `PermissionContext` & `SecurityContext`
+  - `ExecutionEnvironment`
+  - `ApprovalPolicy` rules & requirements
+  - `ExecutionRetryPolicy` & `ExecutionRollbackPolicy`
+  - `MonitoringConfiguration`
+  - `ResourceAllocation`
+  - `ExecutionObjective`, `ExecutionConstraints`, and `ExecutionScope`
+
+### 3. Workflow Builder & Assembly Pipeline
+- `WorkflowAssembler`: Transforms task graphs and step specifications into ordered/parallel `ExecutionStage`s, `ExecutionUnit`s, and `ExecutionCheckpoint`s.
+- `WorkflowTemplate` & `WorkflowRegistry`: Thread-safe registry for managing workflow structural templates and domain configurations.
+- `ExecutableWorkflowBuilder`: Constructs execution-ready `ExecutableWorkflow` contracts with SLAs, duration estimates, and memory limits (`ExecutionContract`).
+
+### 4. Dry-Run Resource Analysis
+- `ResourceAnalyzer`: Analyzes required tools, APIs, compute, memory, storage, and network dependencies without performing actual resource allocation.
+- `ResourceRequirement` & `ResourceAllocation`: Provides dry-run analysis reporting missing resource counts and fulfillment status (`SATISFIED`, `UNSATISFIED`, `ALTERNATE_AVAILABLE`).
+
+### 5. Tool Resolution & Capability Discovery
+- `ToolResolver`: Resolves required capabilities from execution units, checks availability in `CapabilityRegistry`, detects missing tools, and recommends alternatives by domain.
+- `CapabilityRegistry`: Thread-safe registry holding available `ToolCapability` entries across academic, planner, calendar, and campus domains.
+
+### 6. Rule-Based Execution Validation
+- `ExecutionValidator`: Evaluates pluggable validation rules against `ExecutionContext` and `ExecutableWorkflow`:
+  - `CompletenessValidationRule`: Validates structural completeness of workflow components.
+  - `DependencySatisfactionValidationRule`: Validates unit dependencies exist within the workflow.
+  - `PolicyComplianceValidationRule`: Enforces operational constraints and prohibited capability checks.
+  - `PermissionsValidationRule`: Validates security context and user authorization rules.
+  - `CapabilityAvailabilityValidationRule`: Verifies required capabilities exist in registry.
+  - `ExecutionReadinessValidationRule`: Checks overall readiness score.
+
+### 7. Approval Framework
+- `ApprovalEngine`: Evaluates `ApprovalPolicy` rules against risk assessment, restricted mutation actions, and explicit constraints to generate `ApprovalRequirement` levels (`NONE`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL_ADMIN`) without performing approvals.
+
+### 8. Deterministic Rollback Planning
+- `RollbackPlanner`: Generates deterministic `RollbackPlan` and fallback workflows by constructing reverse compensating units for action/mutation steps and mapping checkpoint restorations (`RecoveryStrategy`).
+
+### 9. Multi-Factor Risk Assessment
+- `RiskAssessmentEngine`: Evaluates multi-dimensional risk factors:
+  $$\text{CompositeRiskScore} = \sum (\text{FactorScore}_i \times \text{Weight}_i)$$
+  evaluating Execution Complexity (25%), Stage Dependency Depth (20%), Security & Isolation (25%), Resource Availability (15%), and Failure Probability (15%).
+
+### 10. Structured Explainability Engine
+- `ExecutionExplanationEngine`: Synthesizes structured `ExecutionExplanation` explaining readiness rationale, approval requirements, risk levels, rollback strategies, required capabilities, assumptions, and categorized reasons (`ExecutionReason`).
+
+### 11. Future Compatibility & Runtime Extension Points
+Pluggable SPI interfaces designed for zero-redesign future runtime execution capabilities:
+- `DistributedExecutionHandler`: SPI for distributed node execution.
+- `CloudExecutionHandler`: SPI for cloud deployment (AWS Lambda, Cloudflare Workers, GCP).
+- `LocalExecutionHandler`: SPI for local in-process execution.
+- `WorkflowOrchestrationHandler`: SPI for external workflow orchestrators (Temporal, Camunda, Airflow).
+- `AutonomousAgentHandler`: SPI for autonomous agent delegation.
+- `HumanInTheLoopHandler`: SPI for human-in-the-loop approvals.
+
+### 12. Observability & Privacy Guarantees
+- `ExecutionPreparationMetrics`: Captures preparation latency (ms), validation latency (ms), total stages/units/checkpoints, validation failures, approval metrics, risk distributions, rollback step counts, and capability coverage ratio.
+- **Privacy Guarantees**: Never logs sensitive workflow payloads, PII, or raw parameters.
+
+---
+
 ## Error Handling Matrix
 
 | Exception Class | Cause | Category | HTTP Status | Response Payload |
