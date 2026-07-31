@@ -1,0 +1,50 @@
+import { NavLink } from "react-router";
+import {
+  LayoutDashboard,
+  Users,
+  Shield,
+  BookOpen,
+  ClipboardList,
+  User
+} from "lucide-react";
+
+const navItems = [
+  { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/councils", label: "Councils", icon: Shield },
+  { path: "/communities", label: "Communities", icon: Users },
+  { path: "/resources", label: "Resource Center", icon: BookOpen },
+  { path: "/notices", label: "Notice Board", icon: ClipboardList },
+  { path: "/profile", label: "Profile", icon: User },
+];
+
+export function Sidebar() {
+  return (
+    <aside className="w-64 bg-[#fafafa] border-r border-gray-200 flex flex-col">
+      <div className="p-6 border-b border-gray-200">
+        <h1 className="text-xl font-semibold text-gray-900">CampusGuide</h1>
+      </div>
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                end={item.path === "/"}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive
+                      ? "bg-blue-50 text-[#2563EB] border-l-4 border-[#2563EB]"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  );
+}
