@@ -48,4 +48,9 @@ export const queryKeys = {
     landmark: (id: string) => [...queryKeys.atlas.all, 'landmarks', id] as const,
     mapLayers: () => [...queryKeys.atlas.all, 'mapLayers'] as const,
   },
+  notifications: {
+    all: ['notifications'] as const,
+    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    unreadCount: () => [...queryKeys.notifications.all, 'unread-count'] as const,
+  },
 };

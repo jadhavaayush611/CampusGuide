@@ -24,8 +24,13 @@ export * from './planner/useCourses';
 export * from './planner/useTimetable';
 export * from './planner/useStudyGoals';
 export * from './planner/useCreateStudyGoal';
+export * from './planner/useDegreePlan';
 
 export * from './atlas/useAtlasSearch';
 export * from './atlas/useRouteCalculation';
 export * from './atlas/useLandmarkDetails';
 export * from './atlas/useMapLayers';
+
+export * from './notifications/useNotifications';
+export * from './notifications/useUnreadNotificationCount';
+

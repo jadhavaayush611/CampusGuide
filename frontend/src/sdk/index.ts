@@ -18,4 +18,9 @@ export * from './atlas/atlas.dto';
 export * from './atlas/atlas.mapper';
 export * from './atlas/AtlasSdk';
 
+export * from './notifications/notification.dto';
+export * from './notifications/notification.mapper';
+export * from './notifications/NotificationSdk';
+
 export * from './queryKeys';
+

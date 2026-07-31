@@ -3,37 +3,8 @@ import { Bell, Clock, MessageSquare, Calendar, Settings, LogOut, User as UserIco
 import { useNavigate } from "react-router";
 import { useAuth } from "../../core/auth";
 import { useLogout } from "../../hooks/auth/useLogout";
-
-const notifications = [
-  {
-    id: 1,
-    type: "reminder",
-    title: "HackFest 2026 in 2 hours",
-    description: "Event starts at 9:00 AM",
-    time: "2h ago",
-  },
-  {
-    id: 2,
-    type: "mention",
-    title: "New announcement from Student Council",
-    description: "Mid-Semester Exam Schedule Released",
-    time: "5h ago",
-  },
-  {
-    id: 3,
-    type: "reminder",
-    title: "Mental Health Workshop tomorrow",
-    description: "Don't forget to attend at 3:00 PM",
-    time: "1d ago",
-  },
-  {
-    id: 4,
-    type: "event",
-    title: "Spring Music Night this Friday",
-    description: "Main Auditorium, 6:00 PM",
-    time: "2d ago",
-  },
-];
+import { useNotifications } from "../../hooks/notifications/useNotifications";
+import { useUnreadNotificationCount } from "../../hooks/notifications/useUnreadNotificationCount";
 
 export function Header() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -41,6 +12,9 @@ export function Header() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const logoutMutation = useLogout();
+  const { data: notifications = [] } = useNotifications();
+  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+
 
   const handleLogout = () => {
     setUserMenuOpen(false);
@@ -76,7 +50,11 @@ export function Header() {
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-gray-700" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </button>
 
             {/* Notification Dropdown */}
