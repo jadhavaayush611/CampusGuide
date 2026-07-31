@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { RootLayout } from "./components/RootLayout";
 import { Dashboard } from "./pages/Dashboard";
 import { Communities } from "./pages/Communities";
+import { CommunityDetail } from "./pages/CommunityDetail";
 import { Councils } from "./pages/Councils";
 import { Council } from "./pages/Council";
 import { ResourceCenter } from "./pages/ResourceCenter";
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: "councils", Component: Councils },
       { path: "councils/:id", Component: Council },
       { path: "communities", Component: Communities },
+      { path: "communities/:id", Component: CommunityDetail },
       { path: "resources", Component: ResourceCenter },
       { path: "notices", Component: NoticeBoard },
       { path: "profile", Component: Profile },
@@ -51,3 +53,4 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+

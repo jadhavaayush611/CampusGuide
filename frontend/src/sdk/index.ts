@@ -22,5 +22,10 @@ export * from './notifications/notification.dto';
 export * from './notifications/notification.mapper';
 export * from './notifications/NotificationSdk';
 
+export * from './community/community.dto';
+export * from './community/community.mapper';
+export * from './community/CommunitySdk';
+
 export * from './queryKeys';
+
 

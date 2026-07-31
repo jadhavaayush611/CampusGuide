@@ -69,14 +69,9 @@ export interface Council {
   memberCount?: number;
 }
 
-export interface Community {
-  id: string;
-  name: string;
-  description: string;
-  councilId?: string;
-  memberCount: number;
-  isPrivate?: boolean;
-}
+export type { Community } from './community.model';
+
+
 
 export interface Resource {
   id: string;

@@ -94,16 +94,8 @@ export function mapCouncilDtoToModel(dto: CouncilDto): Council {
   };
 }
 
-export function mapCommunityDtoToModel(dto: CommunityDto): Community {
-  return {
-    id: dto.id,
-    name: dto.name,
-    description: dto.description,
-    councilId: dto.councilId ?? undefined,
-    memberCount: dto.memberCount,
-    isPrivate: dto.isPrivate ?? undefined,
-  };
-}
+export { mapCommunityDtoToModel } from '../community/community.mapper';
+
 
 export function mapResourceDtoToModel(dto: ResourceDto): Resource {
   return {

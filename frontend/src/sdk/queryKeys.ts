@@ -54,4 +54,16 @@ export const queryKeys = {
     list: () => [...queryKeys.notifications.all, 'list'] as const,
     unreadCount: () => [...queryKeys.notifications.all, 'unread-count'] as const,
   },
+  communities: {
+    all: ['communities'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.communities.all, 'list', params] as const,
+    featured: () => [...queryKeys.communities.all, 'featured'] as const,
+    trending: () => [...queryKeys.communities.all, 'trending'] as const,
+    recentlyActive: () => [...queryKeys.communities.all, 'recentlyActive'] as const,
+    joined: () => [...queryKeys.communities.all, 'joined'] as const,
+    detail: (id: string) => [...queryKeys.communities.all, 'detail', id] as const,
+    feed: (id: string, filter?: string) => [...queryKeys.communities.detail(id), 'feed', { filter }] as const,
+    members: (id: string, params?: Record<string, any>) => [...queryKeys.communities.detail(id), 'members', params] as const,
+  },
 };
+

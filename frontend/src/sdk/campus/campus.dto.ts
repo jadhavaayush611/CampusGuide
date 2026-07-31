@@ -91,14 +91,8 @@ export interface CouncilDto {
   memberCount?: number | null;
 }
 
-export interface CommunityDto {
-  id: string;
-  name: string;
-  description: string;
-  councilId?: string | null;
-  memberCount: number;
-  isPrivate?: boolean | null;
-}
+export type { CommunityDto } from '../community/community.dto';
+
 
 export interface ResourceDto {
   id: string;
