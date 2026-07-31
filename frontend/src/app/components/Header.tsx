@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Bell, Clock, MessageSquare, Calendar, Settings } from "lucide-react";
+import { Bell, Clock, MessageSquare, Calendar, Settings, LogOut, User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useAuth } from "../../core/auth";
+import { useLogout } from "../../hooks/auth/useLogout";
 
 const notifications = [
   {
@@ -35,14 +37,29 @@ const notifications = [
 
 export function Header() {
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const logoutMutation = useLogout();
+
+  const handleLogout = () => {
+    setUserMenuOpen(false);
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        navigate("/login", { replace: true });
+      },
+    });
+  };
+
+  const displayName = user?.name || user?.email?.split("@")[0] || "Campus User";
+  const avatarInitial = (user?.name?.[0] || user?.email?.[0] || "U").toUpperCase();
 
   return (
     <header className="bg-white border-b border-gray-200 px-8 py-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900">
-            Hi, Rohan 👋
+            Hi, {displayName} 👋
           </h2>
           <p className="text-sm text-gray-600 mt-1">
             Here's what's happening today
@@ -51,8 +68,12 @@ export function Header() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <button
-              onClick={() => setNotificationOpen(!notificationOpen)}
+              onClick={() => {
+                setNotificationOpen(!notificationOpen);
+                setUserMenuOpen(false);
+              }}
               className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-150"
+              aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-gray-700" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -132,8 +153,58 @@ export function Header() {
               </>
             )}
           </div>
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-semibold">
-            R
+
+          {/* User Profile Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setUserMenuOpen(!userMenuOpen);
+                setNotificationOpen(false);
+              }}
+              className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-semibold shadow-sm hover:opacity-95 transition-opacity"
+              aria-label="User menu"
+            >
+              {avatarInitial}
+            </button>
+
+            {userMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setUserMenuOpen(false)}
+                ></div>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg z-20 py-2">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {displayName}
+                    </p>
+                    {user?.email && (
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      navigate("/profile");
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                  >
+                    <UserIcon className="w-4 h-4 text-gray-500" />
+                    <span>Your Profile</span>
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    disabled={logoutMutation.isPending}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-100"
+                  >
+                    <LogOut className="w-4 h-4 text-red-500" />
+                    <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

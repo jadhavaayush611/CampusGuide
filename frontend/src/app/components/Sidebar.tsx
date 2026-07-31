@@ -1,12 +1,14 @@
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   Users,
   Shield,
   BookOpen,
   ClipboardList,
-  User
+  User,
+  LogOut
 } from "lucide-react";
+import { useLogout } from "../../hooks/auth/useLogout";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -18,8 +20,19 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const logoutMutation = useLogout();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        navigate("/login", { replace: true });
+      },
+    });
+  };
+
   return (
-    <aside className="w-64 bg-[#fafafa] border-r border-gray-200 flex flex-col">
+    <aside className="w-64 bg-[#fafafa] border-r border-gray-200 flex flex-col h-full">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-semibold text-gray-900">CampusGuide</h1>
       </div>
@@ -45,6 +58,16 @@ export function Sidebar() {
           ))}
         </ul>
       </nav>
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={handleLogout}
+          disabled={logoutMutation.isPending}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
+        >
+          <LogOut className="w-5 h-5 text-red-500" />
+          <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
+        </button>
+      </div>
     </aside>
   );
 }

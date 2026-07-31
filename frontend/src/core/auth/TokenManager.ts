@@ -1,12 +1,14 @@
 import { TokenStorage, TokenPair } from './TokenStorage';
 import { isTokenExpired, getTokenExpirationTime } from '../utils/jwt';
 import { logger } from '../utils/logger';
+import { authSdk } from '../../sdk/auth/AuthSdk';
 
 export type TokenChangeListener = (tokens: TokenPair | null) => void;
 
 export class TokenManager {
   private tokenStorage: TokenStorage;
   private listeners: Set<TokenChangeListener> = new Set();
+  private refreshPromise: Promise<TokenPair> | null = null;
 
   constructor(tokenStorage?: TokenStorage) {
     this.tokenStorage = tokenStorage ?? new TokenStorage();
@@ -46,7 +48,7 @@ export class TokenManager {
 
     const tokenPair: TokenPair = {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      refreshToken: tokens.refreshToken ?? this.getRefreshToken() ?? undefined,
       expiresAt,
     };
 
@@ -76,6 +78,44 @@ export class TokenManager {
     const token = this.getAccessToken();
     if (!token) return false;
     return !this.isAccessTokenExpired();
+  }
+
+  /**
+   * Refreshes the access token using stored refresh token.
+   * Prevents multiple concurrent refresh attempts by returning active refresh promise.
+   */
+  public async refreshTokens(): Promise<TokenPair> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this.clearTokens();
+      throw new Error('No refresh token available');
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        logger.info('[TokenManager] Attempting silent token refresh...');
+        const session = await authSdk.refreshToken(refreshToken);
+        const newTokens: TokenPair = {
+          accessToken: session.tokens.accessToken,
+          refreshToken: session.tokens.refreshToken || refreshToken,
+        };
+        this.setTokens(newTokens);
+        logger.info('[TokenManager] Token refresh successful');
+        return newTokens;
+      } catch (err) {
+        logger.error('[TokenManager] Token refresh failed:', err);
+        this.clearTokens();
+        throw err;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
   }
 }
 

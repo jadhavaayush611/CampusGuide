@@ -79,9 +79,40 @@ export class ApiClient {
 
   private buildUrl(url: string, params?: ApiRequestConfig['params']): string {
     const isAbsolute = /^https?:\/\//i.test(url);
+    if (isAbsolute) {
+      let fullUrl = url;
+      if (params) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, val]) => {
+          if (val !== undefined && val !== null) {
+            searchParams.append(key, String(val));
+          }
+        });
+        const queryString = searchParams.toString();
+        if (queryString) {
+          fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryString;
+        }
+      }
+      return fullUrl;
+    }
+
     const baseUrl = this.clientConfig.baseUrl.replace(/\/+$/, '');
-    const path = url.startsWith('/') ? url : `/${url}`;
-    let fullUrl = isAbsolute ? url : `${baseUrl}${path}`;
+    let cleanPath = url.startsWith('/') ? url : `/${url}`;
+
+    // Normalize duplicate /api/v1 or /api prefixes if baseUrl already ends with /api/v1
+    if (baseUrl.endsWith('/api/v1')) {
+      if (cleanPath.startsWith('/api/v1/')) {
+        cleanPath = cleanPath.replace(/^\/api\/v1/, '');
+      } else if (cleanPath.startsWith('/api/')) {
+        cleanPath = cleanPath.replace(/^\/api/, '');
+      }
+    } else if (baseUrl.endsWith('/api')) {
+      if (cleanPath.startsWith('/api/')) {
+        cleanPath = cleanPath.replace(/^\/api/, '');
+      }
+    }
+
+    let fullUrl = `${baseUrl}${cleanPath.startsWith('/') ? '' : '/'}${cleanPath}`;
 
     if (params) {
       const searchParams = new URLSearchParams();

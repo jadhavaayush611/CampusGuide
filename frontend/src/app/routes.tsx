@@ -7,12 +7,36 @@ import { Council } from "./pages/Council";
 import { ResourceCenter } from "./pages/ResourceCenter";
 import { NoticeBoard } from "./pages/NoticeBoard";
 import { Profile } from "./pages/Profile";
+import { Login } from "./pages/Login";
+import { Register } from "./pages/Register";
 import { NotFound } from "./pages/NotFound";
+import { ProtectedRoute } from "../core/routing/ProtectedRoute";
+import { PublicRoute } from "../core/routing/PublicRoute";
 
 export const router = createBrowserRouter([
   {
+    path: "/login",
+    element: (
+      <PublicRoute restricted>
+        <Login />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/register",
+    element: (
+      <PublicRoute restricted>
+        <Register />
+      </PublicRoute>
+    ),
+  },
+  {
     path: "/",
-    Component: RootLayout,
+    element: (
+      <ProtectedRoute>
+        <RootLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, Component: Dashboard },
       { path: "councils", Component: Councils },

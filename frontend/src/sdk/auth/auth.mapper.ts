@@ -1,12 +1,12 @@
 import { UserDto, AuthResponseDto } from './auth.dto';
 import { User, AuthTokens, AuthSession } from '../../models/auth.model';
 
-export function mapUserDtoToModel(dto: UserDto): User {
+export function mapUserDtoToModel(dto: UserDto & { username?: string }): User {
   return {
-    id: dto.id,
-    email: dto.email,
-    name: dto.name,
-    role: dto.role,
+    id: dto.id || '',
+    email: dto.email || '',
+    name: dto.name || dto.username || (dto.email ? dto.email.split('@')[0] : 'Campus User'),
+    role: dto.role || 'STUDENT',
     department: dto.department ?? undefined,
     avatarUrl: dto.avatarUrl ?? undefined,
     studentId: dto.studentId ?? undefined,
@@ -16,9 +16,10 @@ export function mapUserDtoToModel(dto: UserDto): User {
   };
 }
 
-export function mapAuthResponseToSession(dto: AuthResponseDto): AuthSession {
+export function mapAuthResponseToSession(dto: AuthResponseDto & { token?: string; email?: string; role?: string }): AuthSession {
+  const accessToken = dto.accessToken || dto.token || '';
   const tokens: AuthTokens = {
-    accessToken: dto.accessToken,
+    accessToken,
     refreshToken: dto.refreshToken,
     expiresIn: dto.expiresIn,
     tokenType: dto.tokenType ?? 'Bearer',
@@ -28,9 +29,9 @@ export function mapAuthResponseToSession(dto: AuthResponseDto): AuthSession {
     ? mapUserDtoToModel(dto.user)
     : {
         id: '',
-        email: '',
-        name: '',
-        role: 'USER',
+        email: dto.email || '',
+        name: dto.email ? dto.email.split('@')[0] : 'Campus User',
+        role: dto.role || 'STUDENT',
       };
 
   return {

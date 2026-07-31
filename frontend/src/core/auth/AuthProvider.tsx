@@ -5,6 +5,7 @@ import { apiClient } from '../api/ApiClient';
 import { HTTP_HEADER } from '../api/ApiConstants';
 import { parseJwtPayload } from '../utils/jwt';
 import { logger } from '../utils/logger';
+import { authSdk } from '../../sdk/auth/AuthSdk';
 
 export interface AuthProviderProps {
   children: ReactNode;
@@ -34,29 +35,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       if (tokenMgr.hasValidAccessToken()) {
-        const token = tokenMgr.getAccessToken();
-        if (token) {
-          const payload = parseJwtPayload(token);
-          // Construct fallback user object from JWT claims until Phase 4.1 user endpoint integration
-          const restoredUser: User = {
-            id: (payload?.sub as string) || (payload?.userId as string) || 'user-session',
-            email: (payload?.email as string) || 'user@campusguide.edu',
-            name: (payload?.name as string) || 'Campus User',
-            role: (payload?.role as string) || (Array.isArray(payload?.roles) ? payload?.roles[0] : 'USER'),
-          };
-
+        try {
+          const user = await authSdk.getCurrentUser();
           setState({
             isAuthenticated: true,
             isLoading: false,
-            user: restoredUser,
+            user,
             error: null,
           });
-          logger.info('[AuthProvider] Session restored successfully');
+          logger.info('[AuthProvider] Session restored via getCurrentUser():', user.id);
           return;
+        } catch (fetchErr) {
+          logger.warn('[AuthProvider] Could not fetch current user from backend, checking JWT token fallback:', fetchErr);
+          const token = tokenMgr.getAccessToken();
+          if (token) {
+            const payload = parseJwtPayload(token);
+            const fallbackUser: User = {
+              id: (payload?.sub as string) || (payload?.userId as string) || 'user-session',
+              email: (payload?.email as string) || 'user@campusguide.edu',
+              name: (payload?.name as string) || (payload?.email ? (payload.email as string).split('@')[0] : 'Campus User'),
+              role: (payload?.role as string) || (Array.isArray(payload?.roles) ? payload?.roles[0] : 'STUDENT'),
+            };
+
+            setState({
+              isAuthenticated: true,
+              isLoading: false,
+              user: fallbackUser,
+              error: null,
+            });
+            return;
+          }
         }
       }
 
-      // If token expired or absent
+      // Check if refresh token is available for silent refresh on startup
+      const refreshToken = tokenMgr.getRefreshToken();
+      if (refreshToken) {
+        try {
+          logger.info('[AuthProvider] Access token expired. Attempting startup token refresh...');
+          await tokenMgr.refreshTokens();
+          const user = await authSdk.getCurrentUser();
+          setState({
+            isAuthenticated: true,
+            isLoading: false,
+            user,
+            error: null,
+          });
+          logger.info('[AuthProvider] Session restored via silent token refresh');
+          return;
+        } catch (refreshErr) {
+          logger.warn('[AuthProvider] Startup silent token refresh failed:', refreshErr);
+        }
+      }
+
+      // If token expired, missing, or refresh failed
       tokenMgr.clearTokens();
       setState({
         isAuthenticated: false,
@@ -85,7 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
         user,
         error: null,
       });
-      logger.info('[AuthProvider] User authenticated successfully:', user.id);
+      logger.info('[AuthProvider] User authenticated successfully:', user.id || user.email);
     },
     [tokenMgr]
   );
@@ -114,7 +146,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
     // Error Interceptor: Handle 401 Unauthorized (Expired Tokens)
     const unbindError = apiClient.addErrorInterceptor(async (apiError) => {
       if (apiError.statusCode === 401) {
-        logger.warn('[AuthProvider] Received 401 Unauthorized. Clearing session.');
+        logger.warn('[AuthProvider] Received 401 Unauthorized.');
+        const refreshToken = tokenMgr.getRefreshToken();
+        if (refreshToken) {
+          try {
+            logger.info('[AuthProvider] Attempting silent token refresh on 401...');
+            await tokenMgr.refreshTokens();
+            return;
+          } catch (refreshErr) {
+            logger.error('[AuthProvider] Silent token refresh failed on 401. Performing forced logout:', refreshErr);
+          }
+        }
         await logout();
       }
     });

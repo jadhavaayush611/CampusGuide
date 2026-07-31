@@ -14,15 +14,16 @@ import { User, AuthSession, LoginCredentials, RegisterPayload, PasswordChangePay
  * Production Authentication SDK module encapsulating all auth endpoints.
  */
 export class AuthSdk extends BaseSdk {
-  private readonly baseUrl = '/api/auth';
-  private readonly usersUrl = '/api/users';
+  private readonly baseUrl = '/api/v1/auth';
+  private readonly usersUrl = '/api/v1/users';
 
   /**
    * Authenticate user with credentials
    */
   public async login(credentials: LoginCredentials): Promise<AuthSession> {
-    const payload: LoginRequestDto = {
+    const payload = {
       email: credentials.email,
+      emailOrUsername: credentials.email,
       password: credentials.password,
     };
     const dto = await this.post<AuthResponseDto>(`${this.baseUrl}/login`, payload, { skipAuth: true });
