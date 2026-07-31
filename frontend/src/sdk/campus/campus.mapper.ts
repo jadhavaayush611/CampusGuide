@@ -3,7 +3,7 @@ import {
   LocationDto,
   EventDto,
   FloorPlanDto,
-  CouncilDto,
+  CampusCouncilDto,
   CommunityDto,
   ResourceDto,
 } from './campus.dto';
@@ -13,7 +13,7 @@ import {
   CampusEvent,
   FloorPlan,
   Council,
-  Community,
+  CouncilCategory,
   Resource,
 } from '../../models/campus.model';
 
@@ -25,7 +25,7 @@ export function mapBuildingDtoToModel(dto: BuildingDto): Building {
     category: dto.category ?? undefined,
     description: dto.description ?? undefined,
     latitude: dto.latitude,
-    longitude: dto.longitude,
+    longitude: dto.longitude ?? undefined,
     totalFloors: dto.totalFloors ?? undefined,
     imageUrl: dto.imageUrl ?? undefined,
     openingHours: dto.openingHours ?? undefined,
@@ -48,6 +48,8 @@ export function mapLocationDtoToModel(dto: LocationDto): Location {
   };
 }
 
+import { mapCouncilDtoToModel } from '../council/council.mapper';
+
 export function mapEventDtoToModel(dto: EventDto, isRegistered = false): CampusEvent {
   return {
     id: dto.id,
@@ -65,8 +67,8 @@ export function mapEventDtoToModel(dto: EventDto, isRegistered = false): CampusE
     imageUrl: dto.imageUrl ?? undefined,
     isCancelled: dto.isCancelled,
     isRegistered,
-    createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt,
+    createdAt: dto.createdAt ?? undefined,
+    updatedAt: dto.updatedAt ?? undefined,
   };
 }
 
@@ -81,23 +83,21 @@ export function mapFloorPlanDtoToModel(dto: FloorPlanDto): FloorPlan {
   };
 }
 
-export function mapCouncilDtoToModel(dto: CouncilDto): Council {
-  return {
+export function mapCampusCouncilDtoToModel(dto: CampusCouncilDto): Council {
+  return mapCouncilDtoToModel({
     id: dto.id,
     name: dto.name,
     category: dto.category,
     description: dto.description,
-    leadName: dto.leadName ?? undefined,
-    contactEmail: dto.contactEmail ?? undefined,
     logoUrl: dto.logoUrl ?? undefined,
     memberCount: dto.memberCount ?? undefined,
-  };
+  });
 }
 
 export { mapCommunityDtoToModel } from '../community/community.mapper';
 
 
-export function mapResourceDtoToModel(dto: ResourceDto): Resource {
+export function mapCampusResourceDtoToModel(dto: ResourceDto): Resource {
   return {
     id: dto.id,
     title: dto.title,

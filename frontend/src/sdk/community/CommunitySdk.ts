@@ -14,7 +14,7 @@ import {
   mapCommunitySummaryDtoToModel,
   mapPostDtoToModel,
   mapPostSummaryDtoToModel,
-  mapMemberDtoToModel,
+  mapCommunityMemberDtoToModel,
 } from './community.mapper';
 import {
   Community,
@@ -489,7 +489,7 @@ export class CommunitySdk extends BaseSdk {
   ): Promise<PaginatedMembersResponse> {
     try {
       const dtos = await this.get<CommunityMemberDto[]>(`${this.communitiesUrl}/${communityId}/members`);
-      let members = dtos.map(mapMemberDtoToModel);
+      let members = dtos.map(mapCommunityMemberDtoToModel);
       if (!members || members.length === 0) {
         members = SEED_MEMBERS[communityId] || SEED_MEMBERS['comm-1'];
       }

@@ -9,7 +9,8 @@ export const CampusActivityWidget: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: events = [], isLoading: loadingEvents } = useCampusEvents(true);
-  const { data: councils = [], isLoading: loadingCouncils } = useCouncils();
+  const { data: councilsData, isLoading: loadingCouncils } = useCouncils();
+  const councils = councilsData?.councils || [];
   const { data: resources = [], isLoading: loadingResources } = useResources();
 
   const isLoading = loadingEvents || loadingCouncils || loadingResources;

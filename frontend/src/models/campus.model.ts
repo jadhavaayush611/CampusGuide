@@ -58,16 +58,18 @@ export interface FloorPlan {
   height: number;
 }
 
-export interface Council {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  leadName?: string;
-  contactEmail?: string;
-  logoUrl?: string;
-  memberCount?: number;
-}
+export type {
+  Council,
+  CouncilRole,
+  CouncilCategory,
+  CouncilLeadershipMember,
+  CouncilNotice,
+  CouncilNoticeAttachment,
+  CouncilResource,
+  CouncilMember,
+  CouncilActivityMetrics,
+  CouncilContactInfo,
+} from './council.model';
 
 export type { Community } from './community.model';
 

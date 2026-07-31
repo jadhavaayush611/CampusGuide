@@ -6,7 +6,7 @@ import {
   CreateEventDto,
   UpdateEventDto,
   FloorPlanDto,
-  CouncilDto,
+  CampusCouncilDto,
   ResourceDto,
 } from './campus.dto';
 import {
@@ -14,8 +14,8 @@ import {
   mapLocationDtoToModel,
   mapEventDtoToModel,
   mapFloorPlanDtoToModel,
-  mapCouncilDtoToModel,
-  mapResourceDtoToModel,
+  mapCampusCouncilDtoToModel,
+  mapCampusResourceDtoToModel,
 } from './campus.mapper';
 import {
   Building,
@@ -112,25 +112,25 @@ export class CampusSdk extends BaseSdk {
   // --- Councils ---
 
   public async getCouncils(): Promise<Council[]> {
-    const dtos = await this.get<CouncilDto[]>(this.councilsUrl);
-    return dtos.map(mapCouncilDtoToModel);
+    const dtos = await this.get<CampusCouncilDto[]>(this.councilsUrl);
+    return dtos.map(mapCampusCouncilDtoToModel);
   }
 
   public async getCouncilById(councilId: string): Promise<Council> {
-    const dto = await this.get<CouncilDto>(`${this.councilsUrl}/${councilId}`);
-    return mapCouncilDtoToModel(dto);
+    const dto = await this.get<CampusCouncilDto>(`${this.councilsUrl}/${councilId}`);
+    return mapCampusCouncilDtoToModel(dto);
   }
 
   // --- Resources ---
 
   public async getResources(): Promise<Resource[]> {
     const dtos = await this.get<ResourceDto[]>(this.resourcesUrl);
-    return dtos.map(mapResourceDtoToModel);
+    return dtos.map(mapCampusResourceDtoToModel);
   }
 
   public async searchResources(query: string): Promise<Resource[]> {
     const dtos = await this.get<ResourceDto[]>(`${this.resourcesUrl}/search`, { query });
-    return dtos.map(mapResourceDtoToModel);
+    return dtos.map(mapCampusResourceDtoToModel);
   }
 }
 

@@ -115,7 +115,7 @@ export function mapPostSummaryDtoToModel(
   };
 }
 
-export function mapMemberDtoToModel(dto: CommunityMemberDto): CommunityMember {
+export function mapCommunityMemberDtoToModel(dto: CommunityMemberDto): CommunityMember {
   return {
     id: dto.id,
     name: dto.name,

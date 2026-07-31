@@ -38,7 +38,8 @@ export const CommunityCreateModal: React.FC<CommunityCreateModalProps> = ({
 
   const createMutation = useCreateCommunity();
   const updateMutation = useUpdateCommunity();
-  const { data: councils } = useCouncils();
+  const { data: councilsData } = useCouncils();
+  const councils = councilsData?.councils || [];
 
   if (!isOpen) return null;
 

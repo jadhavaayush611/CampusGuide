@@ -65,5 +65,18 @@ export const queryKeys = {
     feed: (id: string, filter?: string) => [...queryKeys.communities.detail(id), 'feed', { filter }] as const,
     members: (id: string, params?: Record<string, any>) => [...queryKeys.communities.detail(id), 'members', params] as const,
   },
+  councils: {
+    all: ['councils'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.councils.all, 'list', params] as const,
+    featured: () => [...queryKeys.councils.all, 'featured'] as const,
+    recentlyActive: () => [...queryKeys.councils.all, 'recentlyActive'] as const,
+    joined: () => [...queryKeys.councils.all, 'joined'] as const,
+    detail: (id: string) => [...queryKeys.councils.all, 'detail', id] as const,
+    leadership: (id: string) => [...queryKeys.councils.detail(id), 'leadership'] as const,
+    members: (id: string, params?: Record<string, any>) => [...queryKeys.councils.detail(id), 'members', params] as const,
+    events: (id: string) => [...queryKeys.councils.detail(id), 'events'] as const,
+    notices: (id: string, filter?: string) => [...queryKeys.councils.detail(id), 'notices', { filter }] as const,
+    resources: (id: string, category?: string) => [...queryKeys.councils.detail(id), 'resources', { category }] as const,
+  },
 };
 

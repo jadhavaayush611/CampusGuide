@@ -26,6 +26,10 @@ export * from './community/community.dto';
 export * from './community/community.mapper';
 export * from './community/CommunitySdk';
 
+export * from './council/council.dto';
+export * from './council/council.mapper';
+export * from './council/CouncilSdk';
+
 export * from './queryKeys';
 
 

@@ -80,7 +80,7 @@ export interface FloorPlanDto {
   height: number;
 }
 
-export interface CouncilDto {
+export interface CampusCouncilDto {
   id: string;
   name: string;
   category: string;
