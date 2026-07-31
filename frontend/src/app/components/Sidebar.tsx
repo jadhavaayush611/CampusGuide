@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
+  GraduationCap,
   Users,
   Shield,
   BookOpen,
@@ -12,6 +13,7 @@ import { useLogout } from "../../hooks/auth/useLogout";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/academic", label: "Academic", icon: GraduationCap },
   { path: "/councils", label: "Councils", icon: Shield },
   { path: "/communities", label: "Communities", icon: Users },
   { path: "/resources", label: "Resource Center", icon: BookOpen },

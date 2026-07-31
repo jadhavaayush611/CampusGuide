@@ -11,6 +11,10 @@ export interface CourseDto {
   department: string;
   instructor?: string | null;
   prerequisites?: string[] | null;
+  status?: 'ENROLLED' | 'COMPLETED' | 'IN_PROGRESS' | 'PLANNED' | null;
+  term?: string | null;
+  grade?: string | null;
+  syllabusUrl?: string | null;
 }
 
 export interface TimetableSlotDto {
@@ -23,6 +27,7 @@ export interface TimetableSlotDto {
   endTime: string;
   room: string;
   buildingCode?: string | null;
+  buildingName?: string | null;
   instructor?: string | null;
   type?: 'LECTURE' | 'LAB' | 'TUTORIAL' | 'SEMINAR' | null;
 }
@@ -78,8 +83,25 @@ export interface DegreePlanDto {
   programName: string;
   totalRequiredCredits: number;
   completedCredits: number;
+  gpa?: number | null;
+  curriculumBreakdown?: Array<{
+    category: string;
+    completedCredits: number;
+    requiredCredits: number;
+  }> | null;
   plannedTerms: Array<{
     termName: string;
     courses: CourseDto[];
   }>;
 }
+
+export interface AcademicCalendarItemDto {
+  id: string;
+  title: string;
+  date: string;
+  endDate?: string | null;
+  category: 'EXAM' | 'REGISTRATION' | 'MILESTONE' | 'HOLIDAY' | 'DEADLINE';
+  description?: string | null;
+  term?: string | null;
+}
+

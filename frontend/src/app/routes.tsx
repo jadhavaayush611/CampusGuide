@@ -9,6 +9,7 @@ import { NoticeBoard } from "./pages/NoticeBoard";
 import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { Academic } from "./pages/Academic";
 import { NotFound } from "./pages/NotFound";
 import { ProtectedRoute } from "../core/routing/ProtectedRoute";
 import { PublicRoute } from "../core/routing/PublicRoute";
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, Component: Dashboard },
+      { path: "academic", Component: Academic },
       { path: "councils", Component: Councils },
       { path: "councils/:id", Component: Council },
       { path: "communities", Component: Communities },

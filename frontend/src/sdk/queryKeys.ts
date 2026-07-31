@@ -38,6 +38,7 @@ export const queryKeys = {
     timetable: (scheduleId?: string) => [...queryKeys.planner.all, 'timetable', { scheduleId }] as const,
     studyGoals: () => [...queryKeys.planner.all, 'studyGoals'] as const,
     degreePlan: () => [...queryKeys.planner.all, 'degreePlan'] as const,
+    academicCalendar: (term?: string) => [...queryKeys.planner.all, 'academicCalendar', { term }] as const,
   },
   atlas: {
     all: ['atlas'] as const,

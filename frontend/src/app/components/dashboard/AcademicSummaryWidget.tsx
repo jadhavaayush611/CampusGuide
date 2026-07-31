@@ -59,7 +59,7 @@ export const AcademicSummaryWidget: React.FC = () => {
           </div>
         </div>
         <button
-          onClick={() => navigate('/resources')}
+          onClick={() => navigate('/academic')}
           className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
         >
           <span>View All Courses</span>
