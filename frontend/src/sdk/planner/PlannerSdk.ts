@@ -317,145 +317,7 @@ const FALLBACK_CALENDAR: AcademicCalendarItemDto[] = [
   },
 ];
 
-const TASKS_STORAGE_KEY = 'campusguide_planner_tasks';
 const GOALS_STORAGE_KEY = 'campusguide_planner_goals';
-
-const INITIAL_FALLBACK_TASKS: PlannerTaskDto[] = [
-  {
-    id: 'task-1',
-    userId: 'user-1',
-    title: 'Submit CS-301 Algorithm Analysis Report',
-    description: 'Complete complexity proofs for graph algorithms and dynamic programming state transitions.',
-    category: 'ACADEMIC',
-    priority: 'URGENT',
-    status: 'IN_PROGRESS',
-    progress: 75,
-    dueDate: '2026-08-03',
-    createdDate: '2026-07-28T09:00:00Z',
-    tags: ['cs301', 'homework', 'report'],
-    attachments: [
-      { id: 'att-1', name: 'algo_report_draft.pdf', url: 'https://campusguide.edu/files/algo_draft.pdf', size: '2.4 MB' },
-    ],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-2',
-    userId: 'user-1',
-    title: 'DBMS Indexing & Query Tuning Assignment',
-    description: 'Implement B-Tree vs Hash index performance benchmarks on PostgreSQL test database.',
-    category: 'ASSIGNMENT',
-    priority: 'HIGH',
-    status: 'TODO',
-    progress: 10,
-    dueDate: '2026-08-07',
-    createdDate: '2026-07-29T11:30:00Z',
-    tags: ['dbms', 'sql', 'benchmark'],
-    attachments: [],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-3',
-    userId: 'user-1',
-    title: 'Senior Capstone System Architecture Proposal',
-    description: 'Draft microservices topology diagram, API contracts, and database schema migrations.',
-    category: 'PROJECT',
-    priority: 'URGENT',
-    status: 'IN_PROGRESS',
-    progress: 60,
-    dueDate: '2026-08-08',
-    createdDate: '2026-07-25T14:00:00Z',
-    tags: ['capstone', 'architecture', 'diagram'],
-    attachments: [
-      { id: 'att-2', name: 'capstone_arch.png', url: 'https://campusguide.edu/files/capstone_arch.png', size: '1.1 MB' },
-    ],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-4',
-    userId: 'user-1',
-    title: 'Operating Systems System Call Prep',
-    description: 'Implement fork(), execve(), and custom POSIX signal handler routines.',
-    category: 'STUDY_GOAL',
-    priority: 'MEDIUM',
-    status: 'IN_PROGRESS',
-    progress: 40,
-    dueDate: '2026-08-12',
-    createdDate: '2026-07-30T16:20:00Z',
-    tags: ['os', 'posix', 'c'],
-    attachments: [],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-5',
-    userId: 'user-1',
-    title: 'Linear Algebra Midterm Revision',
-    description: 'Review eigenvalues, singular value decomposition (SVD), and vector space projections.',
-    category: 'EXAMINATION',
-    priority: 'HIGH',
-    status: 'TODO',
-    progress: 0,
-    dueDate: '2026-08-15',
-    createdDate: '2026-08-01T10:00:00Z',
-    tags: ['math201', 'exam', 'linear-algebra'],
-    attachments: [],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-6',
-    userId: 'user-1',
-    title: 'Organize Campus Tech Club Workshop',
-    description: 'Reserve Auditorium B, confirm guest speakers, and publish flyer on Notice Board.',
-    category: 'PERSONAL',
-    priority: 'MEDIUM',
-    status: 'IN_PROGRESS',
-    progress: 50,
-    dueDate: '2026-08-18',
-    createdDate: '2026-07-27T12:00:00Z',
-    tags: ['event', 'club', 'workshop'],
-    attachments: [],
-    isArchived: false,
-    isCompleted: false,
-  },
-  {
-    id: 'task-7',
-    userId: 'user-1',
-    title: 'Renew Campus Library Digital Access Key',
-    description: 'Submit student ID badge validation at Central Library help desk.',
-    category: 'REMINDER',
-    priority: 'LOW',
-    status: 'COMPLETED',
-    progress: 100,
-    dueDate: '2026-07-30',
-    createdDate: '2026-07-20T08:00:00Z',
-    completedDate: '2026-07-29T15:00:00Z',
-    tags: ['library', 'admin'],
-    attachments: [],
-    isArchived: false,
-    isCompleted: true,
-  },
-  {
-    id: 'task-8',
-    userId: 'user-1',
-    title: 'Configure Development Environment IDE Extensions',
-    description: 'Set up ESLint, Prettier, React Query DevTools, and Tailwind Intellisense.',
-    category: 'MISCELLANEOUS',
-    priority: 'LOW',
-    status: 'ARCHIVED',
-    progress: 100,
-    dueDate: '2026-07-22',
-    createdDate: '2026-07-15T09:00:00Z',
-    completedDate: '2026-07-21T18:00:00Z',
-    tags: ['tooling', 'ide'],
-    attachments: [],
-    isArchived: true,
-    isCompleted: true,
-  },
-];
 
 const INITIAL_FALLBACK_GOALS: StudyGoalDto[] = [
   {
@@ -493,29 +355,6 @@ const INITIAL_FALLBACK_GOALS: StudyGoalDto[] = [
   },
 ];
 
-function getStoredTasks(): PlannerTaskDto[] {
-  if (typeof window === 'undefined') return INITIAL_FALLBACK_TASKS;
-  try {
-    const raw = localStorage.getItem(TASKS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(INITIAL_FALLBACK_TASKS));
-      return INITIAL_FALLBACK_TASKS;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_FALLBACK_TASKS;
-  }
-}
-
-function saveStoredTasks(tasks: PlannerTaskDto[]): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-  } catch {
-    // Ignore storage write errors
-  }
-}
-
 function getStoredGoals(): StudyGoalDto[] {
   if (typeof window === 'undefined') return INITIAL_FALLBACK_GOALS;
   try {
@@ -543,108 +382,53 @@ function saveStoredGoals(goals: StudyGoalDto[]): void {
  * Production Planner SDK encapsulating tasks, schedules, course catalog, timetable, study goals, degree plan, and academic calendar.
  */
 export class PlannerSdk extends BaseSdk {
-  private readonly tasksUrl = '/api/planner/tasks';
-  private readonly schedulesUrl = '/api/planner/schedules';
-  private readonly coursesUrl = '/api/planner/courses';
-  private readonly goalsUrl = '/api/planner/goals';
-  private readonly degreePlanUrl = '/api/planner/degree-plan';
-  private readonly calendarUrl = '/api/planner/calendar';
+  private readonly tasksUrl = '/api/v1/planner';
+  private readonly schedulesUrl = '/api/v1/planner/schedules';
+  private readonly coursesUrl = '/api/v1/planner/courses';
+  private readonly goalsUrl = '/api/v1/planner/goals';
+  private readonly degreePlanUrl = '/api/v1/planner/degree-plan';
+  private readonly calendarUrl = '/api/v1/planner/calendar';
 
   // --- Task Management ---
 
   public async getTasks(params?: TaskQueryParams): Promise<TaskPaginatedResponse> {
-    try {
-      const dtos = await this.get<PlannerTaskDto[]>(this.tasksUrl, params as Record<string, any>);
-      const models = (dtos || []).map(mapTaskDtoToModel);
-      return this.filterAndPaginateTasks(models, params);
-    } catch {
-      const storedDtos = getStoredTasks();
-      const models = storedDtos.map(mapTaskDtoToModel);
-      return this.filterAndPaginateTasks(models, params);
-    }
+    const dtos = await this.get<PlannerTaskDto[]>(this.tasksUrl, params as Record<string, any>);
+    const models = (dtos || []).map(mapTaskDtoToModel);
+    return this.filterAndPaginateTasks(models, params);
   }
 
   public async getTaskById(id: string): Promise<PlannerTask> {
-    try {
-      const dto = await this.get<PlannerTaskDto>(`${this.tasksUrl}/${id}`);
-      return mapTaskDtoToModel(dto);
-    } catch {
-      const stored = getStoredTasks();
-      const match = stored.find((t) => t.id === id);
-      if (!match) {
-        throw new Error(`Task with id ${id} not found`);
-      }
-      return mapTaskDtoToModel(match);
-    }
+    const dto = await this.get<PlannerTaskDto>(`${this.tasksUrl}/${id}`);
+    return mapTaskDtoToModel(dto);
   }
 
   public async createTask(payload: CreateTaskDto): Promise<PlannerTask> {
-    try {
-      const dto = await this.post<PlannerTaskDto>(this.tasksUrl, payload);
-      return mapTaskDtoToModel(dto);
-    } catch {
-      const stored = getStoredTasks();
-      const newTaskDto: PlannerTaskDto = {
-        id: `task-${Date.now()}`,
-        userId: 'user-1',
-        title: payload.title,
-        description: payload.description || null,
-        category: payload.category || 'PERSONAL',
-        priority: payload.priority || 'MEDIUM',
-        status: payload.status || 'TODO',
-        progress: payload.progress || 0,
-        dueDate: payload.dueDate || null,
-        createdDate: new Date().toISOString(),
-        tags: payload.tags || [],
-        attachments: payload.attachments || [],
-        isArchived: payload.status === 'ARCHIVED',
-        isCompleted: payload.status === 'COMPLETED' || payload.progress === 100,
-      };
-      stored.unshift(newTaskDto);
-      saveStoredTasks(stored);
-      return mapTaskDtoToModel(newTaskDto);
-    }
+    const reqBody = {
+      title: payload.title,
+      description: payload.description,
+      type: payload.category || (payload as any).type || 'PERSONAL',
+      priority: payload.priority || 'MEDIUM',
+      dueAt: payload.dueDate || (payload as any).dueAt,
+    };
+    const dto = await this.post<PlannerTaskDto>(this.tasksUrl, reqBody);
+    return mapTaskDtoToModel(dto);
   }
 
   public async updateTask(id: string, payload: UpdateTaskDto): Promise<PlannerTask> {
-    try {
-      const dto = await this.put<PlannerTaskDto>(`${this.tasksUrl}/${id}`, payload);
-      return mapTaskDtoToModel(dto);
-    } catch {
-      const stored = getStoredTasks();
-      const index = stored.findIndex((t) => t.id === id);
-      if (index === -1) {
-        throw new Error(`Task ${id} not found`);
-      }
-      const existing = stored[index];
-      const updatedStatus = payload.status ?? existing.status;
-      const updatedProgress = payload.progress ?? existing.progress;
-      const isCompleted = payload.isCompleted ?? (updatedStatus === 'COMPLETED' || updatedProgress === 100);
-      const isArchived = payload.isArchived ?? (updatedStatus === 'ARCHIVED');
-
-      const updatedDto: PlannerTaskDto = {
-        ...existing,
-        ...payload,
-        status: updatedStatus,
-        progress: updatedProgress,
-        isCompleted,
-        isArchived,
-        completedDate: isCompleted ? (payload.completedDate || existing.completedDate || new Date().toISOString()) : undefined,
-      };
-      stored[index] = updatedDto;
-      saveStoredTasks(stored);
-      return mapTaskDtoToModel(updatedDto);
-    }
+    const reqBody = {
+      title: payload.title,
+      description: payload.description,
+      type: payload.category || (payload as any).type || 'PERSONAL',
+      priority: payload.priority || 'MEDIUM',
+      status: payload.status,
+      dueAt: payload.dueDate || (payload as any).dueAt,
+    };
+    const dto = await this.put<PlannerTaskDto>(`${this.tasksUrl}/${id}`, reqBody);
+    return mapTaskDtoToModel(dto);
   }
 
   public async deleteTask(id: string): Promise<void> {
-    try {
-      await this.delete<void>(`${this.tasksUrl}/${id}`);
-    } catch {
-      const stored = getStoredTasks();
-      const filtered = stored.filter((t) => t.id !== id);
-      saveStoredTasks(filtered);
-    }
+    await this.delete<void>(`${this.tasksUrl}/${id}`);
   }
 
   public async archiveTask(id: string): Promise<PlannerTask> {

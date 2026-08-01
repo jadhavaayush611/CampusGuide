@@ -54,12 +54,21 @@ export const queryKeys = {
   },
   atlas: {
     all: ['atlas'] as const,
+    capabilities: () => [...queryKeys.atlas.all, 'capabilities'] as const,
+    info: () => [...queryKeys.atlas.all, 'info'] as const,
     search: (query: string, category?: string) => [...queryKeys.atlas.all, 'search', { query, category }] as const,
     route: (originLat: number, originLng: number, destLat: number, destLng: number, isAccessible?: boolean) =>
       [...queryKeys.atlas.all, 'route', { originLat, originLng, destLat, destLng, isAccessible }] as const,
     landmarks: (category?: string) => [...queryKeys.atlas.all, 'landmarks', { category }] as const,
     landmark: (id: string) => [...queryKeys.atlas.all, 'landmarks', id] as const,
     mapLayers: () => [...queryKeys.atlas.all, 'mapLayers'] as const,
+  },
+  conversations: {
+    all: ['conversations'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.conversations.all, 'list', params] as const,
+    detail: (id: string) => [...queryKeys.conversations.all, 'detail', id] as const,
+    history: (id: string) => [...queryKeys.conversations.detail(id), 'history'] as const,
+    summary: (id: string) => [...queryKeys.conversations.detail(id), 'summary'] as const,
   },
   notifications: {
     all: ['notifications'] as const,

@@ -9,6 +9,7 @@ export interface LoginRequestDto {
 
 export interface RegisterRequestDto {
   name: string;
+  username: string;
   email: string;
   password: string;
   role?: string;
@@ -23,7 +24,8 @@ export interface RefreshTokenRequestDto {
 export interface UserDto {
   id: string;
   email: string;
-  name: string;
+  name?: string | null;
+  username?: string | null;
   role: string;
   department?: string | null;
   avatarUrl?: string | null;

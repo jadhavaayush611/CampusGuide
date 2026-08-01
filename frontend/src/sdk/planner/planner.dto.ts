@@ -115,20 +115,26 @@ export interface TaskAttachmentDto {
 
 export interface PlannerTaskDto {
   id: string;
-  userId: string;
+  userId?: string;
   title: string;
   description?: string | null;
-  category: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
-  progress: number;
+  category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS' | string | null;
+  type?: 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'PERSONAL' | 'EXAM' | 'OTHER' | string | null;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | string | null;
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED' | string | null;
+  progress?: number | null;
   dueDate?: string | null;
-  createdDate: string;
+  dueAt?: string | null;
+  createdDate?: string | null;
+  createdAt?: string | null;
   completedDate?: string | null;
+  completedAt?: string | null;
   tags?: string[] | null;
   attachments?: TaskAttachmentDto[] | null;
   isArchived?: boolean | null;
   isCompleted?: boolean | null;
+  notes?: string | null;
+  linkedEventId?: string | null;
 }
 
 export interface CreateTaskDto {

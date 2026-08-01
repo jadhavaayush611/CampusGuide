@@ -33,9 +33,10 @@ export class AuthSdk extends BaseSdk {
   /**
    * Register a new user account
    */
-  public async register(payload: RegisterPayload): Promise<AuthSession> {
+  public async register(payload: RegisterPayload & { username?: string }): Promise<AuthSession> {
     const reqDto: RegisterRequestDto = {
       name: payload.name,
+      username: payload.username || payload.name || payload.email.split('@')[0],
       email: payload.email,
       password: payload.password,
       role: payload.role,

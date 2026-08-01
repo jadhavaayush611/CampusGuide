@@ -238,85 +238,53 @@ export class CommunitySdk extends BaseSdk {
    * Fetch communities directory supporting search, category filter, sorting, and pagination.
    */
   public async getCommunities(params?: CommunityQueryParams): Promise<PaginatedCommunitiesResponse> {
-    try {
-      const dtos = await this.get<CommunitySummaryDto[]>(this.communitiesUrl);
-      let list: Community[] = dtos.map((dto) =>
-        mapCommunitySummaryDtoToModel(dto, {
-          isJoined: this.joinedCommunityIds.has(dto.id),
-          myRole: this.joinedCommunityIds.has(dto.id) ? 'MEMBER' : 'NONE',
-        })
+    const dtos = await this.get<CommunitySummaryDto[]>(this.communitiesUrl);
+    let list: Community[] = (dtos || []).map((dto) =>
+      mapCommunitySummaryDtoToModel(dto, {
+        isJoined: this.joinedCommunityIds.has(dto.id),
+        myRole: this.joinedCommunityIds.has(dto.id) ? 'MEMBER' : 'NONE',
+      })
+    );
+
+    // Filter by search query
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.category.toLowerCase().includes(q) ||
+          c.tags?.some((t) => t.toLowerCase().includes(q))
       );
-
-      // If backend returns empty list (fresh DB), fallback to rich seed communities
-      if (!list || list.length === 0) {
-        list = SEED_COMMUNITIES.map((comm) => ({
-          ...comm,
-          isJoined: this.joinedCommunityIds.has(comm.id),
-          myRole: this.joinedCommunityIds.has(comm.id) ? (comm.myRole || 'MEMBER') : 'NONE',
-        }));
-      }
-
-      // Filter by search query
-      if (params?.search) {
-        const q = params.search.toLowerCase();
-        list = list.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            c.description.toLowerCase().includes(q) ||
-            c.category.toLowerCase().includes(q) ||
-            c.tags?.some((t) => t.toLowerCase().includes(q))
-        );
-      }
-
-      // Filter by category
-      if (params?.category && params.category !== 'All') {
-        list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
-      }
-
-      // Sorting
-      const sort = params?.sort || 'members';
-      list.sort((a, b) => {
-        if (sort === 'name') return a.name.localeCompare(b.name);
-        if (sort === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
-        if (sort === 'activity') return (b.activityMetrics?.postsThisWeek || 0) - (a.activityMetrics?.postsThisWeek || 0);
-        return b.memberCount - a.memberCount;
-      });
-
-      // Pagination
-      const page = params?.page || 1;
-      const limit = params?.limit || 12;
-      const startIndex = (page - 1) * limit;
-      const paginated = list.slice(startIndex, startIndex + limit);
-      const totalPages = Math.ceil(list.length / limit) || 1;
-
-      return {
-        communities: paginated,
-        total: list.length,
-        page,
-        totalPages,
-      };
-    } catch {
-      // Fallback for offline or local dev without backend connection
-      let list = SEED_COMMUNITIES.map((comm) => ({
-        ...comm,
-        isJoined: this.joinedCommunityIds.has(comm.id),
-      }));
-
-      if (params?.search) {
-        const q = params.search.toLowerCase();
-        list = list.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
-      }
-      if (params?.category && params.category !== 'All') {
-        list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
-      }
-
-      return {
-        communities: list,
-        total: list.length,
-        page: 1,
-        totalPages: 1,
-      };
     }
+
+    // Filter by category
+    if (params?.category && params.category !== 'All') {
+      list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
+    }
+
+    // Sorting
+    const sort = params?.sort || 'members';
+    list.sort((a, b) => {
+      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
+      if (sort === 'activity') return (b.activityMetrics?.postsThisWeek || 0) - (a.activityMetrics?.postsThisWeek || 0);
+      return b.memberCount - a.memberCount;
+    });
+
+    // Pagination
+    const page = params?.page || 1;
+    const limit = params?.limit || 12;
+    const startIndex = (page - 1) * limit;
+    const paginated = list.slice(startIndex, startIndex + limit);
+    const totalPages = Math.ceil(list.length / limit) || 1;
+
+    return {
+      communities: paginated,
+      total: list.length,
+      page,
+      totalPages,
+    };
   }
 
   /**
@@ -355,34 +323,19 @@ export class CommunitySdk extends BaseSdk {
    * Fetch single community detail by ID.
    */
   public async getCommunityById(communityId: string): Promise<Community> {
-    try {
-      const dto = await this.get<CommunityDto>(`${this.communitiesUrl}/${communityId}`);
-      return mapCommunityDtoToModel(dto, {
-        isJoined: this.joinedCommunityIds.has(dto.id),
-        myRole: this.joinedCommunityIds.has(dto.id) ? 'MEMBER' : 'NONE',
-      });
-    } catch {
-      // Fallback matching seed community
-      const seed = SEED_COMMUNITIES.find((c) => c.id === communityId) || SEED_COMMUNITIES[0];
-      return {
-        ...seed,
-        id: communityId,
-        isJoined: this.joinedCommunityIds.has(communityId),
-        myRole: this.joinedCommunityIds.has(communityId) ? 'MEMBER' : 'NONE',
-      };
-    }
+    const dto = await this.get<CommunityDto>(`${this.communitiesUrl}/${communityId}`);
+    return mapCommunityDtoToModel(dto, {
+      isJoined: this.joinedCommunityIds.has(dto.id),
+      myRole: this.joinedCommunityIds.has(dto.id) ? 'MEMBER' : 'NONE',
+    });
   }
 
   /**
    * Fetch communities associated with a council.
    */
   public async getCommunitiesByCouncil(councilId: string): Promise<Community[]> {
-    try {
-      const dtos = await this.get<CommunitySummaryDto[]>(`${this.communitiesUrl}/councils/${councilId}/communities`);
-      return dtos.map((dto) => mapCommunitySummaryDtoToModel(dto));
-    } catch {
-      return SEED_COMMUNITIES.filter((c) => c.councilId === councilId || true);
-    }
+    const dtos = await this.get<CommunitySummaryDto[]>(`${this.communitiesUrl}/councils/${councilId}/communities`);
+    return (dtos || []).map((dto) => mapCommunitySummaryDtoToModel(dto));
   }
 
   /**
@@ -392,7 +345,7 @@ export class CommunitySdk extends BaseSdk {
     try {
       await this.post(`${this.communitiesUrl}/${communityId}/join`);
     } catch {
-      // Simulated endpoint response if backend endpoint pending
+      // Ignore
     }
     this.joinedCommunityIds.add(communityId);
     return { success: true, isJoined: true };
@@ -405,7 +358,7 @@ export class CommunitySdk extends BaseSdk {
     try {
       await this.delete(`${this.communitiesUrl}/${communityId}/leave`);
     } catch {
-      // Simulated endpoint response if backend endpoint pending
+      // Ignore
     }
     this.joinedCommunityIds.delete(communityId);
     return { success: true, isJoined: false };
@@ -418,37 +371,20 @@ export class CommunitySdk extends BaseSdk {
     communityId: string,
     params?: CommunityFeedQueryParams
   ): Promise<PaginatedFeedResponse> {
-    try {
-      const dtos = await this.get<PostSummaryDto[]>(`${this.postsUrl}/community/${communityId}`);
-      let posts = dtos.map((dto) => mapPostSummaryDtoToModel(dto));
-      if (!posts || posts.length === 0) {
-        posts = SEED_POSTS[communityId] || SEED_POSTS['comm-1'];
-      }
+    const dtos = await this.get<PostSummaryDto[]>(`${this.postsUrl}/community/${communityId}`);
+    let posts = (dtos || []).map((dto) => mapPostSummaryDtoToModel(dto));
 
-      if (params?.filter === 'announcements') {
-        posts = posts.filter((p) => p.isAnnouncement);
-      } else if (params?.filter === 'pinned') {
-        posts = posts.filter((p) => p.isPinned);
-      }
-
-      return {
-        posts,
-        total: posts.length,
-        hasMore: false,
-      };
-    } catch {
-      let posts = SEED_POSTS[communityId] || SEED_POSTS['comm-1'];
-      if (params?.filter === 'announcements') {
-        posts = posts.filter((p) => p.isAnnouncement);
-      } else if (params?.filter === 'pinned') {
-        posts = posts.filter((p) => p.isPinned);
-      }
-      return {
-        posts,
-        total: posts.length,
-        hasMore: false,
-      };
+    if (params?.filter === 'announcements') {
+      posts = posts.filter((p) => p.isAnnouncement);
+    } else if (params?.filter === 'pinned') {
+      posts = posts.filter((p) => p.isPinned);
     }
+
+    return {
+      posts,
+      total: posts.length,
+      hasMore: false,
+    };
   }
 
   /**

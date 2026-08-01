@@ -23,10 +23,25 @@ import {
  * Production Atlas SDK encapsulating spatial search, route calculation, wayfinding, and map layer endpoints.
  */
 export class AtlasSdk extends BaseSdk {
-  private readonly searchUrl = '/api/atlas/search';
-  private readonly routeUrl = '/api/atlas/route';
-  private readonly landmarksUrl = '/api/atlas/landmarks';
-  private readonly layersUrl = '/api/atlas/layers';
+  private readonly baseUrl = '/api/v1/atlas';
+  private readonly searchUrl = '/api/v1/atlas/search';
+  private readonly routeUrl = '/api/v1/atlas/route';
+  private readonly landmarksUrl = '/api/v1/atlas/landmarks';
+  private readonly layersUrl = '/api/v1/atlas/layers';
+
+  /**
+   * Send a chat message to Atlas AI assistant
+   */
+  public async chat(message: string, conversationId?: string): Promise<{ response: string; conversationId: string }> {
+    return this.post<{ response: string; conversationId: string }>(`${this.baseUrl}/chat`, { message, conversationId });
+  }
+
+  /**
+   * Fetch Atlas operational capabilities
+   */
+  public async getCapabilities(): Promise<any> {
+    return this.get<any>(`${this.baseUrl}/capabilities`);
+  }
 
   /**
    * Search campus spatially or by query term

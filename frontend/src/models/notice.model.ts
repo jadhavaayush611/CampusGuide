@@ -58,7 +58,7 @@ export interface NoticeQueryParams {
   priority?: NoticePriority | 'ALL';
   publisher?: string;
   visibility?: NoticeVisibility;
-  status?: 'ALL' | 'ACTIVE' | 'EXPIRED' | 'UNREAD' | 'ARCHIVED';
+  status?: 'ALL' | 'ACTIVE' | 'EXPIRED' | 'UNREAD' | 'ARCHIVED' | 'DRAFT';
   tags?: string[];
   isPinned?: boolean;
   includeUnpublished?: boolean;

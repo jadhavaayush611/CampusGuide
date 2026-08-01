@@ -30,10 +30,10 @@ import {
  * Production Campus SDK encapsulating buildings, locations, events, councils, and resource endpoints.
  */
 export class CampusSdk extends BaseSdk {
-  private readonly eventsUrl = '/api/events';
-  private readonly councilsUrl = '/api/councils';
-  private readonly resourcesUrl = '/api/resources';
-  private readonly buildingsUrl = '/api/buildings';
+  private readonly eventsUrl = '/api/v1/events';
+  private readonly councilsUrl = '/api/v1/councils';
+  private readonly resourcesUrl = '/api/v1/resources';
+  private readonly buildingsUrl = '/api/v1/academic/buildings';
 
   // --- Buildings & Locations ---
 
@@ -49,7 +49,7 @@ export class CampusSdk extends BaseSdk {
 
   public async getLocations(buildingId?: string): Promise<Location[]> {
     const params = buildingId ? { buildingId } : undefined;
-    const dtos = await this.get<LocationDto[]>('/api/locations', params);
+    const dtos = await this.get<LocationDto[]>('/api/v1/academic/locations', params);
     return dtos.map(mapLocationDtoToModel);
   }
 
@@ -102,8 +102,8 @@ export class CampusSdk extends BaseSdk {
 
   public async getEventRegistrationStatus(eventId: string): Promise<boolean> {
     try {
-      const res = await this.get<{ registered: boolean }>(`${this.eventsUrl}/${eventId}/registration-status`);
-      return res.registered;
+      const res = await this.get<boolean | { registered: boolean }>(`${this.eventsUrl}/${eventId}/is-registered`);
+      return typeof res === 'boolean' ? res : Boolean(res?.registered);
     } catch {
       return false;
     }

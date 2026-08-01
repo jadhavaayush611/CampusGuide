@@ -115,18 +115,25 @@ export function mapAcademicCalendarItemDtoToModel(dto: AcademicCalendarItemDto):
 export function mapTaskDtoToModel(dto: PlannerTaskDto): PlannerTask {
   const isCompleted = dto.isCompleted ?? dto.status === 'COMPLETED';
   const isArchived = dto.isArchived ?? dto.status === 'ARCHIVED';
+  const category = (dto.category || dto.type || 'PERSONAL') as any;
+  const priority = (dto.priority || 'MEDIUM') as any;
+  const status = (dto.status || 'TODO') as any;
+  const dueDate = dto.dueDate || dto.dueAt || undefined;
+  const createdDate = dto.createdDate || dto.createdAt || new Date().toISOString();
+  const completedDate = dto.completedDate || dto.completedAt || undefined;
+
   return {
     id: dto.id,
-    userId: dto.userId,
+    userId: dto.userId || 'user-1',
     title: dto.title,
     description: dto.description ?? undefined,
-    category: dto.category ?? 'PERSONAL',
-    priority: dto.priority ?? 'MEDIUM',
-    status: dto.status ?? 'TODO',
+    category,
+    priority,
+    status,
     progress: dto.progress ?? (isCompleted ? 100 : 0),
-    dueDate: dto.dueDate ?? undefined,
-    createdDate: dto.createdDate ?? new Date().toISOString(),
-    completedDate: dto.completedDate ?? undefined,
+    dueDate,
+    createdDate,
+    completedDate,
     tags: dto.tags || [],
     attachments: (dto.attachments || []).map((att) => ({
       id: att.id ?? undefined,

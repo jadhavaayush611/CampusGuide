@@ -57,44 +57,46 @@ src/sdk/
 ## SDK Modules Reference
 
 ### 1. Authentication SDK (`AuthSdk`)
-- `login(credentials: LoginCredentials): Promise<AuthSession>`
-- `register(payload: RegisterPayload): Promise<AuthSession>`
-- `getCurrentUser(): Promise<User>`
-- `refreshToken(refreshToken: string): Promise<AuthSession>`
-- `updateProfile(userId: string, payload: UpdateProfileDto): Promise<User>`
-- `changePassword(payload: PasswordChangePayload): Promise<void>`
-- `logout(): Promise<void>`
+- Base Endpoint: `/api/v1/auth`
+- Methods: `login`, `register` (with required `@NotBlank username`), `getCurrentUser` (`GET /api/v1/auth/me`), `refreshToken`, `updateProfile`, `changePassword`, `logout`
 
 ### 2. Campus SDK (`CampusSdk`)
-- `getBuildings(): Promise<Building[]>`
-- `getBuildingById(id: string): Promise<Building>`
-- `getLocations(buildingId?: string): Promise<Location[]>`
-- `getFloorPlans(buildingId: string): Promise<FloorPlan[]>`
-- `getEvents(): Promise<CampusEvent[]>`
-- `getUpcomingEvents(): Promise<CampusEvent[]>`
-- `getEventById(eventId: string): Promise<CampusEvent>`
-- `createEvent(payload: CreateEventDto): Promise<CampusEvent>`
-- `updateEvent(eventId: string, payload: UpdateEventDto): Promise<CampusEvent>`
-- `deleteEvent(eventId: string): Promise<void>`
-- `registerForEvent(eventId: string): Promise<CampusEvent>`
-- `cancelEventRegistration(eventId: string): Promise<CampusEvent>`
-- `getCouncils(): Promise<Council[]>`
-- `getResources(): Promise<Resource[]>`
+- Base Endpoints: `/api/v1/events`, `/api/v1/councils`, `/api/v1/resources`, `/api/v1/academic`
+- Methods: `getBuildings`, `getBuildingById`, `getLocations`, `getFloorPlans`, `getEvents`, `getUpcomingEvents`, `getEventById`, `createEvent`, `updateEvent`, `deleteEvent`, `registerForEvent`, `cancelEventRegistration`, `getEventRegistrationStatus` (`GET /api/v1/events/{id}/is-registered`)
 
 ### 3. Academic Planner SDK (`PlannerSdk`)
-- `getSchedules(): Promise<Schedule[]>`
-- `getScheduleById(id: string): Promise<Schedule>`
-- `createSchedule(payload: CreateScheduleDto): Promise<Schedule>`
-- `updateSchedule(id: string, payload: UpdateScheduleDto): Promise<Schedule>`
-- `deleteSchedule(id: string): Promise<void>`
-- `getCourses(department?: string): Promise<Course[]>`
-- `getTimetable(scheduleId?: string): Promise<TimetableSlot[]>`
-- `getStudyGoals(): Promise<StudyGoal[]>`
-- `createStudyGoal(payload: CreateStudyGoalDto): Promise<StudyGoal>`
+- Base Endpoint: `/api/v1/planner`
+- Methods: `getTasks` (`GET /api/v1/planner`), `getTaskById`, `createTask` (`POST /api/v1/planner`), `updateTask` (`PUT /api/v1/planner/{id}`), `deleteTask` (`DELETE /api/v1/planner/{id}`), `archiveTask`, `restoreTask`, `markTaskComplete` (`PATCH /api/v1/planner/{id}/status`), `getSchedules`, `getTimetable`, `getStudyGoals`, `getDegreePlan`, `getAcademicCalendar`
 
-### 4. Atlas Maps SDK (`AtlasSdk`)
-- `searchSpatial(query: string, category?: string, userLat?: number, userLng?: number): Promise<SpatialSearchResult[]>`
-- `calculateRoute(request: RouteRequestDto): Promise<CalculatedRoute>`
-- `getLandmarks(category?: string): Promise<Landmark[]>`
-- `getLandmarkById(id: string): Promise<Landmark>`
-- `getMapLayers(): Promise<MapLayer[]>`
+### 4. Atlas Maps & AI SDK (`AtlasSdk`)
+- Base Endpoints: `/api/v1/atlas`, `/api/v1/atlas/search`, `/api/v1/atlas/route`, `/api/v1/atlas/landmarks`, `/api/v1/atlas/layers`
+- Methods: `chat` (`POST /api/v1/atlas/chat`), `getCapabilities`, `searchSpatial`, `calculateRoute`, `getLandmarks`, `getLandmarkById`, `getMapLayers`
+
+### 5. Community SDK (`CommunitySdk`)
+- Base Endpoints: `/api/v1/communities`, `/api/v1/posts`, `/api/v1/comments`
+- Methods: `getCommunities`, `getFeaturedCommunities`, `getTrendingCommunities`, `getRecentlyActiveCommunities`, `getJoinedCommunities`, `getCommunityById`, `getCommunitiesByCouncil`, `joinCommunity`, `leaveCommunity`, `getCommunityPosts`
+
+### 6. Council SDK (`CouncilSdk`)
+- Base Endpoint: `/api/v1/councils`
+- Methods: `getCouncils`, `getFeaturedCouncils`, `getRecentlyActiveCouncils`, `getJoinedCouncils`, `getCouncilById`, `getCouncilBySlug`, `joinCouncil`, `leaveCouncil`, `getCouncilLeadership`, `getCouncilEvents`, `getCouncilNotices`, `getCouncilResources`
+
+### 7. Resource SDK (`ResourceSdk`)
+- Base Endpoint: `/api/v1/resources`
+- Methods: `getResources`, `getFeaturedResources`, `getRecentResources`, `getPopularResources`, `getBookmarkedResources`, `getResourceById`, `createResource` (multipart form upload), `updateResource`, `deleteResource`
+
+### 8. Notice SDK (`NoticeSdk`)
+- Base Endpoint: `/api/v1/notices`
+- Methods: `getAllNotices`, `getNoticeById`, `getNoticeBySlug`, `createNotice`, `updateNotice`, `publishNotice` (`PATCH /api/v1/notices/{id}/publish`), `pinNotice` (`PATCH /api/v1/notices/{id}/pin`), `deleteNotice`
+
+### 9. Notification SDK (`NotificationSdk` & `ScheduledNotificationSdk`)
+- Base Endpoints: `/api/v1/notifications`, `/api/v1/scheduled-notifications`
+- Methods: `getNotifications`, `getNotificationStats`, `getUnreadCount` (`GET /api/v1/notifications/unread/count`), `markAsRead` (`PATCH /api/v1/notifications/{id}/read`), `markAsUnread`, `markAllAsRead` (`PATCH /api/v1/notifications/read-all`), `archiveNotification`, `restoreNotification`, `deleteNotification`
+
+### 10. Calendar SDK (`CalendarSdk`)
+- Base Endpoint: `/api/v1/calendar`
+- Methods: `getEntries` (`GET /api/v1/calendar`), `getEntriesInRange` (`GET /api/v1/calendar/range?from=...&to=...`), `getEntryById`, `createEntry`, `updateEntry`, `deleteEntry`
+
+---
+
+## Fallback Policy
+In accordance with Pre-Phase 5 standards, obsolete local storage fallbacks, in-memory repository fallbacks, and seed datasets have been removed from all SDKs. Requests execute exclusively against live backend contracts and propagate strongly typed `SdkError` instances on failure.

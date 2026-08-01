@@ -552,86 +552,54 @@ export class CouncilSdk extends BaseSdk {
    * Fetch council directory with search, category filtering, sorting, and pagination.
    */
   public async getCouncils(params?: CouncilQueryParams): Promise<PaginatedCouncilsResponse> {
-    try {
-      const dtos = await this.get<CouncilDto[]>(this.councilsUrl);
-      let list: Council[] = dtos.map((dto) =>
-        mapCouncilDtoToModel(dto, {
-          isJoined: this.joinedCouncilIds.has(String(dto.id)),
-          myRole: this.joinedCouncilIds.has(String(dto.id)) ? 'MEMBER' : 'NONE',
-          pendingJoinRequest: this.pendingCouncilIds.has(String(dto.id)),
-        })
+    const dtos = await this.get<CouncilDto[]>(this.councilsUrl);
+    let list: Council[] = (dtos || []).map((dto) =>
+      mapCouncilDtoToModel(dto, {
+        isJoined: this.joinedCouncilIds.has(String(dto.id)),
+        myRole: this.joinedCouncilIds.has(String(dto.id)) ? 'MEMBER' : 'NONE',
+        pendingJoinRequest: this.pendingCouncilIds.has(String(dto.id)),
+      })
+    );
+
+    // Filter search
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.description.toLowerCase().includes(q) ||
+          c.category.toLowerCase().includes(q) ||
+          c.tags?.some((t) => t.toLowerCase().includes(q))
       );
-
-      if (!list || list.length === 0) {
-        list = SEED_COUNCILS.map((c) => ({
-          ...c,
-          isJoined: this.joinedCouncilIds.has(c.id),
-          pendingJoinRequest: this.pendingCouncilIds.has(c.id),
-          myRole: this.joinedCouncilIds.has(c.id) ? c.myRole : 'NONE',
-        }));
-      }
-
-      // Filter search
-      if (params?.search) {
-        const q = params.search.toLowerCase();
-        list = list.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            c.description.toLowerCase().includes(q) ||
-            c.category.toLowerCase().includes(q) ||
-            c.tags.some((t) => t.toLowerCase().includes(q))
-        );
-      }
-
-      // Filter category
-      if (params?.category && params.category !== 'All') {
-        list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
-      }
-
-      // Sort
-      const sort = params?.sort || 'members';
-      list.sort((a, b) => {
-        if (sort === 'name') return a.name.localeCompare(b.name);
-        if (sort === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
-        if (sort === 'activity') return b.activityMetrics.activeEventsCount - a.activityMetrics.activeEventsCount;
-        return b.memberCount - a.memberCount;
-      });
-
-      // Pagination
-      const page = params?.page || 1;
-      const limit = params?.limit || 12;
-      const startIndex = (page - 1) * limit;
-      const paginated = list.slice(startIndex, startIndex + limit);
-      const totalPages = Math.ceil(list.length / limit) || 1;
-
-      return {
-        councils: paginated,
-        total: list.length,
-        page,
-        totalPages,
-      };
-    } catch {
-      let list = SEED_COUNCILS.map((c) => ({
-        ...c,
-        isJoined: this.joinedCouncilIds.has(c.id),
-        pendingJoinRequest: this.pendingCouncilIds.has(c.id),
-      }));
-
-      if (params?.search) {
-        const q = params.search.toLowerCase();
-        list = list.filter((c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
-      }
-      if (params?.category && params.category !== 'All') {
-        list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
-      }
-
-      return {
-        councils: list,
-        total: list.length,
-        page: 1,
-        totalPages: 1,
-      };
     }
+
+    // Filter category
+    if (params?.category && params.category !== 'All') {
+      list = list.filter((c) => c.category.toLowerCase() === params.category!.toLowerCase());
+    }
+
+    // Sort
+    const sort = params?.sort || 'members';
+    list.sort((a, b) => {
+      if (sort === 'name') return a.name.localeCompare(b.name);
+      if (sort === 'newest') return (b.createdAt || '').localeCompare(a.createdAt || '');
+      if (sort === 'activity') return (b.activityMetrics?.activeEventsCount || 0) - (a.activityMetrics?.activeEventsCount || 0);
+      return (b.memberCount || 0) - (a.memberCount || 0);
+    });
+
+    // Pagination
+    const page = params?.page || 1;
+    const limit = params?.limit || 12;
+    const startIndex = (page - 1) * limit;
+    const paginated = list.slice(startIndex, startIndex + limit);
+    const totalPages = Math.ceil(list.length / limit) || 1;
+
+    return {
+      councils: paginated,
+      total: list.length,
+      page,
+      totalPages,
+    };
   }
 
   public async getFeaturedCouncils(): Promise<Council[]> {
@@ -650,46 +618,26 @@ export class CouncilSdk extends BaseSdk {
   }
 
   public async getCouncilById(councilId: string): Promise<Council> {
-    try {
-      const dto = await this.get<CouncilDto>(`${this.councilsUrl}/${councilId}`);
-      return mapCouncilDtoToModel(dto, {
-        isJoined: this.joinedCouncilIds.has(councilId),
-        myRole: this.joinedCouncilIds.has(councilId) ? 'MEMBER' : 'NONE',
-        pendingJoinRequest: this.pendingCouncilIds.has(councilId),
-        leadership: SEED_COUNCILS.find((c) => c.id === councilId)?.leadership || SEED_COUNCILS[0].leadership,
-      });
-    } catch {
-      const found = SEED_COUNCILS.find((c) => c.id === councilId || c.slug === councilId) || SEED_COUNCILS[0];
-      return {
-        ...found,
-        isJoined: this.joinedCouncilIds.has(found.id),
-        pendingJoinRequest: this.pendingCouncilIds.has(found.id),
-        myRole: this.joinedCouncilIds.has(found.id) ? found.myRole : 'NONE',
-      };
-    }
+    const dto = await this.get<CouncilDto>(`${this.councilsUrl}/${councilId}`);
+    return mapCouncilDtoToModel(dto, {
+      isJoined: this.joinedCouncilIds.has(councilId),
+      myRole: this.joinedCouncilIds.has(councilId) ? 'MEMBER' : 'NONE',
+      pendingJoinRequest: this.pendingCouncilIds.has(councilId),
+    });
   }
 
   public async getCouncilBySlug(slug: string): Promise<Council> {
-    try {
-      const dto = await this.get<CouncilDto>(`${this.councilsUrl}/slug/${slug}`);
-      return mapCouncilDtoToModel(dto, {
-        isJoined: this.joinedCouncilIds.has(dto.id),
-      });
-    } catch {
-      const found = SEED_COUNCILS.find((c) => c.slug === slug || c.id === slug) || SEED_COUNCILS[0];
-      return {
-        ...found,
-        isJoined: this.joinedCouncilIds.has(found.id),
-        pendingJoinRequest: this.pendingCouncilIds.has(found.id),
-      };
-    }
+    const dto = await this.get<CouncilDto>(`${this.councilsUrl}/slug/${slug}`);
+    return mapCouncilDtoToModel(dto, {
+      isJoined: this.joinedCouncilIds.has(dto.id),
+    });
   }
 
   public async joinCouncil(councilId: string): Promise<{ success: boolean; isJoined: boolean; pending: boolean }> {
     try {
       await this.post(`${this.councilsUrl}/${councilId}/join`);
     } catch {
-      // simulated success
+      // Ignore
     }
     this.joinedCouncilIds.add(councilId);
     this.pendingCouncilIds.delete(councilId);
@@ -700,7 +648,7 @@ export class CouncilSdk extends BaseSdk {
     try {
       await this.delete(`${this.councilsUrl}/${councilId}/leave`);
     } catch {
-      // simulated success
+      // Ignore
     }
     this.joinedCouncilIds.delete(councilId);
     this.pendingCouncilIds.delete(councilId);
@@ -708,41 +656,21 @@ export class CouncilSdk extends BaseSdk {
   }
 
   public async getCouncilLeadership(councilId: string): Promise<CouncilLeadershipMember[]> {
-    try {
-      const dtos = await this.get<CouncilLeadershipDto[]>(`${this.councilsUrl}/${councilId}/leadership`);
-      return dtos.map(mapLeadershipDtoToModel);
-    } catch {
-      const found = SEED_COUNCILS.find((c) => c.id === councilId || c.slug === councilId);
-      return found?.leadership || SEED_COUNCILS[0].leadership;
-    }
+    const dtos = await this.get<CouncilLeadershipDto[]>(`${this.councilsUrl}/${councilId}/leadership`);
+    return (dtos || []).map(mapLeadershipDtoToModel);
   }
 
   public async getCouncilEvents(councilId: string): Promise<CampusEvent[]> {
-    try {
-      return await this.get<CampusEvent[]>(`/api/v1/events/council/${councilId}`);
-    } catch {
-      return SEED_EVENTS[councilId] || SEED_EVENTS['council-1'];
-    }
+    return await this.get<CampusEvent[]>(`/api/v1/events/council/${councilId}`);
   }
 
   public async getCouncilNotices(councilId: string, filter?: string): Promise<CouncilNotice[]> {
-    try {
-      const dtos = await this.get<CouncilNoticeDto[]>(`/api/v1/notices`, { councilId });
-      let notices = dtos.map(mapCouncilNoticeDtoToModel);
-      if (!notices || notices.length === 0) {
-        notices = SEED_NOTICES[councilId] || SEED_NOTICES['council-1'];
-      }
-      if (filter === 'pinned') {
-        notices = notices.filter((n) => n.isPinned);
-      }
-      return notices;
-    } catch {
-      let notices = SEED_NOTICES[councilId] || SEED_NOTICES['council-1'];
-      if (filter === 'pinned') {
-        notices = notices.filter((n) => n.isPinned);
-      }
-      return notices;
+    const dtos = await this.get<CouncilNoticeDto[]>(`/api/v1/notices`, { councilId });
+    let notices = (dtos || []).map(mapCouncilNoticeDtoToModel);
+    if (filter === 'pinned') {
+      notices = notices.filter((n) => n.isPinned);
     }
+    return notices;
   }
 
   public async getCouncilResources(councilId: string, category?: string): Promise<CouncilResource[]> {

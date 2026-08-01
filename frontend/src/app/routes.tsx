@@ -14,6 +14,7 @@ import { Register } from "./pages/Register";
 import { Academic } from "./pages/Academic";
 import { CalendarPage } from "./pages/CalendarPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
+import { AtlasPage } from "./pages/AtlasPage";
 import { Unauthorized } from "./pages/Unauthorized";
 import { NotFound } from "./pages/NotFound";
 import { ProtectedRoute } from "../core/routing/ProtectedRoute";
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, Component: Dashboard },
+      { path: "atlas", Component: AtlasPage },
       { path: "calendar", Component: CalendarPage },
       { path: "planner", Component: PlannerPage },
       { path: "academic", Component: Academic },

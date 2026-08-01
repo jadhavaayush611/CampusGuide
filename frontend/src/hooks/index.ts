@@ -32,10 +32,7 @@ export * from './resources/useDownloadResource';
 
 export * from './planner';
 
-export * from './atlas/useAtlasSearch';
-export * from './atlas/useRouteCalculation';
-export * from './atlas/useLandmarkDetails';
-export * from './atlas/useMapLayers';
+export * from './atlas';
 
 export * from './notifications';
 
