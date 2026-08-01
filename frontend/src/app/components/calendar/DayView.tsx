@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { AggregatedCalendarEvent } from '../../../models/calendar.model';
 import { ConflictIndicator } from './ConflictIndicator';
-import { Clock, MapPin, AlertCircle, Calendar as CalendarIcon, User, FileText } from 'lucide-react';
+import { Clock, MapPin, AlertCircle } from 'lucide-react';
 
 interface DayViewProps {
   currentDate: Date;
@@ -10,25 +10,34 @@ interface DayViewProps {
   onOpenCreateEventForTime: (date: Date, hour: number) => void;
 }
 
-export const DayView: React.FC<DayViewProps> = ({
+export const DayView: React.FC<DayViewProps> = memo(function DayView({
   currentDate,
   events,
   onSelectEvent,
   onOpenCreateEventForTime,
-}) => {
-  const dStr = currentDate.toISOString().split('T')[0];
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+}) {
+  const dStr = useMemo(() => currentDate.toISOString().split('T')[0], [currentDate]);
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
 
   // Filter events for this day
-  const dayEvents = events.filter((ev) => {
-    const sStr = ev.startTime.toISOString().split('T')[0];
-    const eStr = ev.endTime.toISOString().split('T')[0];
-    return dStr >= sStr && dStr <= eStr;
-  });
+  const { dayEvents, allDayEvents, timedEvents, conflictEvents } = useMemo(() => {
+    const list = events.filter((ev) => {
+      const sStr = ev.startTime.toISOString().split('T')[0];
+      const eStr = ev.endTime.toISOString().split('T')[0];
+      return dStr >= sStr && dStr <= eStr;
+    });
 
-  const allDayEvents = dayEvents.filter((e) => e.isAllDay);
-  const timedEvents = dayEvents.filter((e) => !e.isAllDay);
-  const conflictEvents = dayEvents.filter((e) => e.hasConflict);
+    const allDay = list.filter((e) => e.isAllDay);
+    const timed = list.filter((e) => !e.isAllDay);
+    const conflict = list.filter((e) => e.hasConflict);
+
+    return {
+      dayEvents: list,
+      allDayEvents: allDay,
+      timedEvents: timed,
+      conflictEvents: conflict,
+    };
+  }, [events, dStr]);
 
   return (
     <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col h-[750px]">
@@ -162,4 +171,4 @@ export const DayView: React.FC<DayViewProps> = ({
       </div>
     </div>
   );
-};
+});

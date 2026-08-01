@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Users, TrendingUp, Check, Plus, Loader2 } from 'lucide-react';
 import { Community } from '../../../models/community.model';
 import { useCommunityMembership } from '../../../hooks/community/useCommunityMembership';
@@ -18,26 +18,35 @@ const CATEGORY_COLORS: Record<string, string> = {
   Social: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
-export const CommunityCard: React.FC<CommunityCardProps> = ({ community, onSelect }) => {
+export const CommunityCard: React.FC<CommunityCardProps> = memo(function CommunityCard({ community, onSelect }) {
   const membershipMutation = useCommunityMembership();
 
   const isJoined = community.isJoined;
   const isPending = membershipMutation.isPending;
 
-  const handleToggleJoin = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    membershipMutation.mutate({
-      communityId: community.id,
-      action: isJoined ? 'leave' : 'join',
-    });
-  };
+  const handleCardClick = useCallback(() => {
+    onSelect?.(community);
+  }, [onSelect, community]);
 
-  const badgeStyle =
-    CATEGORY_COLORS[community.category] || 'bg-gray-50 text-gray-700 border-gray-200';
+  const handleToggleJoin = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      membershipMutation.mutate({
+        communityId: community.id,
+        action: isJoined ? 'leave' : 'join',
+      });
+    },
+    [membershipMutation, community.id, isJoined]
+  );
+
+  const badgeStyle = useMemo(
+    () => CATEGORY_COLORS[community.category] || 'bg-gray-50 text-gray-700 border-gray-200',
+    [community.category]
+  );
 
   return (
     <div
-      onClick={() => onSelect?.(community)}
+      onClick={handleCardClick}
       className="group relative bg-white rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer hover:-translate-y-1"
     >
       {/* Banner / Visual accent */}
@@ -151,4 +160,4 @@ export const CommunityCard: React.FC<CommunityCardProps> = ({ community, onSelec
       </div>
     </div>
   );
-};
+});

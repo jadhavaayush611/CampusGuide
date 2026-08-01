@@ -1,19 +1,47 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useCourses } from '../../../hooks/planner/useCourses';
 import { useTimetable } from '../../../hooks/planner/useTimetable';
 import { useDegreePlan } from '../../../hooks/planner/useDegreePlan';
-import { BookOpen, Clock, Calendar, CheckCircle2, Award, AlertCircle, ChevronRight } from 'lucide-react';
+import { BookOpen, Clock, Calendar, CheckCircle2, Award, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export const AcademicSummaryWidget: React.FC = () => {
+export const AcademicSummaryWidget: React.FC = memo(function AcademicSummaryWidget() {
   const navigate = useNavigate();
 
   // Parallel React Query hooks
-  const { data: courses = [], isLoading: loadingCourses, isError: errorCourses } = useCourses();
-  const { data: timetable = [], isLoading: loadingTimetable, isError: errorTimetable } = useTimetable();
-  const { data: degreePlan, isLoading: loadingDegree, isError: errorDegree } = useDegreePlan();
+  const { data: courses = [], isLoading: loadingCourses } = useCourses();
+  const { data: timetable = [], isLoading: loadingTimetable } = useTimetable();
+  const { data: degreePlan, isLoading: loadingDegree } = useDegreePlan();
 
   const isLoading = loadingCourses || loadingTimetable || loadingDegree;
+
+  const handleNavigateAcademic = useCallback(() => {
+    navigate('/academic');
+  }, [navigate]);
+
+  // Derive today's day of week & classes
+  const currentDayStr = useMemo(() => {
+    const daysMap: Record<number, string> = {
+      1: 'MONDAY',
+      2: 'TUESDAY',
+      3: 'WEDNESDAY',
+      4: 'THURSDAY',
+      5: 'FRIDAY',
+      6: 'SATURDAY',
+      0: 'SUNDAY',
+    };
+    return daysMap[new Date().getDay()] || 'MONDAY';
+  }, []);
+
+  const todayClasses = useMemo(
+    () => timetable.filter((slot) => slot.dayOfWeek === currentDayStr),
+    [timetable, currentDayStr]
+  );
+
+  const displayedCourses = useMemo(() => courses.slice(0, 4), [courses]);
+
+  // Derived or mock fallback attendance rate
+  const attendanceRate = 92;
 
   if (isLoading) {
     return (
@@ -28,24 +56,6 @@ export const AcademicSummaryWidget: React.FC = () => {
     );
   }
 
-  // Derive today's day of week
-  const daysMap: Record<number, string> = {
-    1: 'MONDAY',
-    2: 'TUESDAY',
-    3: 'WEDNESDAY',
-    4: 'THURSDAY',
-    5: 'FRIDAY',
-    6: 'SATURDAY',
-    0: 'SUNDAY',
-  };
-  const currentDayStr = daysMap[new Date().getDay()] || 'MONDAY';
-
-  const todayClasses = timetable.filter((slot) => slot.dayOfWeek === currentDayStr);
-  const upcomingClasses = timetable.slice(0, 3);
-
-  // Derived or mock fallback attendance rate
-  const attendanceRate = 92;
-
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
       <div className="flex items-center justify-between">
@@ -59,7 +69,7 @@ export const AcademicSummaryWidget: React.FC = () => {
           </div>
         </div>
         <button
-          onClick={() => navigate('/academic')}
+          onClick={handleNavigateAcademic}
           className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
         >
           <span>View All Courses</span>
@@ -137,7 +147,7 @@ export const AcademicSummaryWidget: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
-              {courses.slice(0, 4).map((course) => (
+              {displayedCourses.map((course) => (
                 <div
                   key={course.id}
                   className="bg-white p-3 rounded-lg border border-gray-200/80 shadow-2xs flex items-center justify-between hover:border-blue-300 transition-colors"
@@ -205,4 +215,4 @@ export const AcademicSummaryWidget: React.FC = () => {
       </div>
     </div>
   );
-};
+});

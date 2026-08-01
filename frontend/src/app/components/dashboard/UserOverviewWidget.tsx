@@ -1,16 +1,44 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useCurrentUser } from '../../../hooks/auth/useCurrentUser';
 import { useAuth } from '../../../core/auth';
-import { User, ShieldCheck, Building2, Mail, Award, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Building2, Mail, Award, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export const UserOverviewWidget: React.FC = () => {
+export const UserOverviewWidget: React.FC = memo(function UserOverviewWidget() {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
   const { data: user, isLoading, isError, error, refetch } = useCurrentUser();
 
   // Combine query data with fallback from auth context if needed
   const currentUser = user || authUser;
+
+  const handleNavigateProfile = useCallback(() => {
+    navigate('/profile');
+  }, [navigate]);
+
+  const handleNavigateLogin = useCallback(() => {
+    navigate('/login');
+  }, [navigate]);
+
+  const handleRefetch = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  // Calculate profile completion percentage based on available fields
+  const completionPercentage = useMemo(() => {
+    if (!currentUser) return 0;
+    const fields = [
+      Boolean(currentUser.name),
+      Boolean(currentUser.email),
+      Boolean(currentUser.role),
+      Boolean(currentUser.department),
+      Boolean(currentUser.studentId),
+      Boolean(currentUser.phone),
+      Boolean(currentUser.bio),
+    ];
+    const filledCount = fields.filter(Boolean).length;
+    return Math.round((filledCount / fields.length) * 100);
+  }, [currentUser]);
 
   if (isLoading && !currentUser) {
     return (
@@ -35,7 +63,7 @@ export const UserOverviewWidget: React.FC = () => {
           <p className="text-sm">Could not load profile details: {error?.message}</p>
         </div>
         <button
-          onClick={() => refetch()}
+          onClick={handleRefetch}
           className="text-xs bg-white px-3 py-1.5 rounded-lg border border-amber-300 font-medium hover:bg-amber-100"
         >
           Retry
@@ -49,7 +77,7 @@ export const UserOverviewWidget: React.FC = () => {
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm text-center">
         <p className="text-sm text-gray-600">No authenticated user found.</p>
         <button
-          onClick={() => navigate('/login')}
+          onClick={handleNavigateLogin}
           className="mt-3 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700"
         >
           Sign In
@@ -57,19 +85,6 @@ export const UserOverviewWidget: React.FC = () => {
       </div>
     );
   }
-
-  // Calculate profile completion percentage based on available fields
-  const fields = [
-    Boolean(currentUser.name),
-    Boolean(currentUser.email),
-    Boolean(currentUser.role),
-    Boolean(currentUser.department),
-    Boolean(currentUser.studentId),
-    Boolean(currentUser.phone),
-    Boolean(currentUser.bio),
-  ];
-  const filledCount = fields.filter(Boolean).length;
-  const completionPercentage = Math.round((filledCount / fields.length) * 100);
 
   const initial = (currentUser.name?.[0] || currentUser.email?.[0] || 'U').toUpperCase();
 
@@ -138,7 +153,7 @@ export const UserOverviewWidget: React.FC = () => {
             ></div>
           </div>
           <button
-            onClick={() => navigate('/profile')}
+            onClick={handleNavigateProfile}
             className="text-[11px] text-blue-600 hover:text-blue-800 font-medium text-right hover:underline"
           >
             Edit Profile →
@@ -147,4 +162,4 @@ export const UserOverviewWidget: React.FC = () => {
       </div>
     </div>
   );
-};
+});

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import { useAtlasSearch } from '../../../hooks/atlas/useAtlasSearch';
 import { useRouteCalculation } from '../../../hooks/atlas/useRouteCalculation';
 import { useBuildings } from '../../../hooks/campus/useBuildings';
-import { MapPin, Search, Navigation, Building2, Map, ArrowRight } from 'lucide-react';
+import { MapPin, Search, Navigation, Building2, ArrowRight } from 'lucide-react';
 
-export const AtlasWidget: React.FC = () => {
+export const AtlasWidget: React.FC = memo(function AtlasWidget() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'search' | 'route' | 'recent'>('search');
 
@@ -18,8 +18,8 @@ export const AtlasWidget: React.FC = () => {
 
   // React Query hooks
   const { data: searchResults = [], isLoading: isSearching } = useAtlasSearch({ query: searchQuery });
-  const { data: buildings = [], isLoading: loadingBuildings } = useBuildings();
-  const { data: calculatedRoute, isLoading: isCalculatingRoute } = useRouteCalculation({
+  const { data: buildings = [] } = useBuildings();
+  const { data: calculatedRoute } = useRouteCalculation({
     originLat: routeParams.originLat || 0,
     originLng: routeParams.originLng || 0,
     destLat: routeParams.destLat || 0,
@@ -27,7 +27,9 @@ export const AtlasWidget: React.FC = () => {
     enabled: Boolean(routeParams.originLat && routeParams.destLat),
   });
 
-  const handleQuickRoute = (buildingLat: number, buildingLng: number) => {
+  const topBuildings = useMemo(() => buildings.slice(0, 3), [buildings]);
+
+  const handleQuickRoute = useCallback((buildingLat: number, buildingLng: number) => {
     // Default origin: Main Campus Entrance
     setRouteParams({
       originLat: 19.0465,
@@ -36,7 +38,7 @@ export const AtlasWidget: React.FC = () => {
       destLng: buildingLng,
     });
     setActiveTab('route');
-  };
+  }, []);
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-5">
@@ -123,7 +125,7 @@ export const AtlasWidget: React.FC = () => {
 
           {!searchQuery && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {buildings.slice(0, 3).map((b) => (
+              {topBuildings.map((b) => (
                 <div
                   key={b.id}
                   onClick={() => handleQuickRoute(b.latitude, b.longitude)}
@@ -199,4 +201,4 @@ export const AtlasWidget: React.FC = () => {
       )}
     </div>
   );
-};
+});

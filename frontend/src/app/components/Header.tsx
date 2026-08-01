@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Bell, Clock, MessageSquare, Calendar, Settings, LogOut, User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../core/auth";
@@ -6,7 +6,7 @@ import { useLogout } from "../../hooks/auth/useLogout";
 import { useNotifications } from "../../hooks/notifications/useNotifications";
 import { useUnreadNotificationCount } from "../../hooks/notifications/useUnreadNotificationCount";
 
-export function Header() {
+export const Header = memo(function Header() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -15,15 +15,14 @@ export function Header() {
   const { data: notifications = [] } = useNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
 
-
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setUserMenuOpen(false);
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         navigate("/login", { replace: true });
       },
     });
-  };
+  }, [logoutMutation, navigate]);
 
   const displayName = user?.name || user?.email?.split("@")[0] || "Campus User";
   const avatarInitial = (user?.name?.[0] || user?.email?.[0] || "U").toUpperCase();
@@ -194,4 +193,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+});

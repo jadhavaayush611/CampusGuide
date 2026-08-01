@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 interface ConflictIndicatorProps {
@@ -7,11 +7,11 @@ interface ConflictIndicatorProps {
   compact?: boolean;
 }
 
-export const ConflictIndicator: React.FC<ConflictIndicatorProps> = ({
+export const ConflictIndicator: React.FC<ConflictIndicatorProps> = memo(function ConflictIndicator({
   conflictCount = 1,
   message,
   compact = false,
-}) => {
+}) {
   if (compact) {
     return (
       <span
@@ -32,4 +32,4 @@ export const ConflictIndicator: React.FC<ConflictIndicatorProps> = ({
       </span>
     </div>
   );
-};
+});

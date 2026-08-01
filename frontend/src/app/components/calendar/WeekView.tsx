@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 import { AggregatedCalendarEvent, UpdateCalendarEntryPayload } from '../../../models/calendar.model';
-import { ConflictIndicator } from './ConflictIndicator';
 import { Clock, AlertCircle, MapPin } from 'lucide-react';
 
 interface WeekViewProps {
@@ -11,59 +10,65 @@ interface WeekViewProps {
   onUpdatePersonalEvent?: (id: string, payload: UpdateCalendarEntryPayload) => void;
 }
 
-export const WeekView: React.FC<WeekViewProps> = ({
+export const WeekView: React.FC<WeekViewProps> = memo(function WeekView({
   currentDate,
   events,
   onSelectEvent,
   onOpenCreateEventForTime,
   onUpdatePersonalEvent,
-}) => {
+}) {
   // Compute start of week (Monday)
-  const startOfWeek = new Date(currentDate);
-  const day = startOfWeek.getDay();
-  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-  startOfWeek.setDate(diff);
+  const weekDays = useMemo(() => {
+    const startOfWeek = new Date(currentDate);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+    startOfWeek.setDate(diff);
 
-  const weekDays: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + i);
-    weekDays.push(d);
-  }
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      days.push(d);
+    }
+    return days;
+  }, [currentDate]);
 
-  const hours = Array.from({ length: 24 }, (_, i) => i); // 0..23
-  const todayStr = new Date().toISOString().split('T')[0];
+  const hours = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   // Drag and Drop state for rescheduling personal events
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
 
-  const handleDragStart = (e: React.DragEvent, event: AggregatedCalendarEvent) => {
+  const handleDragStart = useCallback((e: React.DragEvent, event: AggregatedCalendarEvent) => {
     if (event.sourceModule !== 'personal') return;
     setDraggedEventId(event.originalId);
     e.dataTransfer.setData('text/plain', event.originalId);
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent, targetDate: Date, targetHour: number) => {
-    e.preventDefault();
-    if (!draggedEventId || !onUpdatePersonalEvent) return;
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetDate: Date, targetHour: number) => {
+      e.preventDefault();
+      if (!draggedEventId || !onUpdatePersonalEvent) return;
 
-    const originalEv = events.find((ev) => ev.originalId === draggedEventId && ev.sourceModule === 'personal');
-    if (!originalEv) return;
+      const originalEv = events.find((ev) => ev.originalId === draggedEventId && ev.sourceModule === 'personal');
+      if (!originalEv) return;
 
-    const durationMs = originalEv.endTime.getTime() - originalEv.startTime.getTime();
+      const durationMs = originalEv.endTime.getTime() - originalEv.startTime.getTime();
 
-    const newStart = new Date(targetDate);
-    newStart.setHours(targetHour, 0, 0, 0);
+      const newStart = new Date(targetDate);
+      newStart.setHours(targetHour, 0, 0, 0);
 
-    const newEnd = new Date(newStart.getTime() + durationMs);
+      const newEnd = new Date(newStart.getTime() + durationMs);
 
-    onUpdatePersonalEvent(draggedEventId, {
-      startTime: newStart.toISOString(),
-      endTime: newEnd.toISOString(),
-    });
+      onUpdatePersonalEvent(draggedEventId, {
+        startTime: newStart.toISOString(),
+        endTime: newEnd.toISOString(),
+      });
 
-    setDraggedEventId(null);
-  };
+      setDraggedEventId(null);
+    },
+    [draggedEventId, onUpdatePersonalEvent, events]
+  );
 
   return (
     <div className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col h-[750px]">
@@ -234,4 +239,4 @@ export const WeekView: React.FC<WeekViewProps> = ({
       </div>
     </div>
   );
-};
+});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { AuthContext, AuthState, User, AuthContextValue } from './AuthContext';
 import { tokenManager, TokenManager } from './TokenManager';
 import { apiClient } from '../api/ApiClient';
@@ -175,13 +175,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
     restoreSession();
   }, [restoreSession]);
 
-  const contextValue: AuthContextValue = {
-    ...state,
-    login,
-    logout,
-    restoreSession,
-    setUser,
-  };
+  const contextValue = useMemo<AuthContextValue>(
+    () => ({
+      ...state,
+      login,
+      logout,
+      restoreSession,
+      setUser,
+    }),
+    [state, login, logout, restoreSession, setUser]
+  );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Resource } from '../../../models/resource.model';
 import {
   FileText,
@@ -11,7 +11,6 @@ import {
   FileArchive,
   Video,
   Image as ImageIcon,
-  Link as LinkIcon,
   User,
   Calendar,
   Tag,
@@ -56,7 +55,7 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export function ResourceCard({
+export const ResourceCard = memo(function ResourceCard({
   resource,
   viewMode = 'grid',
   onViewDetails,
@@ -66,7 +65,7 @@ export function ResourceCard({
   onDelete,
   isOwnerOrAdmin = true,
 }: ResourceCardProps) {
-  const badge = getFileTypeBadge(resource.fileType);
+  const badge = useMemo(() => getFileTypeBadge(resource.fileType), [resource.fileType]);
   const BadgeIcon = badge.icon;
 
   if (viewMode === 'list') {
@@ -273,4 +272,4 @@ export function ResourceCard({
       </div>
     </div>
   );
-}
+});

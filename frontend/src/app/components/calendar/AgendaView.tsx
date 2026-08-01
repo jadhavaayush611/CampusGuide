@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { AggregatedCalendarEvent } from '../../../models/calendar.model';
 import { Clock, MapPin, ExternalLink, AlertCircle, CheckCircle2, Calendar as CalendarIcon } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -8,7 +8,7 @@ interface AgendaViewProps {
   onSelectEvent: (event: AggregatedCalendarEvent) => void;
 }
 
-export const AgendaView: React.FC<AgendaViewProps> = ({ events, onSelectEvent }) => {
+export const AgendaView: React.FC<AgendaViewProps> = memo(function AgendaView({ events, onSelectEvent }) {
   const navigate = useNavigate();
 
   // Sort events chronologically
@@ -158,4 +158,4 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ events, onSelectEvent })
       })}
     </div>
   );
-};
+});

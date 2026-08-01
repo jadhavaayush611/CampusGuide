@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { User, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
+import React, { lazy, Suspense, memo } from 'react';
+import { User, Sparkles } from 'lucide-react';
 import { CampusResultCard } from './CampusResultCard';
 import { ConversationHistoryMessage } from '../../../models/atlas.model';
 
@@ -13,7 +13,7 @@ interface MessageBubbleProps {
   onRetry?: () => void;
 }
 
-export function MessageBubble({ message, isStreaming = false, onRetry }: MessageBubbleProps) {
+export const MessageBubble = memo(function MessageBubble({ message, isStreaming = false }: MessageBubbleProps) {
   const isUser = message.role === 'user';
 
   return (
@@ -74,4 +74,4 @@ export function MessageBubble({ message, isStreaming = false, onRetry }: Message
       )}
     </div>
   );
-}
+});

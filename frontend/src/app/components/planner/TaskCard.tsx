@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import {
   Calendar,
   CheckCircle2,
@@ -53,7 +53,7 @@ const PRIORITY_STYLES: Record<TaskPriority, { bg: string; text: string }> = {
   LOW: { bg: 'bg-gray-400', text: 'text-white' },
 };
 
-export const TaskCard: React.FC<TaskCardProps> = ({
+export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
   task,
   viewMode = 'grid',
   onSelect,
@@ -63,29 +63,62 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onArchive,
   onRestore,
   onDelete,
-}) => {
-  const todayStr = new Date().toISOString().split('T')[0];
-  const isOverdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted && !task.isArchived;
-  const isDueToday = task.dueDate && task.dueDate.split('T')[0] === todayStr && !task.isCompleted;
+}) {
+  const { isOverdue, isDueToday } = useMemo(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const overdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted && !task.isArchived;
+    const dueToday = task.dueDate && task.dueDate.split('T')[0] === todayStr && !task.isCompleted;
+    return { isOverdue: Boolean(overdue), isDueToday: Boolean(dueToday) };
+  }, [task.dueDate, task.isCompleted, task.isArchived]);
 
   const categoryStyle = CATEGORY_STYLES[task.category] || CATEGORY_STYLES.MISCELLANEOUS;
   const priorityStyle = PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.MEDIUM;
 
-  const handleCheckboxClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onMarkComplete(task.id, !task.isCompleted);
-  };
+  const handleCardClick = useCallback(() => {
+    onSelect(task);
+  }, [onSelect, task]);
 
-  const handleStepProgress = (e: React.MouseEvent, delta: number) => {
-    e.stopPropagation();
-    const newProgress = Math.min(100, Math.max(0, task.progress + delta));
-    onUpdateProgress(task.id, newProgress);
-  };
+  const handleCheckboxClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onMarkComplete(task.id, !task.isCompleted);
+    },
+    [onMarkComplete, task.id, task.isCompleted]
+  );
+
+  const handleStepProgress = useCallback(
+    (e: React.MouseEvent, delta: number) => {
+      e.stopPropagation();
+      const newProgress = Math.min(100, Math.max(0, task.progress + delta));
+      onUpdateProgress(task.id, newProgress);
+    },
+    [onUpdateProgress, task.id, task.progress]
+  );
+
+  const handleEdit = useCallback(() => {
+    onEdit(task);
+  }, [onEdit, task]);
+
+  const handleToggleComplete = useCallback(() => {
+    onMarkComplete(task.id, !task.isCompleted);
+  }, [onMarkComplete, task.id, task.isCompleted]);
+
+  const handleRestore = useCallback(() => {
+    onRestore(task.id);
+  }, [onRestore, task.id]);
+
+  const handleArchive = useCallback(() => {
+    onArchive(task.id);
+  }, [onArchive, task.id]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(task.id);
+  }, [onDelete, task.id]);
 
   if (viewMode === 'list') {
     return (
       <div
-        onClick={() => onSelect(task)}
+        onClick={handleCardClick}
         className={`group p-4 bg-white hover:bg-gray-50/80 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-4 shadow-xs hover:shadow-md ${
           task.isCompleted ? 'border-gray-200 opacity-75' : isOverdue ? 'border-red-300 bg-red-50/20' : 'border-gray-100'
         }`}
@@ -163,24 +196,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={() => onEdit(task)}>
+                <DropdownMenuItem onClick={handleEdit}>
                   <Edit className="w-4 h-4 mr-2" /> Edit Task
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onMarkComplete(task.id, !task.isCompleted)}>
+                <DropdownMenuItem onClick={handleToggleComplete}>
                   <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
                   {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {task.isArchived ? (
-                  <DropdownMenuItem onClick={() => onRestore(task.id)}>
+                  <DropdownMenuItem onClick={handleRestore}>
                     <RotateCcw className="w-4 h-4 mr-2 text-blue-500" /> Restore Task
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem onClick={() => onArchive(task.id)}>
+                  <DropdownMenuItem onClick={handleArchive}>
                     <Archive className="w-4 h-4 mr-2 text-amber-500" /> Archive Task
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => onDelete(task.id)} className="text-red-600 focus:text-red-600">
+                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                   <Trash2 className="w-4 h-4 mr-2" /> Delete Task
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -193,7 +226,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div
-      onClick={() => onSelect(task)}
+      onClick={handleCardClick}
       className={`group relative p-5 bg-white hover:bg-gray-50/50 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md ${
         task.isCompleted ? 'border-gray-200 opacity-80' : isOverdue ? 'border-red-300 bg-red-50/10' : 'border-gray-100'
       }`}
@@ -222,24 +255,24 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem onClick={() => onEdit(task)}>
+              <DropdownMenuItem onClick={handleEdit}>
                 <Edit className="w-4 h-4 mr-2" /> Edit Task
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onMarkComplete(task.id, !task.isCompleted)}>
+              <DropdownMenuItem onClick={handleToggleComplete}>
                 <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
                 {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {task.isArchived ? (
-                <DropdownMenuItem onClick={() => onRestore(task.id)}>
+                <DropdownMenuItem onClick={handleRestore}>
                   <RotateCcw className="w-4 h-4 mr-2 text-blue-500" /> Restore Task
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => onArchive(task.id)}>
+                <DropdownMenuItem onClick={handleArchive}>
                   <Archive className="w-4 h-4 mr-2 text-amber-500" /> Archive Task
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onDelete(task.id)} className="text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                 <Trash2 className="w-4 h-4 mr-2" /> Delete Task
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -341,4 +374,4 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       )}
     </div>
   );
-};
+});

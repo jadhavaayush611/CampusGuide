@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo, useCallback } from 'react';
 import { Header } from '../components/Header';
 import { WidgetErrorBoundary } from '../components/dashboard/WidgetErrorBoundary';
 import { UserOverviewWidget } from '../components/dashboard/UserOverviewWidget';
@@ -10,8 +10,16 @@ import { NotificationsWidget } from '../components/dashboard/NotificationsWidget
 import { Calendar, LayoutDashboard, Search } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export function Dashboard() {
+export const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
+
+  const handleNavigateCalendar = useCallback(() => {
+    navigate('/calendar');
+  }, [navigate]);
+
+  const handleNavigateResources = useCallback(() => {
+    navigate('/resources');
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -26,7 +34,7 @@ export function Dashboard() {
               <span>Production Dashboard</span>
             </div>
             <button
-              onClick={() => navigate('/calendar')}
+              onClick={handleNavigateCalendar}
               className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-all"
             >
               <Calendar className="w-4 h-4 text-blue-600" />
@@ -86,7 +94,7 @@ export function Dashboard() {
 
       {/* Quick Search Floating Action Button */}
       <button
-        onClick={() => navigate('/resources')}
+        onClick={handleNavigateResources}
         className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-blue-700 hover:scale-105 transition-all flex items-center justify-center ring-4 ring-blue-100 z-40"
         title="Quick Search Campus Resources"
       >
@@ -94,4 +102,4 @@ export function Dashboard() {
       </button>
     </div>
   );
-}
+});

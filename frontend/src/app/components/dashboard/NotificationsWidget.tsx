@@ -1,16 +1,32 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useNotifications } from '../../../hooks/notifications/useNotifications';
 import { useUnreadNotificationCount } from '../../../hooks/notifications/useUnreadNotificationCount';
-import { Bell, Clock, Calendar, MessageSquare, ChevronRight, Check } from 'lucide-react';
+import { Bell, Clock, Calendar, MessageSquare, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export const NotificationsWidget: React.FC = () => {
+export const NotificationsWidget: React.FC = memo(function NotificationsWidget() {
   const navigate = useNavigate();
 
   const { data: notifications = [], isLoading: loadingNotifs } = useNotifications();
   const { data: unreadCount = 0, isLoading: loadingUnread } = useUnreadNotificationCount();
 
   const isLoading = loadingNotifs || loadingUnread;
+
+  const handleNavigateAll = useCallback(() => {
+    navigate('/notifications');
+  }, [navigate]);
+
+  const handleItemClick = useCallback(
+    (link?: string) => {
+      navigate(link || '/notifications');
+    },
+    [navigate]
+  );
+
+  const displayedNotifications = useMemo(
+    () => notifications.slice(0, 3),
+    [notifications]
+  );
 
   if (isLoading) {
     return (
@@ -41,7 +57,7 @@ export const NotificationsWidget: React.FC = () => {
         </div>
 
         <button
-          onClick={() => navigate('/notifications')}
+          onClick={handleNavigateAll}
           className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
         >
           <span>View All</span>
@@ -50,10 +66,10 @@ export const NotificationsWidget: React.FC = () => {
       </div>
 
       <div className="space-y-2.5">
-        {notifications.slice(0, 3).map((item) => (
+        {displayedNotifications.map((item) => (
           <div
             key={item.id}
-            onClick={() => navigate(item.actionLink || item.linkUrl || '/notifications')}
+            onClick={() => handleItemClick(item.actionLink || item.linkUrl)}
             className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
               !item.isRead
                 ? 'bg-blue-50/40 border-blue-200/80 hover:bg-blue-50/80'
@@ -93,4 +109,4 @@ export const NotificationsWidget: React.FC = () => {
       </div>
     </div>
   );
-};
+});

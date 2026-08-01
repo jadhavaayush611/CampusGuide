@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { NotificationItem } from '../../../models/notification.model';
 import {
   GraduationCap,
@@ -65,29 +65,60 @@ const PRIORITY_BADGES: Record<string, { label: string; class: string; icon: Reac
   LOW: { label: 'LOW', class: 'bg-gray-100 text-gray-600 border-gray-200', icon: Clock },
 };
 
-export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
+export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(function NotificationItemCard({
   item,
   onSelect,
   onToggleRead,
   onToggleArchive,
   onDelete,
-}) => {
+}) {
   const navigate = useNavigate();
   const IconComponent = CATEGORY_ICONS[item.category] || Server;
   const categoryColorClass = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.System;
   const priorityInfo = PRIORITY_BADGES[item.priority] || PRIORITY_BADGES.NORMAL;
   const PriorityIcon = priorityInfo.icon;
 
-  const handleActionClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (item.actionLink) {
-      navigate(item.actionLink);
-    }
-  };
+  const handleSelect = useCallback(() => {
+    onSelect(item);
+  }, [onSelect, item]);
+
+  const handleActionClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (item.actionLink) {
+        navigate(item.actionLink);
+      }
+    },
+    [navigate, item.actionLink]
+  );
+
+  const handleToggleReadClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggleRead(item.id, item.isRead);
+    },
+    [onToggleRead, item.id, item.isRead]
+  );
+
+  const handleToggleArchiveClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggleArchive(item.id, item.isArchived);
+    },
+    [onToggleArchive, item.id, item.isArchived]
+  );
+
+  const handleDeleteClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDelete(item.id);
+    },
+    [onDelete, item.id]
+  );
 
   return (
     <div
-      onClick={() => onSelect(item)}
+      onClick={handleSelect}
       className={`group relative p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
         !item.isRead
           ? 'bg-blue-50/30 border-blue-200/80 shadow-sm hover:bg-blue-50/60'
@@ -181,10 +212,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
               {/* Quick Actions (Read/Unread, Archive/Restore, Delete) */}
               <div className="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleRead(item.id, item.isRead);
-                  }}
+                  onClick={handleToggleReadClick}
                   title={item.isRead ? 'Mark as Unread' : 'Mark as Read'}
                   className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
                 >
@@ -192,10 +220,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
                 </button>
 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleArchive(item.id, item.isArchived);
-                  }}
+                  onClick={handleToggleArchiveClick}
                   title={item.isArchived ? 'Restore' : 'Archive'}
                   className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
                 >
@@ -203,10 +228,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
                 </button>
 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(item.id);
-                  }}
+                  onClick={handleDeleteClick}
                   title="Delete"
                   className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
                 >
@@ -219,4 +241,4 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       </div>
     </div>
   );
-};
+});

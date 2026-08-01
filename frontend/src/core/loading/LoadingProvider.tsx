@@ -1,4 +1,4 @@
-import React, { useState, useCallback, ReactNode } from 'react';
+import React, { useState, useCallback, useMemo, ReactNode } from 'react';
 import { LoadingContext, LoadingContextValue } from './LoadingContext';
 import { LoadingOverlay } from './LoadingOverlay';
 
@@ -38,13 +38,16 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 
   const isGlobalLoading = loadingKeys.has('global');
 
-  const value: LoadingContextValue = {
-    isGlobalLoading,
-    startLoading,
-    stopLoading,
-    isLoading,
-    clearAllLoading,
-  };
+  const value: LoadingContextValue = useMemo(
+    () => ({
+      isGlobalLoading,
+      startLoading,
+      stopLoading,
+      isLoading,
+      clearAllLoading,
+    }),
+    [isGlobalLoading, startLoading, stopLoading, isLoading, clearAllLoading]
+  );
 
   return (
     <LoadingContext.Provider value={value}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Wrench, CheckCircle, XCircle, Clock, ShieldCheck, Loader2 } from 'lucide-react';
 import { ToolExecutionItem } from '../../../models/atlas.model';
 
@@ -7,7 +7,7 @@ interface ToolExecutionPanelProps {
   isStreaming: boolean;
 }
 
-export function ToolExecutionPanel({ tools, isStreaming }: ToolExecutionPanelProps) {
+export const ToolExecutionPanel = memo(function ToolExecutionPanel({ tools }: ToolExecutionPanelProps) {
   if (tools.length === 0) {
     return null;
   }
@@ -77,4 +77,4 @@ export function ToolExecutionPanel({ tools, isStreaming }: ToolExecutionPanelPro
       </div>
     </div>
   );
-}
+});

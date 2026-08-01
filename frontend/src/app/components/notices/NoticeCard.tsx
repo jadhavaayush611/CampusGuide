@@ -1,5 +1,5 @@
 import { Pin, Calendar, Eye, EyeOff, Paperclip, MoreVertical, Edit2, Trash2, Globe, Shield, Tag } from 'lucide-react';
-import { useState } from 'react';
+import { useState, memo, useCallback, useMemo } from 'react';
 import { Notice, NoticeCategory, NoticePriority } from '../../../models/notice.model';
 import { useToggleNoticeRead } from '../../../hooks/notices/useToggleNoticeRead';
 import { usePinNotice } from '../../../hooks/notices/usePinNotice';
@@ -11,14 +11,14 @@ interface NoticeCardProps {
   onEdit?: (notice: Notice) => void;
 }
 
-export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
+export const NoticeCard = memo(function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const toggleReadMutation = useToggleNoticeRead();
   const pinMutation = usePinNotice();
   const deleteMutation = useDeleteNotice();
 
-  const getCategoryStyles = (cat: NoticeCategory) => {
-    switch (cat) {
+  const categoryStyle = useMemo(() => {
+    switch (notice.category) {
       case 'Academic':
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Administrative':
@@ -37,10 +37,10 @@ export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
-  };
+  }, [notice.category]);
 
-  const getPriorityStyles = (p: NoticePriority) => {
-    switch (p) {
+  const priorityStyle = useMemo(() => {
+    switch (notice.priority) {
       case 'URGENT':
         return 'bg-red-600 text-white border-red-700 animate-pulse';
       case 'HIGH':
@@ -50,42 +50,55 @@ export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
       case 'LOW':
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
-  };
+  }, [notice.priority]);
 
-  const formatDate = (dateStr: string) => {
+  const formattedDate = useMemo(() => {
     try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
+      return new Date(notice.publishedAt).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
       });
     } catch {
-      return dateStr;
+      return notice.publishedAt;
     }
-  };
+  }, [notice.publishedAt]);
 
-  const handleReadToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleReadMutation.mutate({ id: notice.id, isRead: !notice.isRead });
-  };
+  const handleSelect = useCallback(() => {
+    onSelect(notice);
+  }, [onSelect, notice]);
 
-  const handlePinToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowMenu(false);
-    pinMutation.mutate({ id: notice.id, isPinned: !notice.isPinned });
-  };
+  const handleReadToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      toggleReadMutation.mutate({ id: notice.id, isRead: !notice.isRead });
+    },
+    [toggleReadMutation, notice.id, notice.isRead]
+  );
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowMenu(false);
-    if (window.confirm(`Are you sure you want to delete notice "${notice.title}"?`)) {
-      deleteMutation.mutate(notice.id);
-    }
-  };
+  const handlePinToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setShowMenu(false);
+      pinMutation.mutate({ id: notice.id, isPinned: !notice.isPinned });
+    },
+    [pinMutation, notice.id, notice.isPinned]
+  );
+
+  const handleDelete = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setShowMenu(false);
+      if (window.confirm(`Are you sure you want to delete notice "${notice.title}"?`)) {
+        deleteMutation.mutate(notice.id);
+      }
+    },
+    [deleteMutation, notice.id, notice.title]
+  );
 
   return (
     <div
-      onClick={() => onSelect(notice)}
+      onClick={handleSelect}
       className={`relative bg-white rounded-2xl border transition-all duration-200 p-6 shadow-2xs hover:shadow-md cursor-pointer group ${
         notice.isPinned ? 'border-amber-300 ring-2 ring-amber-400/20 bg-amber-50/10' : 'border-gray-100 hover:border-blue-200'
       } ${!notice.isRead ? 'border-l-4 border-l-[#2563EB]' : ''}`}
@@ -94,12 +107,12 @@ export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex flex-wrap items-center gap-2">
           {/* Category */}
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getCategoryStyles(notice.category)}`}>
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${categoryStyle}`}>
             {notice.category}
           </span>
 
           {/* Priority */}
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${getPriorityStyles(notice.priority)}`}>
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${priorityStyle}`}>
             {notice.priority}
           </span>
 
@@ -205,7 +218,7 @@ export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
           <span>•</span>
           <span className="inline-flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            {formatDate(notice.publishedAt)}
+            {formattedDate}
           </span>
         </div>
 
@@ -223,4 +236,4 @@ export function NoticeCard({ notice, onSelect, onEdit }: NoticeCardProps) {
       </div>
     </div>
   );
-}
+});

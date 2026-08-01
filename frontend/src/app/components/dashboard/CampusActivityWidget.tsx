@@ -1,19 +1,43 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useCampusEvents } from '../../../hooks/campus/useCampusEvents';
 import { useCouncils } from '../../../hooks/campus/useCouncils';
 import { useResources } from '../../../hooks/campus/useResources';
 import { Calendar, Shield, BookOpen, Bell, ArrowRight, MapPin, Users, Download, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router';
 
-export const CampusActivityWidget: React.FC = () => {
+export const CampusActivityWidget: React.FC = memo(function CampusActivityWidget() {
   const navigate = useNavigate();
 
   const { data: events = [], isLoading: loadingEvents } = useCampusEvents(true);
   const { data: councilsData, isLoading: loadingCouncils } = useCouncils();
-  const councils = councilsData?.councils || [];
+  const councils = useMemo(() => councilsData?.councils || [], [councilsData]);
   const { data: resources = [], isLoading: loadingResources } = useResources();
 
   const isLoading = loadingEvents || loadingCouncils || loadingResources;
+
+  // Previews
+  const topEvents = useMemo(() => events.slice(0, 3), [events]);
+  const topCouncils = useMemo(() => councils.slice(0, 3), [councils]);
+  const topResources = useMemo(() => resources.slice(0, 3), [resources]);
+
+  const handleNavigateCouncils = useCallback(() => {
+    navigate('/councils');
+  }, [navigate]);
+
+  const handleNavigateResources = useCallback(() => {
+    navigate('/resources');
+  }, [navigate]);
+
+  const handleNavigateNotices = useCallback(() => {
+    navigate('/notices');
+  }, [navigate]);
+
+  const handleCouncilDetail = useCallback(
+    (id: string) => {
+      navigate(`/councils/${id}`);
+    },
+    [navigate]
+  );
 
   if (isLoading) {
     return (
@@ -27,11 +51,6 @@ export const CampusActivityWidget: React.FC = () => {
       </div>
     );
   }
-
-  // Previews
-  const topEvents = events.slice(0, 3);
-  const topCouncils = councils.slice(0, 3);
-  const topResources = resources.slice(0, 3);
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
@@ -81,7 +100,7 @@ export const CampusActivityWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate('/councils')}
+            onClick={handleNavigateCouncils}
             className="mt-4 pt-2 text-xs font-semibold text-purple-600 hover:text-purple-800 flex items-center justify-center gap-1 border-t border-purple-100 hover:underline"
           >
             <span>Explore Events</span>
@@ -109,7 +128,7 @@ export const CampusActivityWidget: React.FC = () => {
                 {topCouncils.map((c) => (
                   <div
                     key={c.id}
-                    onClick={() => navigate(`/councils/${c.id}`)}
+                    onClick={() => handleCouncilDetail(c.id)}
                     className="bg-white p-2.5 rounded-lg border border-gray-200/70 text-xs hover:border-blue-300 cursor-pointer transition-colors"
                   >
                     <p className="font-bold text-gray-900">{c.name}</p>
@@ -129,7 +148,7 @@ export const CampusActivityWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate('/councils')}
+            onClick={handleNavigateCouncils}
             className="mt-4 pt-2 text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center justify-center gap-1 border-t border-blue-100 hover:underline"
           >
             <span>View All Councils</span>
@@ -176,7 +195,7 @@ export const CampusActivityWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate('/resources')}
+            onClick={handleNavigateResources}
             className="mt-4 pt-2 text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center justify-center gap-1 border-t border-indigo-100 hover:underline"
           >
             <span>Open Resource Hub</span>
@@ -199,7 +218,7 @@ export const CampusActivityWidget: React.FC = () => {
 
             <div className="space-y-2.5">
               <div
-                onClick={() => navigate('/notices')}
+                onClick={handleNavigateNotices}
                 className="bg-white p-2.5 rounded-lg border border-amber-200/80 text-xs cursor-pointer hover:bg-amber-50/30 transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
@@ -210,7 +229,7 @@ export const CampusActivityWidget: React.FC = () => {
               </div>
 
               <div
-                onClick={() => navigate('/notices')}
+                onClick={handleNavigateNotices}
                 className="bg-white p-2.5 rounded-lg border border-amber-200/80 text-xs cursor-pointer hover:bg-amber-50/30 transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
@@ -223,7 +242,7 @@ export const CampusActivityWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate('/notices')}
+            onClick={handleNavigateNotices}
             className="mt-4 pt-2 text-xs font-semibold text-amber-700 hover:text-amber-900 flex items-center justify-center gap-1 border-t border-amber-100 hover:underline"
           >
             <span>View All Notices</span>
@@ -234,4 +253,4 @@ export const CampusActivityWidget: React.FC = () => {
       </div>
     </div>
   );
-};
+});

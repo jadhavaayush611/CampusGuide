@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import {
   Plus,
   Search,
@@ -29,14 +29,141 @@ interface AtlasSidebarProps {
   onSelectConversation: (conversation: AtlasConversation) => void;
 }
 
-export function AtlasSidebar({
+interface AtlasConversationItemProps {
+  conv: AtlasConversation;
+  isActive: boolean;
+  isEditing: boolean;
+  editingTitle: string;
+  tab: ConversationStatus;
+  onSelectConversation: (conversation: AtlasConversation) => void;
+  onStartRename: (conv: AtlasConversation, e: React.MouseEvent) => void;
+  onSaveRename: (id: string, e: React.MouseEvent) => void;
+  onCancelRename: (e: React.MouseEvent) => void;
+  onEditingTitleChange: (title: string) => void;
+  onArchive: (id: string, e: React.MouseEvent) => void;
+  onRestore: (id: string, e: React.MouseEvent) => void;
+  onDelete: (id: string, e: React.MouseEvent) => void;
+}
+
+const AtlasConversationItem = memo(function AtlasConversationItem({
+  conv,
+  isActive,
+  isEditing,
+  editingTitle,
+  tab,
+  onSelectConversation,
+  onStartRename,
+  onSaveRename,
+  onCancelRename,
+  onEditingTitleChange,
+  onArchive,
+  onRestore,
+  onDelete,
+}: AtlasConversationItemProps) {
+  return (
+    <div
+      onClick={() => !isEditing && onSelectConversation(conv)}
+      className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${
+        isActive
+          ? 'bg-blue-50/80 border-blue-200 text-[#2563EB] shadow-xs'
+          : 'bg-white border-transparent hover:bg-gray-50 text-gray-700'
+      }`}
+    >
+      {isEditing ? (
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <input
+            type="text"
+            value={editingTitle}
+            onChange={(e) => onEditingTitleChange(e.target.value)}
+            className="flex-1 px-2 py-1 bg-white border border-blue-400 rounded text-xs text-gray-900 focus:outline-none"
+            autoFocus
+          />
+          <button
+            onClick={(e) => onSaveRename(conv.id, e)}
+            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onCancelRename}
+            className="p-1 text-gray-400 hover:bg-gray-100 rounded"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-start justify-between gap-2">
+            <h4 className="font-semibold text-xs truncate flex-1 text-gray-900">
+              {conv.title || 'Untitled Conversation'}
+            </h4>
+            <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium uppercase tracking-wider flex-shrink-0">
+              {conv.type || 'GENERAL'}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between mt-2 text-[11px] text-gray-500">
+            <span>{conv.messageCount ?? 0} msgs</span>
+            <span>
+              {conv.updatedAt
+                ? new Date(conv.updatedAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : ''}
+            </span>
+          </div>
+
+          {/* Actions overlay on hover */}
+          <div className="absolute right-2 top-2 hidden group-hover:flex items-center gap-1 bg-white/95 p-1 rounded-lg border border-gray-200 shadow-xs">
+            <button
+              onClick={(e) => onStartRename(conv, e)}
+              title="Rename"
+              className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+
+            {tab === 'ACTIVE' ? (
+              <button
+                onClick={(e) => onArchive(conv.id, e)}
+                title="Archive"
+                className="p-1 text-gray-600 hover:text-amber-600 hover:bg-gray-100 rounded"
+              >
+                <Archive className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <button
+                onClick={(e) => onRestore(conv.id, e)}
+                title="Restore"
+                className="p-1 text-gray-600 hover:text-emerald-600 hover:bg-gray-100 rounded"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            <button
+              onClick={(e) => onDelete(conv.id, e)}
+              title="Delete"
+              className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+});
+
+export const AtlasSidebar = memo(function AtlasSidebar({
   activeConversationId,
   onSelectConversation,
 }: AtlasSidebarProps) {
   const [tab, setTab] = useState<ConversationStatus>('ACTIVE');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'updatedAt' | 'title' | 'messageCount'>('updatedAt');
+  const [sortBy] = useState<'updatedAt' | 'title' | 'messageCount'>('updatedAt');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   // Modal / inline editing state
@@ -66,7 +193,7 @@ export function AtlasSidebar({
   const conversations = conversationData?.data || [];
   const totalPages = conversationData?.totalPages || 1;
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
@@ -80,15 +207,20 @@ export function AtlasSidebar({
         },
       }
     );
-  };
+  }, [newTitle, newType, createMutation, onSelectConversation]);
 
-  const handleStartRename = (conv: AtlasConversation, e: React.MouseEvent) => {
+  const handleStartRename = useCallback((conv: AtlasConversation, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingId(conv.id);
     setEditingTitle(conv.title);
-  };
+  }, []);
 
-  const handleSaveRename = (id: string, e: React.MouseEvent) => {
+  const handleCancelRename = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(null);
+  }, []);
+
+  const handleSaveRename = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!editingTitle.trim()) return;
 
@@ -98,24 +230,24 @@ export function AtlasSidebar({
         onSuccess: () => setEditingId(null),
       }
     );
-  };
+  }, [editingTitle, renameMutation]);
 
-  const handleArchive = (id: string, e: React.MouseEvent) => {
+  const handleArchive = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     archiveMutation.mutate(id);
-  };
+  }, [archiveMutation]);
 
-  const handleRestore = (id: string, e: React.MouseEvent) => {
+  const handleRestore = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     restoreMutation.mutate(id);
-  };
+  }, [restoreMutation]);
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('Are you sure you want to delete this conversation?')) {
       deleteMutation.mutate(id);
     }
-  };
+  }, [deleteMutation]);
 
   return (
     <aside className="w-80 bg-white border-r border-gray-200 flex flex-col h-full overflow-hidden">
@@ -270,109 +402,24 @@ export function AtlasSidebar({
             <p>No {tab.toLowerCase()} conversations found.</p>
           </div>
         ) : (
-          conversations.map((conv) => {
-            const isActive = activeConversationId === conv.id;
-            const isEditing = editingId === conv.id;
-
-            return (
-              <div
-                key={conv.id}
-                onClick={() => !isEditing && onSelectConversation(conv)}
-                className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${
-                  isActive
-                    ? 'bg-blue-50/80 border-blue-200 text-[#2563EB] shadow-xs'
-                    : 'bg-white border-transparent hover:bg-gray-50 text-gray-700'
-                }`}
-              >
-                {isEditing ? (
-                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="text"
-                      value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
-                      className="flex-1 px-2 py-1 bg-white border border-blue-400 rounded text-xs text-gray-900 focus:outline-none"
-                      autoFocus
-                    />
-                    <button
-                      onClick={(e) => handleSaveRename(conv.id, e)}
-                      className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingId(null);
-                      }}
-                      className="p-1 text-gray-400 hover:bg-gray-100 rounded"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="font-semibold text-xs truncate flex-1 text-gray-900">
-                        {conv.title || 'Untitled Conversation'}
-                      </h4>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-medium uppercase tracking-wider flex-shrink-0">
-                        {conv.type || 'GENERAL'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-2 text-[11px] text-gray-500">
-                      <span>{conv.messageCount ?? 0} msgs</span>
-                      <span>
-                        {conv.updatedAt
-                          ? new Date(conv.updatedAt).toLocaleDateString(undefined, {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : ''}
-                      </span>
-                    </div>
-
-                    {/* Actions overlay on hover */}
-                    <div className="absolute right-2 top-2 hidden group-hover:flex items-center gap-1 bg-white/95 p-1 rounded-lg border border-gray-200 shadow-xs">
-                      <button
-                        onClick={(e) => handleStartRename(conv, e)}
-                        title="Rename"
-                        className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-
-                      {tab === 'ACTIVE' ? (
-                        <button
-                          onClick={(e) => handleArchive(conv.id, e)}
-                          title="Archive"
-                          className="p-1 text-gray-600 hover:text-amber-600 hover:bg-gray-100 rounded"
-                        >
-                          <Archive className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => handleRestore(conv.id, e)}
-                          title="Restore"
-                          className="p-1 text-gray-600 hover:text-emerald-600 hover:bg-gray-100 rounded"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-
-                      <button
-                        onClick={(e) => handleDelete(conv.id, e)}
-                        title="Delete"
-                        className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            );
-          })
+          conversations.map((conv) => (
+            <AtlasConversationItem
+              key={conv.id}
+              conv={conv}
+              isActive={activeConversationId === conv.id}
+              isEditing={editingId === conv.id}
+              editingTitle={editingTitle}
+              tab={tab}
+              onSelectConversation={onSelectConversation}
+              onStartRename={handleStartRename}
+              onSaveRename={handleSaveRename}
+              onCancelRename={handleCancelRename}
+              onEditingTitleChange={setEditingTitle}
+              onArchive={handleArchive}
+              onRestore={handleRestore}
+              onDelete={handleDelete}
+            />
+          ))
         )}
       </div>
 
@@ -400,4 +447,4 @@ export function AtlasSidebar({
       )}
     </aside>
   );
-}
+});

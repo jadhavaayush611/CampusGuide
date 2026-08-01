@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { AggregatedCalendarEvent } from '../../../models/calendar.model';
 import { ConflictIndicator } from './ConflictIndicator';
-import { Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -11,40 +11,56 @@ interface MonthViewProps {
   onOpenCreateEventForDate: (date: Date) => void;
 }
 
-export const MonthView: React.FC<MonthViewProps> = ({
+export const MonthView: React.FC<MonthViewProps> = memo(function MonthView({
   currentDate,
   events,
   onSelectEvent,
   onSelectDate,
   onOpenCreateEventForDate,
-}) => {
+}) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   // Compute start of calendar grid (Monday start)
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const daysGrid = useMemo(() => {
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startDayOfWeek = firstDayOfMonth.getDay(); // 0 is Sun, 1 is Mon...
+    const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    const startDate = new Date(year, month, 1 - offset);
 
-  let startDayOfWeek = firstDayOfMonth.getDay(); // 0 is Sun, 1 is Mon...
-  // Convert to Monday start: Mon=0, Tue=1, ..., Sun=6
-  let offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+    const grid: Date[] = [];
+    const curr = new Date(startDate);
+    for (let i = 0; i < 42; i++) {
+      grid.push(new Date(curr));
+      curr.setDate(curr.getDate() + 1);
+    }
 
-  const startDate = new Date(year, month, 1 - offset);
+    if (grid[35].getMonth() !== month && grid[35].getDate() > 7) {
+      grid.splice(35, 7);
+    }
+    return grid;
+  }, [year, month]);
 
-  // Generate 35 or 42 grid cells (5 or 6 weeks)
-  const daysGrid: Date[] = [];
-  const curr = new Date(startDate);
-  for (let i = 0; i < 42; i++) {
-    daysGrid.push(new Date(curr));
-    curr.setDate(curr.getDate() + 1);
-  }
+  // Pre-index events by Date string (YYYY-MM-DD)
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, AggregatedCalendarEvent[]> = {};
+    events.forEach((ev) => {
+      const evStartStr = ev.startTime.toISOString().split('T')[0];
+      const evEndStr = ev.endTime.toISOString().split('T')[0];
 
-  // Trim to 35 days if 6th week belongs entirely to next month
-  if (daysGrid[35].getMonth() !== month && daysGrid[35].getDate() > 7) {
-    daysGrid.splice(35, 7);
-  }
+      // For single day or multi day events
+      daysGrid.forEach((d) => {
+        const dStr = d.toISOString().split('T')[0];
+        if (dStr >= evStartStr && dStr <= evEndStr) {
+          if (!map[dStr]) map[dStr] = [];
+          map[dStr].push(ev);
+        }
+      });
+    });
+    return map;
+  }, [events, daysGrid]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const weekDayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -64,12 +80,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
           const isCurrentMonth = date.getMonth() === month;
           const isToday = dateStr === todayStr;
 
-          // Filter events occurring on this date
-          const dayEvents = events.filter((ev) => {
-            const evStartStr = ev.startTime.toISOString().split('T')[0];
-            const evEndStr = ev.endTime.toISOString().split('T')[0];
-            return dateStr >= evStartStr && dateStr <= evEndStr;
-          });
+          const dayEvents = eventsByDate[dateStr] || [];
 
           const hasConflict = dayEvents.some((e) => e.hasConflict);
           const maxVisible = 3;
@@ -140,4 +151,4 @@ export const MonthView: React.FC<MonthViewProps> = ({
       </div>
     </div>
   );
-};
+});

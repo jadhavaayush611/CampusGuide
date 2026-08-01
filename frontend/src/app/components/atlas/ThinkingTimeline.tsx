@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Brain,
   Cpu,
@@ -19,7 +19,7 @@ interface ThinkingTimelineProps {
   isStreaming: boolean;
 }
 
-export function ThinkingTimeline({ items, isStreaming }: ThinkingTimelineProps) {
+export const ThinkingTimeline = memo(function ThinkingTimeline({ items, isStreaming }: ThinkingTimelineProps) {
   if (items.length === 0 && !isStreaming) {
     return (
       <div className="p-6 text-center text-gray-500 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
@@ -80,9 +80,9 @@ export function ThinkingTimeline({ items, isStreaming }: ThinkingTimelineProps) 
       </div>
     </div>
   );
-}
+});
 
-function TimelineNode({ item, isLast }: { item: ThinkingTimelineItem; isLast: boolean }) {
+const TimelineNode = memo(function TimelineNode({ item }: { item: ThinkingTimelineItem; isLast?: boolean }) {
   const getIcon = (type: AtlasStreamEventType) => {
     switch (type) {
       case 'CONNECTION_OPENED':
@@ -105,19 +105,6 @@ function TimelineNode({ item, isLast }: { item: ThinkingTimelineItem; isLast: bo
         return <AlertTriangle className="w-3 h-3 text-red-600" />;
       default:
         return <Clock className="w-3 h-3 text-gray-600" />;
-    }
-  };
-
-  const getStatusStyle = () => {
-    switch (item.status) {
-      case 'IN_PROGRESS':
-        return 'bg-blue-50 text-blue-700 border-blue-300';
-      case 'COMPLETED':
-        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      case 'FAILED':
-        return 'bg-red-50 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
@@ -163,4 +150,4 @@ function TimelineNode({ item, isLast }: { item: ThinkingTimelineItem; isLast: bo
       </div>
     </div>
   );
-}
+});

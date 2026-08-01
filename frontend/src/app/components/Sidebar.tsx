@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
@@ -29,18 +30,43 @@ const navItems = [
   { path: "/profile", label: "Profile", icon: User },
 ];
 
+const SidebarNavItem = memo(function SidebarNavItem({
+  item,
+}: {
+  item: typeof navItems[number];
+}) {
+  const Icon = item.icon;
+  return (
+    <li>
+      <NavLink
+        to={item.path}
+        end={item.path === "/"}
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+            isActive
+              ? "bg-blue-50 text-[#2563EB] border-l-4 border-[#2563EB]"
+              : "text-gray-700 hover:bg-gray-100"
+          }`
+        }
+      >
+        <Icon className="w-5 h-5" />
+        <span>{item.label}</span>
+      </NavLink>
+    </li>
+  );
+});
 
-export function Sidebar() {
+export const Sidebar = memo(function Sidebar() {
   const logoutMutation = useLogout();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         navigate("/login", { replace: true });
       },
     });
-  };
+  }, [logoutMutation, navigate]);
 
   return (
     <aside className="w-64 bg-[#fafafa] border-r border-gray-200 flex flex-col h-full">
@@ -50,22 +76,7 @@ export function Sidebar() {
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                end={item.path === "/"}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                    isActive
-                      ? "bg-blue-50 text-[#2563EB] border-l-4 border-[#2563EB]"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`
-                }
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </NavLink>
-            </li>
+            <SidebarNavItem key={item.path} item={item} />
           ))}
         </ul>
       </nav>
@@ -81,4 +92,4 @@ export function Sidebar() {
       </div>
     </aside>
   );
-}
+});

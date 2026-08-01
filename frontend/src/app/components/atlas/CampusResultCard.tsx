@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
   MapPin,
@@ -10,7 +10,6 @@ import {
   BookOpen,
   ClipboardList,
   GraduationCap,
-  ExternalLink,
   ChevronRight,
 } from 'lucide-react';
 import { CampusResult } from '../../../models/atlas.model';
@@ -19,10 +18,10 @@ interface CampusResultCardProps {
   result: CampusResult;
 }
 
-export function CampusResultCard({ result }: CampusResultCardProps) {
+export const CampusResultCard = memo(function CampusResultCard({ result }: CampusResultCardProps) {
   const navigate = useNavigate();
 
-  const getIcon = () => {
+  const icon = useMemo(() => {
     switch (result.type) {
       case 'navigation':
       case 'building':
@@ -44,9 +43,9 @@ export function CampusResultCard({ result }: CampusResultCardProps) {
       default:
         return <MapPin className="w-5 h-5 text-blue-600" />;
     }
-  };
+  }, [result.type]);
 
-  const getBadgeStyle = () => {
+  const badgeStyle = useMemo(() => {
     switch (result.type) {
       case 'navigation':
       case 'building':
@@ -68,26 +67,26 @@ export function CampusResultCard({ result }: CampusResultCardProps) {
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
-  };
+  }, [result.type]);
 
-  const handleNavigate = () => {
+  const handleNavigate = useCallback(() => {
     if (result.deepLink) {
       navigate(result.deepLink);
     }
-  };
+  }, [navigate, result.deepLink]);
 
   return (
     <div className="mt-3 p-4 bg-white rounded-xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-200">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-100 flex-shrink-0">
-            {getIcon()}
+            {icon}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h4 className="font-semibold text-gray-900 text-sm">{result.title}</h4>
               <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getBadgeStyle()}`}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider ${badgeStyle}`}
               >
                 {result.type}
               </span>
@@ -113,4 +112,4 @@ export function CampusResultCard({ result }: CampusResultCardProps) {
       </div>
     </div>
   );
-}
+});

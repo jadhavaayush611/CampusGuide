@@ -1,5 +1,5 @@
-import React from 'react';
-import { Target, Clock, Calendar, Plus, CheckCircle2, Edit, Trash2 } from 'lucide-react';
+import React, { memo, useCallback, useMemo } from 'react';
+import { Target, Calendar, Edit, Trash2 } from 'lucide-react';
 import { StudyGoal } from '../../../models/planner.model';
 
 interface StudyGoalCardProps {
@@ -9,14 +9,33 @@ interface StudyGoalCardProps {
   onDelete: (id: string) => void;
 }
 
-export const StudyGoalCard: React.FC<StudyGoalCardProps> = ({
+export const StudyGoalCard: React.FC<StudyGoalCardProps> = memo(function StudyGoalCard({
   goal,
   onLogHours,
   onEdit,
   onDelete,
-}) => {
-  const percent = goal.targetHours > 0 ? Math.min(100, Math.round((goal.completedHours / goal.targetHours) * 100)) : 0;
-  const isCompleted = goal.isCompleted || percent >= 100;
+}) {
+  const { percent, isCompleted } = useMemo(() => {
+    const p = goal.targetHours > 0 ? Math.min(100, Math.round((goal.completedHours / goal.targetHours) * 100)) : 0;
+    const completed = goal.isCompleted || p >= 100;
+    return { percent: p, isCompleted: completed };
+  }, [goal.targetHours, goal.completedHours, goal.isCompleted]);
+
+  const handleEdit = useCallback(() => {
+    onEdit(goal);
+  }, [onEdit, goal]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(goal.id);
+  }, [onDelete, goal.id]);
+
+  const handleLogOneHour = useCallback(() => {
+    onLogHours(goal, 1);
+  }, [onLogHours, goal]);
+
+  const handleLogTwoHours = useCallback(() => {
+    onLogHours(goal, 2);
+  }, [onLogHours, goal]);
 
   return (
     <div className={`p-5 bg-white rounded-2xl border transition-all duration-200 space-y-4 shadow-sm hover:shadow-md ${
@@ -29,14 +48,14 @@ export const StudyGoalCard: React.FC<StudyGoalCardProps> = ({
         </span>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => onEdit(goal)}
+            onClick={handleEdit}
             className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
             title="Edit Goal"
           >
             <Edit className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => onDelete(goal.id)}
+            onClick={handleDelete}
             className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
             title="Delete Goal"
           >
@@ -90,14 +109,14 @@ export const StudyGoalCard: React.FC<StudyGoalCardProps> = ({
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] text-gray-400 font-medium">Log:</span>
           <button
-            onClick={() => onLogHours(goal, 1)}
+            onClick={handleLogOneHour}
             disabled={isCompleted}
             className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
           >
             +1h
           </button>
           <button
-            onClick={() => onLogHours(goal, 2)}
+            onClick={handleLogTwoHours}
             disabled={isCompleted}
             className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
           >
@@ -107,4 +126,4 @@ export const StudyGoalCard: React.FC<StudyGoalCardProps> = ({
       </div>
     </div>
   );
-};
+});

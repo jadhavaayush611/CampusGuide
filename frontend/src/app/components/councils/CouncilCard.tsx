@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { Users, ChevronRight, Check, Plus, Clock } from 'lucide-react';
 import { Council } from '../../../models/council.model';
@@ -8,22 +8,29 @@ interface CouncilCardProps {
   council: Council;
 }
 
-export function CouncilCard({ council }: CouncilCardProps) {
+export const CouncilCard = memo(function CouncilCard({ council }: CouncilCardProps) {
   const navigate = useNavigate();
   const { join, leave, isJoining, isLeaving } = useCouncilMembership(council.id);
 
-  const handleToggleJoin = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (council.isJoined) {
-      leave();
-    } else {
-      join();
-    }
-  };
+  const handleCardClick = useCallback(() => {
+    navigate(`/councils/${council.id}`);
+  }, [navigate, council.id]);
+
+  const handleToggleJoin = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (council.isJoined) {
+        leave();
+      } else {
+        join();
+      }
+    },
+    [council.isJoined, leave, join]
+  );
 
   return (
     <div
-      onClick={() => navigate(`/councils/${council.id}`)}
+      onClick={handleCardClick}
       className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col justify-between"
     >
       <div>
@@ -106,4 +113,4 @@ export function CouncilCard({ council }: CouncilCardProps) {
       </div>
     </div>
   );
-}
+});
