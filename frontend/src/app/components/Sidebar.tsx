@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router";
 import {
   LayoutDashboard,
+  Calendar,
   CalendarCheck,
   GraduationCap,
   Users,
@@ -14,6 +15,7 @@ import { useLogout } from "../../hooks/auth/useLogout";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/calendar", label: "Calendar", icon: Calendar },
   { path: "/planner", label: "Planner", icon: CalendarCheck },
   { path: "/academic", label: "Academic", icon: GraduationCap },
   { path: "/councils", label: "Councils", icon: Shield },
@@ -22,6 +24,7 @@ const navItems = [
   { path: "/notices", label: "Notice Board", icon: ClipboardList },
   { path: "/profile", label: "Profile", icon: User },
 ];
+
 
 export function Sidebar() {
   const logoutMutation = useLogout();

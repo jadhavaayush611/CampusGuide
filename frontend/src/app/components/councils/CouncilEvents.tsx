@@ -139,7 +139,17 @@ END:VCALENDAR`;
                   <Download className="w-4 h-4 text-gray-500" />
                   .ICS
                 </button>
+
+                <a
+                  href={`/calendar?filter=council&eventId=${event.id}`}
+                  className="px-3 py-2.5 border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5"
+                  title="View in Campus Calendar"
+                >
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  Calendar
+                </a>
               </div>
+
             </div>
           );
         })}

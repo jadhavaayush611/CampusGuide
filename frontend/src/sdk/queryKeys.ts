@@ -102,6 +102,18 @@ export const queryKeys = {
     readStatus: () => [...queryKeys.notices.all, 'readStatus'] as const,
     unreadCount: () => [...queryKeys.notices.all, 'unreadCount'] as const,
   },
+  calendar: {
+    all: ['calendar'] as const,
+    entries: () => [...queryKeys.calendar.all, 'entries'] as const,
+    range: (from?: string, to?: string) => [...queryKeys.calendar.all, 'range', { from, to }] as const,
+    detail: (id: string) => [...queryKeys.calendar.all, 'detail', id] as const,
+  },
+  scheduledNotifications: {
+    all: ['scheduledNotifications'] as const,
+    list: () => [...queryKeys.scheduledNotifications.all, 'list'] as const,
+    pending: () => [...queryKeys.scheduledNotifications.all, 'pending'] as const,
+  },
 };
+
 
 

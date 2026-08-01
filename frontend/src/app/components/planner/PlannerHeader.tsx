@@ -45,6 +45,13 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="/calendar?filter=planner"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold text-sm backdrop-blur-md transition-all shadow-sm"
+            >
+              <CalendarCheck className="w-4 h-4 text-amber-400" />
+              Open in Calendar
+            </a>
             <button
               onClick={onOpenCreateGoal}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl font-semibold text-sm backdrop-blur-md transition-all shadow-sm"
@@ -60,6 +67,7 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
               New Task
             </button>
           </div>
+
         </div>
       </div>
 

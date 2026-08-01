@@ -156,16 +156,13 @@ export function Dashboard() {
               <span>Production Dashboard</span>
             </button>
             <button
-              onClick={() => setActiveTab('calendar')}
-              className={`flex items-center gap-2 pb-2 text-sm font-bold border-b-2 transition-all ${
-                activeTab === 'calendar'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-800'
-              }`}
+              onClick={() => navigate('/calendar')}
+              className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-all"
             >
-              <Calendar className="w-4 h-4" />
-              <span>Event Calendar</span>
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span>Full Campus Calendar</span>
             </button>
+
           </div>
 
           <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs">

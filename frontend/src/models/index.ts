@@ -6,6 +6,8 @@ export * from './notification.model';
 export * from './community.model';
 export * from './resource.model';
 export * from './notice.model';
+export * from './calendar.model';
+
 
 
 

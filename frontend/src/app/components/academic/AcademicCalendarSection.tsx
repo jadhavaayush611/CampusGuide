@@ -65,8 +65,8 @@ export const AcademicCalendarSection: React.FC<AcademicCalendarSectionProps> = (
           </p>
         </div>
 
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto">
+        {/* Category Filter Pills & Open Calendar button */}
+        <div className="flex items-center gap-2 overflow-x-auto">
           {['ALL', 'EXAM', 'REGISTRATION', 'MILESTONE', 'HOLIDAY'].map((cat) => (
             <button
               key={cat}
@@ -80,8 +80,17 @@ export const AcademicCalendarSection: React.FC<AcademicCalendarSectionProps> = (
               {cat === 'ALL' ? 'All Events' : cat}
             </button>
           ))}
+
+          <a
+            href="/calendar?filter=academic"
+            className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 rounded-xl text-xs font-bold whitespace-nowrap transition-colors flex items-center gap-1"
+          >
+            <CalendarIcon className="w-3.5 h-3.5" />
+            Open Calendar
+          </a>
         </div>
       </div>
+
 
       {/* Loading Skeleton */}
       {isLoading && (

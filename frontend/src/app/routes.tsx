@@ -12,6 +12,7 @@ import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { Academic } from "./pages/Academic";
+import { CalendarPage } from "./pages/CalendarPage";
 import { NotFound } from "./pages/NotFound";
 import { ProtectedRoute } from "../core/routing/ProtectedRoute";
 import { PublicRoute } from "../core/routing/PublicRoute";
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, Component: Dashboard },
+      { path: "calendar", Component: CalendarPage },
       { path: "planner", Component: PlannerPage },
       { path: "academic", Component: Academic },
       { path: "councils", Component: Councils },
@@ -55,5 +57,6 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
 
 
