@@ -29,6 +29,15 @@ export const queryKeys = {
     resources: () => [...queryKeys.campus.all, 'resources'] as const,
     searchResources: (query: string) => [...queryKeys.campus.resources(), 'search', query] as const,
   },
+  resources: {
+    all: ['resources'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.resources.all, 'list', params] as const,
+    featured: () => [...queryKeys.resources.all, 'featured'] as const,
+    recent: () => [...queryKeys.resources.all, 'recent'] as const,
+    popular: () => [...queryKeys.resources.all, 'popular'] as const,
+    bookmarked: () => [...queryKeys.resources.all, 'bookmarked'] as const,
+    detail: (id: string) => [...queryKeys.resources.all, 'detail', id] as const,
+  },
   planner: {
     all: ['planner'] as const,
     schedules: () => [...queryKeys.planner.all, 'schedules'] as const,
@@ -78,5 +87,18 @@ export const queryKeys = {
     notices: (id: string, filter?: string) => [...queryKeys.councils.detail(id), 'notices', { filter }] as const,
     resources: (id: string, category?: string) => [...queryKeys.councils.detail(id), 'resources', { category }] as const,
   },
+  notices: {
+    all: ['notices'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.notices.all, 'list', params] as const,
+    pinned: () => [...queryKeys.notices.all, 'pinned'] as const,
+    recent: () => [...queryKeys.notices.all, 'recent'] as const,
+    important: () => [...queryKeys.notices.all, 'important'] as const,
+    archived: () => [...queryKeys.notices.all, 'archived'] as const,
+    detail: (id: string) => [...queryKeys.notices.all, 'detail', id] as const,
+    detailBySlug: (slug: string) => [...queryKeys.notices.all, 'slug', slug] as const,
+    readStatus: () => [...queryKeys.notices.all, 'readStatus'] as const,
+    unreadCount: () => [...queryKeys.notices.all, 'unreadCount'] as const,
+  },
 };
+
 

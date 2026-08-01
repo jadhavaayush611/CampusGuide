@@ -14,7 +14,21 @@ export * from './campus/useEventDetails';
 export * from './campus/useCreateEvent';
 export * from './campus/useRegisterForEvent';
 export * from './campus/useCouncils';
-export * from './campus/useResources';
+export { useCampusResources } from './campus/useResources';
+
+
+export * from './resources/useResources';
+export * from './resources/useFeaturedResources';
+export * from './resources/useRecentResources';
+export * from './resources/usePopularResources';
+export * from './resources/useBookmarkedResources';
+export * from './resources/useResourceDetails';
+export * from './resources/useCreateResource';
+export * from './resources/useUpdateResource';
+export * from './resources/useDeleteResource';
+export * from './resources/useBookmarkResource';
+export * from './resources/useDownloadResource';
+
 
 export * from './planner/useSchedules';
 export * from './planner/useScheduleDetails';
@@ -58,5 +72,20 @@ export * from './council/useCouncilEvents';
 export * from './council/useCouncilNotices';
 export * from './council/useCouncilResources';
 export * from './council/useCouncilMembers';
+
+export * from './notices/useNotices';
+export * from './notices/usePinnedNotices';
+export * from './notices/useRecentNotices';
+export * from './notices/useImportantNotices';
+export * from './notices/useArchivedNotices';
+export * from './notices/useNoticeDetails';
+export * from './notices/useCreateNotice';
+export * from './notices/useUpdateNotice';
+export * from './notices/usePublishNotice';
+export * from './notices/usePinNotice';
+export * from './notices/useDeleteNotice';
+export * from './notices/useToggleNoticeRead';
+export * from './notices/useUnreadNoticesCount';
+
 
 

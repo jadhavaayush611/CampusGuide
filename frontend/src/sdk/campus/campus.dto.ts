@@ -91,23 +91,5 @@ export interface CampusCouncilDto {
   memberCount?: number | null;
 }
 
-export type { CommunityDto } from '../community/community.dto';
-
-
-export interface ResourceDto {
-  id: string;
-  title: string;
-  description?: string | null;
-  uploaderId: string;
-  uploaderName?: string | null;
-  councilId?: string | null;
-  communityId?: string | null;
-  tags: string[];
-  fileName: string;
-  originalFileName: string;
-  fileType: string;
-  fileSize: number;
-  downloadUrl: string;
-  createdAt: string;
-  updatedAt?: string | null;
-}
+import type { ResourceDto } from '../resources/resource.dto';
+import type { CommunityDto } from '../community/community.dto';

@@ -11,8 +11,8 @@ import {
 import {
   mapCouncilDtoToModel,
   mapLeadershipDtoToModel,
-  mapNoticeDtoToModel,
-  mapResourceDtoToModel,
+  mapCouncilNoticeDtoToModel,
+  mapCouncilResourceDtoToModel,
   mapMemberDtoToModel,
 } from './council.mapper';
 import {
@@ -728,7 +728,7 @@ export class CouncilSdk extends BaseSdk {
   public async getCouncilNotices(councilId: string, filter?: string): Promise<CouncilNotice[]> {
     try {
       const dtos = await this.get<CouncilNoticeDto[]>(`/api/v1/notices`, { councilId });
-      let notices = dtos.map(mapNoticeDtoToModel);
+      let notices = dtos.map(mapCouncilNoticeDtoToModel);
       if (!notices || notices.length === 0) {
         notices = SEED_NOTICES[councilId] || SEED_NOTICES['council-1'];
       }
@@ -748,7 +748,7 @@ export class CouncilSdk extends BaseSdk {
   public async getCouncilResources(councilId: string, category?: string): Promise<CouncilResource[]> {
     try {
       const dtos = await this.get<CouncilResourceDto[]>(`/api/v1/resources/council/${councilId}`);
-      let resources = dtos.map(mapResourceDtoToModel);
+      let resources = dtos.map(mapCouncilResourceDtoToModel);
       if (!resources || resources.length === 0) {
         resources = SEED_RESOURCES[councilId] || SEED_RESOURCES['council-1'];
       }

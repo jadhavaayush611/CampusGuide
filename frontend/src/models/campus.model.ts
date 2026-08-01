@@ -75,20 +75,12 @@ export type { Community } from './community.model';
 
 
 
-export interface Resource {
-  id: string;
-  title: string;
-  description?: string;
-  uploaderId: string;
-  uploaderName?: string;
-  councilId?: string;
-  communityId?: string;
-  tags: string[];
-  fileName: string;
-  originalFileName: string;
-  fileType: string;
-  fileSize: number;
-  downloadUrl: string;
-  createdAt: string;
-  updatedAt?: string;
-}
+export type {
+  Resource,
+  ResourceCategory,
+  ResourceQueryParams,
+  PaginatedResourcesResponse,
+  CreateResourcePayload,
+  UpdateResourcePayload,
+} from './resource.model';
+

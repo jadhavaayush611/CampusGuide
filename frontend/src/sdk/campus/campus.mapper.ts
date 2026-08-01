@@ -4,9 +4,9 @@ import {
   EventDto,
   FloorPlanDto,
   CampusCouncilDto,
-  CommunityDto,
-  ResourceDto,
 } from './campus.dto';
+import { ResourceDto } from '../resources/resource.dto';
+import { mapResourceDtoToModel } from '../resources/resource.mapper';
 import {
   Building,
   Location,
@@ -94,25 +94,7 @@ export function mapCampusCouncilDtoToModel(dto: CampusCouncilDto): Council {
   });
 }
 
-export { mapCommunityDtoToModel } from '../community/community.mapper';
-
-
 export function mapCampusResourceDtoToModel(dto: ResourceDto): Resource {
-  return {
-    id: dto.id,
-    title: dto.title,
-    description: dto.description ?? undefined,
-    uploaderId: dto.uploaderId,
-    uploaderName: dto.uploaderName ?? undefined,
-    councilId: dto.councilId ?? undefined,
-    communityId: dto.communityId ?? undefined,
-    tags: dto.tags || [],
-    fileName: dto.fileName,
-    originalFileName: dto.originalFileName,
-    fileType: dto.fileType,
-    fileSize: dto.fileSize,
-    downloadUrl: dto.downloadUrl,
-    createdAt: dto.createdAt,
-    updatedAt: dto.updatedAt ?? undefined,
-  };
+  return mapResourceDtoToModel(dto);
 }
+

@@ -81,7 +81,7 @@ export function mapLeadershipDtoToModel(dto: CouncilLeadershipDto): CouncilLeade
   };
 }
 
-export function mapNoticeDtoToModel(dto: CouncilNoticeDto): CouncilNotice {
+export function mapCouncilNoticeDtoToModel(dto: CouncilNoticeDto): CouncilNotice {
   return {
     id: dto.id,
     title: dto.title,
@@ -98,7 +98,7 @@ export function mapNoticeDtoToModel(dto: CouncilNoticeDto): CouncilNotice {
   };
 }
 
-export function mapResourceDtoToModel(dto: CouncilResourceDto): CouncilResource {
+export function mapCouncilResourceDtoToModel(dto: CouncilResourceDto): CouncilResource {
   return {
     id: dto.id,
     title: dto.title,

@@ -30,6 +30,16 @@ export * from './council/council.dto';
 export * from './council/council.mapper';
 export * from './council/CouncilSdk';
 
+export * from './resources/resource.dto';
+export * from './resources/resource.mapper';
+export * from './resources/ResourceSdk';
+
+export * from './notices/notice.dto';
+export * from './notices/notice.mapper';
+export * from './notices/NoticeSdk';
+
 export * from './queryKeys';
+
+
 
 

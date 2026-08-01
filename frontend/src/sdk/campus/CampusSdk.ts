@@ -7,8 +7,8 @@ import {
   UpdateEventDto,
   FloorPlanDto,
   CampusCouncilDto,
-  ResourceDto,
 } from './campus.dto';
+import { ResourceDto } from '../resources/resource.dto';
 import {
   mapBuildingDtoToModel,
   mapLocationDtoToModel,
