@@ -1,15 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { Calendar, AlertCircle, CheckCircle2, Clock, CalendarDays, ExternalLink } from 'lucide-react';
 import { useUpcomingDeadlines, UpcomingDeadlineItem } from '../../../hooks/planner/useUpcomingDeadlines';
-import { toast } from 'sonner';
 
 export const DeadlinesView: React.FC = () => {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useUpcomingDeadlines();
 
   const handleOpenCalendar = (title: string, date: string) => {
-    toast.info(`Calendar Shortcut: "${title}" (${date})`, {
-      description: 'Full calendar scheduling & drag-and-drop management will open in Phase 4.9 Calendar.',
-    });
+    navigate(`/calendar?date=${encodeURIComponent(date)}&filter=planner`);
   };
 
   if (isLoading) {
@@ -56,7 +55,7 @@ export const DeadlinesView: React.FC = () => {
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-900 hover:bg-blue-50 rounded-xl font-bold text-xs transition-colors shadow-sm shrink-0"
         >
           <Calendar className="w-4 h-4 text-blue-600" />
-          <span>Open in Calendar (Phase 4.9)</span>
+          <span>Open in Calendar</span>
           <ExternalLink className="w-3.5 h-3.5 text-gray-400" />
         </button>
       </div>

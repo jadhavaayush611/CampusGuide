@@ -63,6 +63,12 @@ export const AcademicResourcesSection: React.FC = () => {
         {/* Quick links header */}
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <a
+            href="/resources?category=Academic"
+            className="px-3.5 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <Library className="w-3.5 h-3.5" /> Open in Resource Center
+          </a>
+          <a
             href="https://campusguide.edu/faculty"
             target="_blank"
             rel="noopener noreferrer"
