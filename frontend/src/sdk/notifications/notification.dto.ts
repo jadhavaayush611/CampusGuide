@@ -4,15 +4,33 @@
 
 export interface NotificationDto {
   id: string;
-  type: 'reminder' | 'mention' | 'event' | 'announcement';
+  type?: string | null;
+  category?: string | null;
   title: string;
-  description: string;
-  time?: string | null;
-  isRead: boolean;
+  message?: string | null;
+  description?: string | null;
+  priority?: string | null;
+  read?: boolean | null;
+  isRead?: boolean | null;
+  archived?: boolean | null;
+  isArchived?: boolean | null;
+  deliveryStatus?: string | null;
+  sourceModule?: string | null;
   linkUrl?: string | null;
+  actionLink?: string | null;
   createdAt?: string | null;
+  readAt?: string | null;
+  time?: string | null;
+  metadata?: Record<string, any> | null;
+  relatedEntity?: {
+    type: string;
+    id: string;
+    name?: string;
+  } | null;
 }
 
 export interface UnreadCountDto {
-  unreadCount: number;
+  unreadCount?: number;
+  count?: number;
 }
+

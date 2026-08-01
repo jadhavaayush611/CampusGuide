@@ -63,8 +63,10 @@ export const queryKeys = {
   },
   notifications: {
     all: ['notifications'] as const,
-    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    list: (params?: Record<string, any>) => [...queryKeys.notifications.all, 'list', params] as const,
+    stats: () => [...queryKeys.notifications.all, 'stats'] as const,
     unreadCount: () => [...queryKeys.notifications.all, 'unread-count'] as const,
+    detail: (id: string) => [...queryKeys.notifications.all, 'detail', id] as const,
   },
   communities: {
     all: ['communities'] as const,

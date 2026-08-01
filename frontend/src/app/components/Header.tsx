@@ -123,7 +123,13 @@ export function Header() {
                     ))}
                   </div>
                   <div className="p-3 border-t border-gray-200 bg-gray-50">
-                    <button className="text-sm text-[#2563EB] hover:underline w-full text-center">
+                    <button
+                      onClick={() => {
+                        navigate("/notifications");
+                        setNotificationOpen(false);
+                      }}
+                      className="text-sm font-semibold text-[#2563EB] hover:underline w-full text-center"
+                    >
                       View All Notifications
                     </button>
                   </div>

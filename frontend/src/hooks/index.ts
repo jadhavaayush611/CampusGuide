@@ -37,8 +37,7 @@ export * from './atlas/useRouteCalculation';
 export * from './atlas/useLandmarkDetails';
 export * from './atlas/useMapLayers';
 
-export * from './notifications/useNotifications';
-export * from './notifications/useUnreadNotificationCount';
+export * from './notifications';
 
 export * from './community/useCommunities';
 export * from './community/useFeaturedCommunities';

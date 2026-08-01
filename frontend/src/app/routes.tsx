@@ -13,6 +13,8 @@ import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { Academic } from "./pages/Academic";
 import { CalendarPage } from "./pages/CalendarPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { Unauthorized } from "./pages/Unauthorized";
 import { NotFound } from "./pages/NotFound";
 import { ProtectedRoute } from "../core/routing/ProtectedRoute";
 import { PublicRoute } from "../core/routing/PublicRoute";
@@ -35,6 +37,10 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/unauthorized",
+    element: <Unauthorized />,
+  },
+  {
     path: "/",
     element: (
       <ProtectedRoute>
@@ -52,11 +58,13 @@ export const router = createBrowserRouter([
       { path: "communities/:id", Component: CommunityDetail },
       { path: "resources", Component: ResourceCenter },
       { path: "notices", Component: NoticeBoard },
+      { path: "notifications", Component: NotificationsPage },
       { path: "profile", Component: Profile },
       { path: "*", Component: NotFound },
     ],
   },
 ]);
+
 
 
 

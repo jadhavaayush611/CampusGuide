@@ -8,6 +8,7 @@ import {
   Shield,
   BookOpen,
   ClipboardList,
+  Bell,
   User,
   LogOut
 } from "lucide-react";
@@ -22,6 +23,7 @@ const navItems = [
   { path: "/communities", label: "Communities", icon: Users },
   { path: "/resources", label: "Resource Center", icon: BookOpen },
   { path: "/notices", label: "Notice Board", icon: ClipboardList },
+  { path: "/notifications", label: "Notifications", icon: Bell },
   { path: "/profile", label: "Profile", icon: User },
 ];
 

@@ -41,7 +41,7 @@ export const NotificationsWidget: React.FC = () => {
         </div>
 
         <button
-          onClick={() => navigate('/notices')}
+          onClick={() => navigate('/notifications')}
           className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
         >
           <span>View All</span>
@@ -53,7 +53,7 @@ export const NotificationsWidget: React.FC = () => {
         {notifications.slice(0, 3).map((item) => (
           <div
             key={item.id}
-            onClick={() => navigate(item.linkUrl || '/notices')}
+            onClick={() => navigate(item.actionLink || item.linkUrl || '/notifications')}
             className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
               !item.isRead
                 ? 'bg-blue-50/40 border-blue-200/80 hover:bg-blue-50/80'
