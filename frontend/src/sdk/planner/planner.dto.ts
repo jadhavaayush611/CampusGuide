@@ -105,3 +105,57 @@ export interface AcademicCalendarItemDto {
   term?: string | null;
 }
 
+export interface TaskAttachmentDto {
+  id?: string | null;
+  name: string;
+  url: string;
+  size?: string | null;
+  type?: string | null;
+}
+
+export interface PlannerTaskDto {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string | null;
+  category: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+  progress: number;
+  dueDate?: string | null;
+  createdDate: string;
+  completedDate?: string | null;
+  tags?: string[] | null;
+  attachments?: TaskAttachmentDto[] | null;
+  isArchived?: boolean | null;
+  isCompleted?: boolean | null;
+}
+
+export interface CreateTaskDto {
+  title: string;
+  description?: string;
+  category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+  progress?: number;
+  dueDate?: string;
+  tags?: string[];
+  attachments?: TaskAttachmentDto[];
+}
+
+export interface UpdateTaskDto {
+  title?: string;
+  description?: string;
+  category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+  progress?: number;
+  dueDate?: string;
+  completedDate?: string;
+  tags?: string[];
+  attachments?: TaskAttachmentDto[];
+  isArchived?: boolean;
+  isCompleted?: boolean;
+}
+
+

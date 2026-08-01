@@ -7,6 +7,7 @@ import { Councils } from "./pages/Councils";
 import { Council } from "./pages/Council";
 import { ResourceCenter } from "./pages/ResourceCenter";
 import { NoticeBoard } from "./pages/NoticeBoard";
+import { PlannerPage } from "./pages/PlannerPage";
 import { Profile } from "./pages/Profile";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, Component: Dashboard },
+      { path: "planner", Component: PlannerPage },
       { path: "academic", Component: Academic },
       { path: "councils", Component: Councils },
       { path: "councils/:id", Component: Council },
@@ -53,4 +55,5 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
 

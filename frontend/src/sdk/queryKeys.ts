@@ -40,6 +40,9 @@ export const queryKeys = {
   },
   planner: {
     all: ['planner'] as const,
+    tasks: (params?: Record<string, any>) => [...queryKeys.planner.all, 'tasks', params] as const,
+    task: (id: string) => [...queryKeys.planner.all, 'tasks', 'detail', id] as const,
+    upcomingDeadlines: () => [...queryKeys.planner.all, 'deadlines', 'upcoming'] as const,
     schedules: () => [...queryKeys.planner.all, 'schedules'] as const,
     schedule: (id: string) => [...queryKeys.planner.schedules(), id] as const,
     courses: (department?: string) => [...queryKeys.planner.all, 'courses', { department }] as const,

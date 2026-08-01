@@ -30,17 +30,7 @@ export * from './resources/useBookmarkResource';
 export * from './resources/useDownloadResource';
 
 
-export * from './planner/useSchedules';
-export * from './planner/useScheduleDetails';
-export * from './planner/useCreateSchedule';
-export * from './planner/useUpdateSchedule';
-export * from './planner/useCourses';
-export * from './planner/useEnrolledCourses';
-export * from './planner/useTimetable';
-export * from './planner/useStudyGoals';
-export * from './planner/useCreateStudyGoal';
-export * from './planner/useDegreePlan';
-export * from './planner/useAcademicCalendar';
+export * from './planner';
 
 export * from './atlas/useAtlasSearch';
 export * from './atlas/useRouteCalculation';

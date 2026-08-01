@@ -86,3 +86,67 @@ export interface AcademicCalendarItem {
   term?: string;
 }
 
+export type TaskCategory =
+  | 'PERSONAL'
+  | 'ACADEMIC'
+  | 'ASSIGNMENT'
+  | 'PROJECT'
+  | 'STUDY_GOAL'
+  | 'EXAMINATION'
+  | 'REMINDER'
+  | 'MISCELLANEOUS';
+
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+
+export interface TaskAttachment {
+  id?: string;
+  name: string;
+  url: string;
+  size?: string;
+  type?: string;
+}
+
+export interface PlannerTask {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  category: TaskCategory;
+  priority: TaskPriority;
+  status: TaskStatus;
+  progress: number; // 0 to 100
+  dueDate?: string; // ISO date string (YYYY-MM-DD)
+  createdDate: string;
+  completedDate?: string;
+  tags: string[];
+  attachments?: TaskAttachment[];
+  isArchived: boolean;
+  isCompleted: boolean;
+}
+
+export interface TaskQueryParams {
+  search?: string;
+  category?: TaskCategory | 'ALL';
+  priority?: TaskPriority | 'ALL';
+  status?: TaskStatus | 'ALL';
+  tag?: string;
+  dueDateFilter?: 'TODAY' | 'THIS_WEEK' | 'OVERDUE' | 'UPCOMING' | 'ALL';
+  isCompleted?: boolean;
+  isArchived?: boolean;
+  sortBy?: 'dueDate' | 'priority' | 'title' | 'createdDate';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  pageSize?: number;
+}
+
+export interface TaskPaginatedResponse {
+  tasks: PlannerTask[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+

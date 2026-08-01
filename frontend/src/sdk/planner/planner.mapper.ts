@@ -5,6 +5,7 @@ import {
   StudyGoalDto,
   DegreePlanDto,
   AcademicCalendarItemDto,
+  PlannerTaskDto,
 } from './planner.dto';
 import {
   Course,
@@ -13,6 +14,7 @@ import {
   StudyGoal,
   DegreePlan,
   AcademicCalendarItem,
+  PlannerTask,
 } from '../../models/planner.model';
 
 export function mapCourseDtoToModel(dto: CourseDto): Course {
@@ -109,4 +111,61 @@ export function mapAcademicCalendarItemDtoToModel(dto: AcademicCalendarItemDto):
     term: dto.term ?? undefined,
   };
 }
+
+export function mapTaskDtoToModel(dto: PlannerTaskDto): PlannerTask {
+  const isCompleted = dto.isCompleted ?? dto.status === 'COMPLETED';
+  const isArchived = dto.isArchived ?? dto.status === 'ARCHIVED';
+  return {
+    id: dto.id,
+    userId: dto.userId,
+    title: dto.title,
+    description: dto.description ?? undefined,
+    category: dto.category ?? 'PERSONAL',
+    priority: dto.priority ?? 'MEDIUM',
+    status: dto.status ?? 'TODO',
+    progress: dto.progress ?? (isCompleted ? 100 : 0),
+    dueDate: dto.dueDate ?? undefined,
+    createdDate: dto.createdDate ?? new Date().toISOString(),
+    completedDate: dto.completedDate ?? undefined,
+    tags: dto.tags || [],
+    attachments: (dto.attachments || []).map((att) => ({
+      id: att.id ?? undefined,
+      name: att.name,
+      url: att.url,
+      size: att.size ?? undefined,
+      type: att.type ?? undefined,
+    })),
+    isArchived,
+    isCompleted,
+  };
+}
+
+export function mapTaskModelToDto(model: PlannerTask): PlannerTaskDto {
+  return {
+    id: model.id,
+    userId: model.userId,
+    title: model.title,
+    description: model.description || null,
+    category: model.category,
+    priority: model.priority,
+    status: model.status,
+    progress: model.progress,
+    dueDate: model.dueDate || null,
+    createdDate: model.createdDate,
+    completedDate: model.completedDate || null,
+    tags: model.tags,
+    attachments: model.attachments
+      ? model.attachments.map((att) => ({
+          id: att.id || null,
+          name: att.name,
+          url: att.url,
+          size: att.size || null,
+          type: att.type || null,
+        }))
+      : null,
+    isArchived: model.isArchived,
+    isCompleted: model.isCompleted,
+  };
+}
+
 
