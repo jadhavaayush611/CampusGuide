@@ -7,6 +7,8 @@ import { parseJwtPayload } from '../utils/jwt';
 import { logger } from '../utils/logger';
 import { authSdk } from '../../sdk/auth/AuthSdk';
 
+import { queryClient } from '../query/queryClient';
+
 export interface AuthProviderProps {
   children: ReactNode;
   tokenMgr?: TokenManager;
@@ -23,6 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
   const logout = useCallback(async (): Promise<void> => {
     logger.info('[AuthProvider] Logging out user');
     tokenMgr.clearTokens();
+    queryClient.clear();
     setState({
       isAuthenticated: false,
       isLoading: false,
