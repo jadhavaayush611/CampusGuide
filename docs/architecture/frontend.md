@@ -1,11 +1,11 @@
 # CampusGuide Frontend Architectural Boundaries & Ownership Guide
 
-This document defines the strict domain ownership boundaries, responsibilities, and cross-module communication rules across the CampusGuide React frontend.
+This document defines the strict domain ownership boundaries, responsibilities, cross-module communication rules, and repository quality standards across the CampusGuide React frontend.
 
 ---
 
 ## 1. Atlas Orchestrator
-- **Role**: Campus Workflow Orchestrator.
+- **Role**: Campus Workflow Orchestrator (`/atlas`).
 - **Execution Pipeline**: 
   `Conversation` ➔ `Streaming Response` ➔ `Thinking Timeline` ➔ `Planning` ➔ `Tool Execution` ➔ `Campus Result`
 - **Responsibilities**:
@@ -35,7 +35,7 @@ This document defines the strict domain ownership boundaries, responsibilities, 
 
 ## 3. Resources Center
 - **Exclusive Owner Of**:
-  - Document repository browsing, searching, and filtering.
+  - Document repository browsing, searching, and filtering (`/resources`).
   - File downloads and bookmarking.
   - Resource file uploading and editing.
   - Document details and preview modals.
@@ -45,7 +45,7 @@ This document defines the strict domain ownership boundaries, responsibilities, 
 ---
 
 ## 4. Dashboard Orchestrator
-- **Role**: High-level Aggregator and Navigator (`/dashboard`).
+- **Role**: High-level Aggregator and Navigator (`/`).
 - **Responsibilities**:
   - Aggregates status summaries across User Overview, Academic Summary, Notifications, Planner, Campus Activity, and Atlas Quick Actions.
   - Previews key metrics and recent activities.
@@ -99,9 +99,9 @@ This document defines the strict domain ownership boundaries, responsibilities, 
 
 ---
 
-## 9. Cross-Module Communication Standards
-- **No Duplicated CRUD**: Entities belong strictly to their owning domain.
-- **Communication Channels**:
-  1. **Deep Links**: Standardized URL routing (`/calendar?date=...`, `/resources?category=...`, `/communities/:id`).
-  2. **Domain SDKs**: Decoupled TypeScript client SDKs in `src/sdk/`.
-  3. **React Query Hooks**: Unified cache keys and server state synchronization (`src/sdk/queryKeys.ts`).
+## 9. Repository Quality Standards & Conventions
+- **SDK-Only API Communication**: All feature components consume backend services via SDK classes (`src/sdk/`) and React Query hooks (`src/hooks/`). Direct `fetch()` calls outside infrastructure layers are forbidden.
+- **Strict Typing**: All models, DTOs, mappers, and props are strongly typed using TypeScript interfaces.
+- **Zero Orphaned / Unused Files**: All routes are registered, and obsolete prototype files or unused components are purged.
+- **UI State Hygiene**: Every feature module provides loading skeletons, error boundaries with retry mechanisms, empty states, and toast notifications.
+
