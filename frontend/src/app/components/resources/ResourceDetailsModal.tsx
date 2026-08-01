@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Resource } from '../../../models/resource.model';
-import { ResourcePreview } from './ResourcePreview';
 import { X, Download, Bookmark, BookmarkCheck, Calendar, User, FileText, Tag, Hash, Eye } from 'lucide-react';
+
+const ResourcePreview = lazy(() =>
+  import('./ResourcePreview').then((m) => ({ default: m.ResourcePreview }))
+);
 
 interface ResourceDetailsModalProps {
   resource: Resource | null;
@@ -75,7 +78,9 @@ export function ResourceDetailsModal({
               <Eye className="w-4 h-4 text-blue-600" />
               Document Preview
             </h3>
-            <ResourcePreview resource={resource} onDownload={() => onDownload(resource)} />
+            <Suspense fallback={<div className="h-48 bg-gray-50 animate-pulse rounded-xl flex items-center justify-center text-sm text-gray-400">Loading Preview...</div>}>
+              <ResourcePreview resource={resource} onDownload={() => onDownload(resource)} />
+            </Suspense>
           </div>
 
           {/* Description */}

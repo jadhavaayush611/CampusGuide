@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router";
 
 import { Header } from "../components/Header";
 import { CommunityDiscovery } from "../components/communities/CommunityDiscovery";
 import { CommunityActivityPanel } from "../components/communities/CommunityActivityPanel";
-import { CommunityCreateModal } from "../components/communities/CommunityCreateModal";
 import { Community } from "../../models/community.model";
 import { ErrorBoundary } from "../../core/errors/ErrorBoundary";
+
+const CommunityCreateModal = lazy(() =>
+  import("../components/communities/CommunityCreateModal").then((m) => ({ default: m.CommunityCreateModal }))
+);
 
 export function Communities() {
   const navigate = useNavigate();
@@ -56,10 +59,12 @@ export function Communities() {
       </main>
 
       {/* Community Creation Modal */}
-      <CommunityCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <CommunityCreateModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+        />
+      </Suspense>
     </div>
   );
 }

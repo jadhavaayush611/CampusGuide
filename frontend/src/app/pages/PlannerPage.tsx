@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Header } from '../components/Header';
 import { PlannerHeader } from '../components/planner/PlannerHeader';
 import { PlannerTabs, PlannerTab } from '../components/planner/PlannerTabs';
 import { TaskFilters } from '../components/planner/TaskFilters';
 import { TaskCard } from '../components/planner/TaskCard';
-import { TaskFormModal } from '../components/planner/TaskFormModal';
-import { TaskDetailsModal } from '../components/planner/TaskDetailsModal';
 import { StudyGoalCard } from '../components/planner/StudyGoalCard';
-import { StudyGoalModal } from '../components/planner/StudyGoalModal';
 import { DeadlinesView } from '../components/planner/DeadlinesView';
 import { AcademicSummaryTab } from '../components/planner/AcademicSummaryTab';
 import { TaskSkeleton, TaskEmptyState } from '../components/planner/TaskSkeleton';
 import { PlannerErrorBoundary } from '../components/planner/PlannerErrorBoundary';
+
+const TaskFormModal = lazy(() =>
+  import('../components/planner/TaskFormModal').then((m) => ({ default: m.TaskFormModal }))
+);
+const TaskDetailsModal = lazy(() =>
+  import('../components/planner/TaskDetailsModal').then((m) => ({ default: m.TaskDetailsModal }))
+);
+const StudyGoalModal = lazy(() =>
+  import('../components/planner/StudyGoalModal').then((m) => ({ default: m.StudyGoalModal }))
+);
 
 import {
   useTasks,
@@ -367,76 +374,76 @@ export function PlannerPage() {
         </div>
       </main>
 
-      {/* Task Creation & Edit Form Modal */}
-      <TaskFormModal
-        isOpen={isTaskFormOpen}
-        onClose={() => setIsTaskFormOpen(false)}
-        taskToEdit={taskToEdit}
-        onSubmitCreate={(payload) => {
-          createTaskMutation.mutate(payload, {
-            onSuccess: () => {
-              toast.success('New task created successfully!');
-            },
-            onError: (err) => {
-              toast.error(`Error creating task: ${err.message}`);
-            },
-          });
-        }}
-        onSubmitUpdate={(id, payload) => {
-          updateTaskMutation.mutate(
-            { id, payload },
-            {
+      {/* Modals */}
+      <Suspense fallback={null}>
+        <TaskFormModal
+          isOpen={isTaskFormOpen}
+          onClose={() => setIsTaskFormOpen(false)}
+          taskToEdit={taskToEdit}
+          onSubmitCreate={(payload) => {
+            createTaskMutation.mutate(payload, {
               onSuccess: () => {
-                toast.success('Task updated.');
+                toast.success('New task created successfully!');
               },
               onError: (err) => {
-                toast.error(`Error updating task: ${err.message}`);
+                toast.error(`Error creating task: ${err.message}`);
               },
-            }
-          );
-        }}
-        isSubmitting={createTaskMutation.isPending || updateTaskMutation.isPending}
-      />
+            });
+          }}
+          onSubmitUpdate={(id, payload) => {
+            updateTaskMutation.mutate(
+              { id, payload },
+              {
+                onSuccess: () => {
+                  toast.success('Task updated.');
+                },
+                onError: (err) => {
+                  toast.error(`Error updating task: ${err.message}`);
+                },
+              }
+            );
+          }}
+          isSubmitting={createTaskMutation.isPending || updateTaskMutation.isPending}
+        />
 
-      {/* Task Details Modal */}
-      <TaskDetailsModal
-        isOpen={!!selectedTask}
-        task={selectedTask}
-        onClose={() => setSelectedTask(null)}
-        onEdit={(task) => {
-          handleOpenEditTask(task);
-        }}
-        onMarkComplete={handleMarkTaskComplete}
-        onUpdateProgress={handleUpdateTaskProgress}
-        onArchive={handleArchiveTask}
-        onRestore={handleRestoreTask}
-        onDelete={handleDeleteTask}
-      />
+        <TaskDetailsModal
+          isOpen={!!selectedTask}
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onEdit={(task) => {
+            handleOpenEditTask(task);
+          }}
+          onMarkComplete={handleMarkTaskComplete}
+          onUpdateProgress={handleUpdateTaskProgress}
+          onArchive={handleArchiveTask}
+          onRestore={handleRestoreTask}
+          onDelete={handleDeleteTask}
+        />
 
-      {/* Study Goal Modal */}
-      <StudyGoalModal
-        isOpen={isGoalModalOpen}
-        onClose={() => setIsGoalModalOpen(false)}
-        goalToEdit={selectedGoalToEdit}
-        onSubmitCreate={(payload) => {
-          createGoalMutation.mutate(payload, {
-            onSuccess: () => {
-              toast.success('Study goal created!');
-            },
-          });
-        }}
-        onSubmitUpdate={(id, payload) => {
-          updateGoalMutation.mutate(
-            { id, payload },
-            {
+        <StudyGoalModal
+          isOpen={isGoalModalOpen}
+          onClose={() => setIsGoalModalOpen(false)}
+          goalToEdit={selectedGoalToEdit}
+          onSubmitCreate={(payload) => {
+            createGoalMutation.mutate(payload, {
               onSuccess: () => {
-                toast.success('Study goal updated.');
+                toast.success('Study goal created!');
               },
-            }
-          );
-        }}
-        isSubmitting={createGoalMutation.isPending || updateGoalMutation.isPending}
-      />
+            });
+          }}
+          onSubmitUpdate={(id, payload) => {
+            updateGoalMutation.mutate(
+              { id, payload },
+              {
+                onSuccess: () => {
+                  toast.success('Study goal updated.');
+                },
+              }
+            );
+          }}
+          isSubmitting={createGoalMutation.isPending || updateGoalMutation.isPending}
+        />
+      </Suspense>
     </div>
   );
 }

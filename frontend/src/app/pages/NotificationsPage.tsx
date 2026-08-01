@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
   NotificationCategory,
   NotificationPriority,
@@ -19,10 +19,13 @@ import { NotificationHeader } from '../components/notifications/NotificationHead
 import { NotificationStatsWidget } from '../components/notifications/NotificationStatsWidget';
 import { NotificationCategoryTabs } from '../components/notifications/NotificationCategoryTabs';
 import { NotificationItemCard } from '../components/notifications/NotificationItemCard';
-import { NotificationDetailModal } from '../components/notifications/NotificationDetailModal';
 import { NotificationSkeleton } from '../components/notifications/NotificationSkeleton';
 import { NotificationEmptyState } from '../components/notifications/NotificationEmptyState';
 import { NotificationErrorBoundary } from '../components/notifications/NotificationErrorBoundary';
+
+const NotificationDetailModal = lazy(() =>
+  import('../components/notifications/NotificationDetailModal').then((m) => ({ default: m.NotificationDetailModal }))
+);
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PAGE_SIZE = 8;
@@ -212,13 +215,15 @@ export function NotificationsPage() {
       </NotificationErrorBoundary>
 
       {/* Item Detail Modal */}
-      <NotificationDetailModal
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-        onToggleRead={handleToggleRead}
-        onToggleArchive={handleToggleArchive}
-        onDelete={handleDelete}
-      />
+      <Suspense fallback={null}>
+        <NotificationDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+          onToggleRead={handleToggleRead}
+          onToggleArchive={handleToggleArchive}
+          onDelete={handleDelete}
+        />
+      </Suspense>
     </div>
   );
 }

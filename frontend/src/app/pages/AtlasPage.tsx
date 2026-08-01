@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   AlertTriangle,
@@ -16,13 +16,17 @@ import {
   ToolExecutionPanel,
   MessageBubble,
   MessageComposer,
-  AtlasCapabilitiesModal,
   AtlasErrorBoundary,
 } from '../components/atlas';
 import { useAtlasConversations } from '../../hooks/atlas/useAtlasConversations';
 import { useConversationHistory } from '../../hooks/atlas/useConversationHistory';
 import { useAtlasStreamChat } from '../../hooks/atlas/useAtlasStreamChat';
 import { AtlasConversation, ConversationHistoryMessage } from '../../models/atlas.model';
+
+const AtlasCapabilitiesModal = lazy(() =>
+  import('../components/atlas/AtlasCapabilitiesModal').then((m) => ({ default: m.AtlasCapabilitiesModal }))
+);
+
 
 export function AtlasPage() {
   const [selectedConversation, setSelectedConversation] = useState<AtlasConversation | null>(null);
@@ -247,10 +251,12 @@ export function AtlasPage() {
       </aside>
 
       {/* Engine Capabilities Modal */}
-      <AtlasCapabilitiesModal
-        isOpen={isCapabilitiesOpen}
-        onClose={() => setIsCapabilitiesOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <AtlasCapabilitiesModal
+          isOpen={isCapabilitiesOpen}
+          onClose={() => setIsCapabilitiesOpen(false)}
+        />
+      </Suspense>
     </div>
   );
 }

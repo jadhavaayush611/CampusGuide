@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { Header } from '../components/Header';
 import {
   useResources,
@@ -16,10 +16,14 @@ import { Resource, CreateResourcePayload, UpdateResourcePayload } from '../../mo
 import { ResourceCard } from '../components/resources/ResourceCard';
 import { ResourceFilterBar } from '../components/resources/ResourceFilterBar';
 import { ResourceSkeleton } from '../components/resources/ResourceSkeleton';
-import { ResourcePreview } from '../components/resources/ResourcePreview';
-import { ResourceDetailsModal } from '../components/resources/ResourceDetailsModal';
-import { ResourceUploadModal } from '../components/resources/ResourceUploadModal';
 import { ResourceErrorBoundary } from '../components/resources/ResourceErrorBoundary';
+
+const ResourceDetailsModal = lazy(() =>
+  import('../components/resources/ResourceDetailsModal').then((m) => ({ default: m.ResourceDetailsModal }))
+);
+const ResourceUploadModal = lazy(() =>
+  import('../components/resources/ResourceUploadModal').then((m) => ({ default: m.ResourceUploadModal }))
+);
 import {
   BookOpen,
   FileText,
@@ -369,24 +373,26 @@ export function ResourceCenter() {
         </ResourceErrorBoundary>
 
         {/* Modals */}
-        <ResourceDetailsModal
-          resource={selectedResourceDetails}
-          isOpen={Boolean(selectedResourceDetails)}
-          onClose={() => setSelectedResourceDetails(null)}
-          onDownload={handleDownload}
-          onToggleBookmark={handleToggleBookmark}
-        />
+        <Suspense fallback={null}>
+          <ResourceDetailsModal
+            resource={selectedResourceDetails}
+            isOpen={Boolean(selectedResourceDetails)}
+            onClose={() => setSelectedResourceDetails(null)}
+            onDownload={handleDownload}
+            onToggleBookmark={handleToggleBookmark}
+          />
 
-        <ResourceUploadModal
-          isOpen={isUploadModalOpen}
-          onClose={() => {
-            setIsUploadModalOpen(false);
-            setEditingResource(null);
-          }}
-          onSubmit={handleCreateResource}
-          onUpdate={handleUpdateResource}
-          editingResource={editingResource}
-        />
+          <ResourceUploadModal
+            isOpen={isUploadModalOpen}
+            onClose={() => {
+              setIsUploadModalOpen(false);
+              setEditingResource(null);
+            }}
+            onSubmit={handleCreateResource}
+            onUpdate={handleUpdateResource}
+            editingResource={editingResource}
+          />
+        </Suspense>
       </main>
     </div>
   );

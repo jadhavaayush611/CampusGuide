@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Header } from '../components/Header';
 import { useNotices } from '../../hooks/notices/useNotices';
 import { useUnreadNoticesCount } from '../../hooks/notices/useUnreadNoticesCount';
 import { Notice, NoticeCategory, NoticePriority } from '../../models/notice.model';
 import { NoticeCard } from '../components/notices/NoticeCard';
 import { NoticeFilters, NoticeTab } from '../components/notices/NoticeFilters';
-import { NoticeDetailsModal } from '../components/notices/NoticeDetailsModal';
-import { NoticeFormModal } from '../components/notices/NoticeFormModal';
 import { NoticeSkeleton, NoticeEmptyState } from '../components/notices/NoticeSkeleton';
 import { NoticeErrorBoundary } from '../components/notices/NoticeErrorBoundary';
 import { Bell, Sparkles, Plus, AlertCircle, Pin } from 'lucide-react';
+
+const NoticeDetailsModal = lazy(() =>
+  import('../components/notices/NoticeDetailsModal').then((m) => ({ default: m.NoticeDetailsModal }))
+);
+const NoticeFormModal = lazy(() =>
+  import('../components/notices/NoticeFormModal').then((m) => ({ default: m.NoticeFormModal }))
+);
 
 export function NoticeBoard() {
   // Filter & Query States
@@ -191,19 +196,20 @@ export function NoticeBoard() {
         </div>
       </main>
 
-      {/* Notice Detail Modal */}
-      <NoticeDetailsModal
-        notice={selectedNotice}
-        onClose={() => setSelectedNotice(null)}
-        onEdit={handleOpenEdit}
-      />
+      {/* Notice Detail & Form Modals */}
+      <Suspense fallback={null}>
+        <NoticeDetailsModal
+          notice={selectedNotice}
+          onClose={() => setSelectedNotice(null)}
+          onEdit={handleOpenEdit}
+        />
 
-      {/* Notice Form Modal */}
-      <NoticeFormModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        noticeToEdit={noticeToEdit}
-      />
+        <NoticeFormModal
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          noticeToEdit={noticeToEdit}
+        />
+      </Suspense>
     </div>
   );
 }

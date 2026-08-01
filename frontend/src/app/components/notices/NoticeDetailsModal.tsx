@@ -1,9 +1,13 @@
+import { lazy, Suspense } from 'react';
 import { X, Calendar, User, Building, Pin, Eye, EyeOff, Shield, Tag, Edit2, Trash2, Clock } from 'lucide-react';
 import { Notice } from '../../../models/notice.model';
-import { NoticeAttachmentViewer } from './NoticeAttachmentViewer';
 import { useToggleNoticeRead } from '../../../hooks/notices/useToggleNoticeRead';
 import { usePinNotice } from '../../../hooks/notices/usePinNotice';
 import { useDeleteNotice } from '../../../hooks/notices/useDeleteNotice';
+
+const NoticeAttachmentViewer = lazy(() =>
+  import('./NoticeAttachmentViewer').then((m) => ({ default: m.NoticeAttachmentViewer }))
+);
 
 interface NoticeDetailsModalProps {
   notice: Notice | null;
@@ -162,7 +166,9 @@ export function NoticeDetailsModal({ notice, onClose, onEdit }: NoticeDetailsMod
 
           {/* Attachments Section */}
           {notice.attachments && notice.attachments.length > 0 && (
-            <NoticeAttachmentViewer attachments={notice.attachments} />
+            <Suspense fallback={<div className="h-24 bg-gray-50 animate-pulse rounded" />}>
+              <NoticeAttachmentViewer attachments={notice.attachments} />
+            </Suspense>
           )}
         </div>
 

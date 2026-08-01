@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Header } from '../components/Header';
 import { AcademicHeader } from '../components/academic/AcademicHeader';
 import { CourseCatalogSection } from '../components/academic/CourseCatalogSection';
@@ -6,8 +6,11 @@ import { TimetableSection } from '../components/academic/TimetableSection';
 import { DegreeProgressSection } from '../components/academic/DegreeProgressSection';
 import { AcademicCalendarSection } from '../components/academic/AcademicCalendarSection';
 import { AcademicResourcesSection } from '../components/academic/AcademicResourcesSection';
-import { CourseDetailsModal } from '../components/academic/CourseDetailsModal';
 import { AcademicSectionErrorBoundary } from '../components/academic/AcademicSectionErrorBoundary';
+
+const CourseDetailsModal = lazy(() =>
+  import('../components/academic/CourseDetailsModal').then((m) => ({ default: m.CourseDetailsModal }))
+);
 
 import { useCourses } from '../../hooks/planner/useCourses';
 import { useEnrolledCourses } from '../../hooks/planner/useEnrolledCourses';
@@ -150,10 +153,12 @@ export function Academic() {
       </main>
 
       {/* Course Detail Modal */}
-      <CourseDetailsModal
-        course={selectedCourse}
-        onClose={() => setSelectedCourse(null)}
-      />
+      <Suspense fallback={null}>
+        <CourseDetailsModal
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+        />
+      </Suspense>
     </div>
   );
 }

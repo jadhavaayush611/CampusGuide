@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { Header } from '../components/Header';
 import { CalendarHeader } from '../components/calendar/CalendarHeader';
@@ -7,10 +7,15 @@ import { MonthView } from '../components/calendar/MonthView';
 import { WeekView } from '../components/calendar/WeekView';
 import { DayView } from '../components/calendar/DayView';
 import { AgendaView } from '../components/calendar/AgendaView';
-import { EventDetailsModal } from '../components/calendar/EventDetailsModal';
-import { EventFormModal } from '../components/calendar/EventFormModal';
 import { CalendarSkeleton } from '../components/calendar/CalendarSkeleton';
 import { CalendarErrorBoundary } from '../components/calendar/CalendarErrorBoundary';
+
+const EventDetailsModal = lazy(() =>
+  import('../components/calendar/EventDetailsModal').then((m) => ({ default: m.EventDetailsModal }))
+);
+const EventFormModal = lazy(() =>
+  import('../components/calendar/EventFormModal').then((m) => ({ default: m.EventFormModal }))
+);
 
 import {
   useAggregatedCalendarEvents,
@@ -278,47 +283,48 @@ export function CalendarPage() {
         </div>
       </main>
 
-      {/* Event Details Modal */}
-      <EventDetailsModal
-        isOpen={isDetailsOpen}
-        event={selectedEvent}
-        onClose={() => setIsDetailsOpen(false)}
-        onEditPersonalEvent={handleEditPersonalEvent}
-        onDeletePersonalEvent={handleDeletePersonalEvent}
-      />
+      {/* Modals */}
+      <Suspense fallback={null}>
+        <EventDetailsModal
+          isOpen={isDetailsOpen}
+          event={selectedEvent}
+          onClose={() => setIsDetailsOpen(false)}
+          onEditPersonalEvent={handleEditPersonalEvent}
+          onDeletePersonalEvent={handleDeletePersonalEvent}
+        />
 
-      {/* Event Form Modal (Create / Edit Personal Event) */}
-      <EventFormModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        eventToEdit={eventToEdit}
-        presetDate={presetDate}
-        presetHour={presetHour}
-        onSubmitCreate={(payload) => {
-          createMutation.mutate(payload, {
-            onSuccess: () => {
-              toast.success('Personal event created!');
-            },
-            onError: (err) => {
-              toast.error(`Error creating event: ${err.message}`);
-            },
-          });
-        }}
-        onSubmitUpdate={(id, payload) => {
-          updateMutation.mutate(
-            { id, payload },
-            {
+        <EventFormModal
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          eventToEdit={eventToEdit}
+          presetDate={presetDate}
+          presetHour={presetHour}
+          onSubmitCreate={(payload) => {
+            createMutation.mutate(payload, {
               onSuccess: () => {
-                toast.success('Personal event updated!');
+                toast.success('Personal event created!');
               },
               onError: (err) => {
-                toast.error(`Error updating event: ${err.message}`);
+                toast.error(`Error creating event: ${err.message}`);
               },
-            }
-          );
-        }}
-        isSubmitting={createMutation.isPending || updateMutation.isPending}
-      />
+            });
+          }}
+          onSubmitUpdate={(id, payload) => {
+            updateMutation.mutate(
+              { id, payload },
+              {
+                onSuccess: () => {
+                  toast.success('Personal event updated!');
+                },
+                onError: (err) => {
+                  toast.error(`Error updating event: ${err.message}`);
+                },
+              }
+            );
+          }}
+          isSubmitting={createMutation.isPending || updateMutation.isPending}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { User, Sparkles, AlertCircle, RefreshCw } from 'lucide-react';
-import { MarkdownRenderer } from './MarkdownRenderer';
 import { CampusResultCard } from './CampusResultCard';
 import { ConversationHistoryMessage } from '../../../models/atlas.model';
+
+const MarkdownRenderer = lazy(() =>
+  import('./MarkdownRenderer').then((m) => ({ default: m.MarkdownRenderer }))
+);
 
 interface MessageBubbleProps {
   message: ConversationHistoryMessage;
@@ -42,7 +45,9 @@ export function MessageBubble({ message, isStreaming = false, onRetry }: Message
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
           ) : (
             <>
-              <MarkdownRenderer content={message.content} />
+              <Suspense fallback={<div className="h-6 w-3/4 bg-gray-100 animate-pulse rounded" />}>
+                <MarkdownRenderer content={message.content} />
+              </Suspense>
 
               {isStreaming && (
                 <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-blue-50 text-blue-700 font-semibold text-xs rounded-full border border-blue-200 animate-pulse">
