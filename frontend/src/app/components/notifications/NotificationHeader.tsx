@@ -61,10 +61,12 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            id="notification-search"
             placeholder="Search by title, message, or module..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            aria-label="Search notifications"
           />
         </div>
 
@@ -75,6 +77,7 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
             value={selectedPriority}
             onChange={(e) => onPriorityChange(e.target.value as any)}
             className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            aria-label="Filter notifications by priority"
           >
             <option value="ALL">All Priorities</option>
             <option value="URGENT">Urgent Priority</option>
@@ -89,6 +92,7 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
           value={selectedDeliveryStatus}
           onChange={(e) => onDeliveryStatusChange(e.target.value as any)}
           className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          aria-label="Filter notifications by delivery status"
         >
           <option value="ALL">All Delivery Statuses</option>
           <option value="DELIVERED">Delivered</option>
@@ -102,6 +106,7 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
             value={sortBy}
             onChange={(e) => onSortByChange(e.target.value as any)}
             className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            aria-label="Sort notifications by field"
           >
             <option value="createdAt">Sort by Date</option>
             <option value="priority">Sort by Priority</option>
@@ -111,6 +116,7 @@ export const NotificationHeader: React.FC<NotificationHeaderProps> = ({
             onClick={onToggleSortOrder}
             title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
             className="p-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-gray-600 transition-all"
+            aria-label={`Toggle sort order to ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
           </button>

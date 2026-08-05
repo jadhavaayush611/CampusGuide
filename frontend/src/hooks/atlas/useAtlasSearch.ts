@@ -1,4 +1,4 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+import { useQuery, keepPreviousData, UseQueryResult } from '@tanstack/react-query';
 import { atlasSdk } from '../../sdk/atlas/AtlasSdk';
 import { queryKeys } from '../../sdk/queryKeys';
 import { SpatialSearchResult } from '../../models/atlas.model';
@@ -23,5 +23,6 @@ export function useAtlasSearch({
     queryFn: () => atlasSdk.searchSpatial(query, category, userLat, userLng),
     enabled: enabled && query.trim().length > 0,
     staleTime: 1 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }

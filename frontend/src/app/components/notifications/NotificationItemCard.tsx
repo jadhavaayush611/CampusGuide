@@ -116,10 +116,23 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
     [onDelete, item.id]
   );
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target === e.currentTarget) {
+        e.preventDefault();
+        handleSelect();
+      }
+    }
+  }, [handleSelect]);
+
   return (
     <div
       onClick={handleSelect}
-      className={`group relative p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`Notification: ${item.title}, Category: ${item.category}, Priority: ${item.priority}. Message: ${item.message}`}
+      className={`group relative p-5 rounded-2xl border transition-all duration-200 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
         !item.isRead
           ? 'bg-blue-50/30 border-blue-200/80 shadow-sm hover:bg-blue-50/60'
           : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
@@ -127,7 +140,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
     >
       <div className="flex items-start gap-4">
         {/* Category Icon */}
-        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 mt-0.5 ${categoryColorClass}`}>
+        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 mt-0.5 ${categoryColorClass}`} aria-hidden="true">
           <IconComponent className="w-5.5 h-5.5" />
         </div>
 
@@ -137,7 +150,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
             <div className="flex items-center gap-2 flex-wrap">
               {/* Unread indicator */}
               {!item.isRead && (
-                <span className="w-2.5 h-2.5 bg-blue-600 rounded-full flex-shrink-0 animate-pulse" title="Unread" />
+                <span className="w-2.5 h-2.5 bg-blue-600 rounded-full flex-shrink-0 animate-pulse" title="Unread" aria-label="Unread notification indicator" />
               )}
 
               {/* Title */}
@@ -155,20 +168,20 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
 
               {/* Priority Badge */}
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] border ${priorityInfo.class}`}>
-                <PriorityIcon className="w-3 h-3" />
+                <PriorityIcon className="w-3 h-3" aria-hidden="true" />
                 <span>{priorityInfo.label}</span>
               </span>
 
               {/* Delivery Status Badge (if not standard DELIVERED) */}
               {item.deliveryStatus === 'SCHEDULED' && (
                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
+                  <Clock className="w-3 h-3" aria-hidden="true" />
                   <span>Scheduled</span>
                 </span>
               )}
               {item.deliveryStatus === 'FAILED' && (
                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 flex items-center gap-1">
-                  <AlertOctagon className="w-3 h-3 text-red-600" />
+                  <AlertOctagon className="w-3 h-3 text-red-600" aria-hidden="true" />
                   <span>Delivery Failed</span>
                 </span>
               )}
@@ -197,15 +210,15 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
               {/* Deep Link Button */}
               {item.actionLink && (
                 <button
                   onClick={handleActionClick}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[11px] font-semibold transition-colors"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
                 >
                   <span>Open</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3" aria-hidden="true" />
                 </button>
               )}
 
@@ -214,25 +227,28 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = memo(fu
                 <button
                   onClick={handleToggleReadClick}
                   title={item.isRead ? 'Mark as Unread' : 'Mark as Read'}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
+                  aria-label={item.isRead ? 'Mark as Unread' : 'Mark as Read'}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
                 >
-                  {item.isRead ? <Circle className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5 text-blue-600" />}
+                  {item.isRead ? <Circle className="w-3.5 h-3.5" aria-hidden="true" /> : <CheckCircle className="w-3.5 h-3.5 text-blue-600" aria-hidden="true" />}
                 </button>
 
                 <button
                   onClick={handleToggleArchiveClick}
                   title={item.isArchived ? 'Restore' : 'Archive'}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors"
+                  aria-label={item.isArchived ? 'Restore' : 'Archive'}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-800 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
                 >
-                  {item.isArchived ? <RotateCcw className="w-3.5 h-3.5 text-purple-600" /> : <Archive className="w-3.5 h-3.5" />}
+                  {item.isArchived ? <RotateCcw className="w-3.5 h-3.5 text-purple-600" aria-hidden="true" /> : <Archive className="w-3.5 h-3.5" aria-hidden="true" />}
                 </button>
 
                 <button
                   onClick={handleDeleteClick}
                   title="Delete"
-                  className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors"
+                  aria-label="Delete notification"
+                  className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-600 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               </div>
             </div>

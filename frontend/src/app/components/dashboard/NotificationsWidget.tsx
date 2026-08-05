@@ -23,6 +23,16 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
     [navigate]
   );
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, link?: string) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleItemClick(link);
+      }
+    },
+    [handleItemClick]
+  );
+
   const displayedNotifications = useMemo(
     () => notifications.slice(0, 3),
     [notifications]
@@ -42,7 +52,7 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600 relative">
+          <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600 relative" aria-hidden="true">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-full text-[10px] font-extrabold flex items-center justify-center ring-2 ring-white">
@@ -58,10 +68,10 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
 
         <button
           onClick={handleNavigateAll}
-          className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline"
+          className="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 rounded-sm"
         >
           <span>View All</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>
 
@@ -70,7 +80,11 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
           <div
             key={item.id}
             onClick={() => handleItemClick(item.actionLink || item.linkUrl)}
-            className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
+            onKeyDown={(e) => handleKeyDown(e, item.actionLink || item.linkUrl)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Notification: ${item.title}. ${item.description}`}
+            className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
               !item.isRead
                 ? 'bg-blue-50/40 border-blue-200/80 hover:bg-blue-50/80'
                 : 'bg-gray-50/70 border-gray-200/70 hover:bg-gray-100/70'
@@ -84,6 +98,7 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
                   ? 'bg-purple-100 text-purple-700'
                   : 'bg-amber-100 text-amber-700'
               }`}
+              aria-hidden="true"
             >
               {item.type === 'reminder' ? (
                 <Clock className="w-4 h-4" />
@@ -98,7 +113,7 @@ export const NotificationsWidget: React.FC = memo(function NotificationsWidget()
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-bold text-gray-900 truncate">{item.title}</p>
                 {!item.isRead && (
-                  <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></span>
+                  <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" aria-label="Unread"></span>
                 )}
               </div>
               <p className="text-[11px] text-gray-600 mt-0.5 line-clamp-1">{item.description}</p>

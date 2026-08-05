@@ -70,25 +70,25 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
       case 'ENROLLED':
         return (
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
-            <BookOpen className="w-3 h-3" /> Enrolled
+            <BookOpen className="w-3 h-3" aria-hidden="true" /> Enrolled
           </span>
         );
       case 'IN_PROGRESS':
         return (
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-            <Clock className="w-3 h-3" /> In Progress
+            <Clock className="w-3 h-3" aria-hidden="true" /> In Progress
           </span>
         );
       case 'COMPLETED':
         return (
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Completed
+            <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Completed
           </span>
         );
       case 'PLANNED':
         return (
           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1">
-            <Sparkles className="w-3 h-3" /> Planned
+            <Sparkles className="w-3 h-3" aria-hidden="true" /> Planned
           </span>
         );
       default:
@@ -105,14 +105,14 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-blue-600" />
+            <BookOpen className="w-5 h-5 text-blue-600" aria-hidden="true" />
             Course Catalog & Enrolled Courses
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
             Search, filter by department or semester, and view course prerequisites & syllabi.
           </p>
         </div>
-        <div className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+        <div className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl self-start sm:self-auto" aria-live="polite">
           Showing {filteredCourses.length} of {courses.length} courses
         </div>
       </div>
@@ -120,14 +120,15 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
       {/* Filter Controls */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-gray-50/70 p-4 rounded-xl border border-gray-200/80">
         {/* Search Bar */}
-        <div className="relative sm:col-span-2">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div role="search" aria-label="Course Catalog Search" className="relative sm:col-span-2">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search code, title, instructor..."
+            aria-label="Search code, title, or instructor"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
           />
         </div>
 
@@ -215,7 +216,16 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
             <div
               key={course.id}
               onClick={() => onSelectCourse(course)}
-              className="bg-white border border-gray-200/90 hover:border-blue-300 hover:shadow-md rounded-xl p-5 transition-all cursor-pointer flex flex-col justify-between group"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectCourse(course);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Course: ${course.code} - ${course.title}. ${course.credits} credits. Status: ${course.status || 'Available'}`}
+              className="bg-white border border-gray-200/90 hover:border-blue-300 hover:shadow-md rounded-xl p-5 transition-all cursor-pointer flex flex-col justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2.5">
@@ -236,7 +246,7 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
                 <div className="space-y-1.5 mt-4 text-[11px] text-gray-500 pt-3 border-t border-gray-100">
                   {course.instructor && (
                     <div className="flex items-center gap-1.5 text-gray-700 font-medium">
-                      <User className="w-3.5 h-3.5 text-gray-400" />
+                      <User className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
                       <span>{course.instructor}</span>
                     </div>
                   )}
@@ -260,7 +270,7 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
 
               <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-blue-600 font-medium group-hover:underline">
                 <span>View Syllabus & Details</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
               </div>
             </div>
           ))}

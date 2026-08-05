@@ -41,9 +41,35 @@ export const NotificationCategoryTabs: React.FC<NotificationCategoryTabsProps> =
   onSelectCategory,
   categoryCounts,
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex = index;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (index + 1) % CATEGORIES.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + CATEGORIES.length) % CATEGORIES.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = CATEGORIES.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    const parent = e.currentTarget.parentElement;
+    if (parent) {
+      const children = Array.from(parent.children) as HTMLButtonElement[];
+      children[nextIndex]?.focus();
+      onSelectCategory(CATEGORIES[nextIndex].id);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-      {CATEGORIES.map((cat) => {
+    <div
+      role="tablist"
+      aria-label="Notification Categories"
+      className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none"
+    >
+      {CATEGORIES.map((cat, idx) => {
         const Icon = cat.icon;
         const isSelected = selectedCategory === cat.id;
         const count = categoryCounts ? categoryCounts[cat.id] ?? 0 : undefined;
@@ -51,14 +77,19 @@ export const NotificationCategoryTabs: React.FC<NotificationCategoryTabsProps> =
         return (
           <button
             key={cat.id}
+            role="tab"
+            aria-selected={isSelected}
+            tabIndex={isSelected ? 0 : -1}
+            id={`tab-${cat.id}`}
             onClick={() => onSelectCategory(cat.id)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 border ${
+            onKeyDown={(e) => handleKeyDown(e, idx)}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 border focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
               isSelected
                 ? 'bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-200'
                 : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
             }`}
           >
-            <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+            <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-gray-500'}`} aria-hidden="true" />
             <span>{cat.label}</span>
             {count !== undefined && count > 0 && (
               <span

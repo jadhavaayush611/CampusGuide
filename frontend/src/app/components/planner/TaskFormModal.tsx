@@ -154,10 +154,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-5 pt-2">
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="task-title" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Task Title <span className="text-red-500">*</span>
             </label>
             <input
+              id="task-title"
               type="text"
               required
               value={title}
@@ -169,10 +170,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="task-description" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Description
             </label>
             <textarea
+              id="task-description"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -185,10 +187,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Category */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="task-category" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Category
               </label>
               <select
+                id="task-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as TaskCategory)}
                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -203,10 +206,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* Priority */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="task-priority" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Priority
               </label>
               <select
+                id="task-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -221,10 +225,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             {/* Status */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="task-status" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Status
               </label>
               <select
+                id="task-status"
                 value={status}
                 onChange={(e) => {
                   const newStatus = e.target.value as TaskStatus;
@@ -245,11 +250,12 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
           {/* Due Date & Progress Slider */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="task-due-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Due Date
               </label>
               <div className="relative">
                 <input
+                  id="task-due-date"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
@@ -260,10 +266,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold text-gray-700 uppercase tracking-wider">
-                <span>Completion Progress</span>
+                <label htmlFor="task-progress" className="cursor-pointer">Completion Progress</label>
                 <span className="text-blue-600 font-bold">{progress}%</span>
               </div>
               <input
+                id="task-progress"
                 type="range"
                 min="0"
                 max="100"
@@ -282,10 +289,11 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
           {/* Tags */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="task-tags" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Tags (Comma separated)
             </label>
             <input
+              id="task-tags"
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
@@ -296,9 +304,9 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 
           {/* Attachments Section */}
           <div className="space-y-2 pt-2 border-t border-gray-100">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Attachments (Optional)
-            </label>
+            </span>
 
             {attachments.length > 0 && (
               <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
@@ -313,6 +321,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
                       type="button"
                       onClick={() => handleRemoveAttachment(index)}
                       className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label={`Remove attachment ${att.name}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -328,6 +337,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 value={newAttName}
                 onChange={(e) => setNewAttName(e.target.value)}
                 className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs"
+                aria-label="Attachment Title"
               />
               <input
                 type="url"
@@ -335,6 +345,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 value={newAttUrl}
                 onChange={(e) => setNewAttUrl(e.target.value)}
                 className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs"
+                aria-label="Attachment URL"
               />
               <button
                 type="button"
@@ -358,6 +369,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
+              aria-busy={isSubmitting}
               className="px-6 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md hover:shadow-blue-200 disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : taskToEdit ? 'Save Changes' : 'Create Task'}

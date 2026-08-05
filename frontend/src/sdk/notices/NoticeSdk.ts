@@ -14,20 +14,30 @@ const READ_NOTICES_STORAGE_KEY = 'campusguide_read_notices';
 export class NoticeSdk extends BaseSdk {
   private readonly baseUrl = '/api/v1/notices';
 
+  private cachedReadNoticeIds: Set<string> | null = null;
+
   // --- Local Storage Read Persistence Helper ---
 
   public getReadNoticeIds(): Set<string> {
+    if (this.cachedReadNoticeIds) {
+      return this.cachedReadNoticeIds;
+    }
     try {
       const stored = localStorage.getItem(READ_NOTICES_STORAGE_KEY);
-      if (!stored) return new Set();
+      if (!stored) {
+        this.cachedReadNoticeIds = new Set();
+        return this.cachedReadNoticeIds;
+      }
       const parsed = JSON.parse(stored);
-      return new Set(Array.isArray(parsed) ? parsed : []);
+      this.cachedReadNoticeIds = new Set(Array.isArray(parsed) ? parsed : []);
     } catch {
-      return new Set();
+      this.cachedReadNoticeIds = new Set();
     }
+    return this.cachedReadNoticeIds;
   }
 
   public saveReadNoticeIds(ids: Set<string>): void {
+    this.cachedReadNoticeIds = ids;
     try {
       localStorage.setItem(READ_NOTICES_STORAGE_KEY, JSON.stringify(Array.from(ids)));
     } catch {

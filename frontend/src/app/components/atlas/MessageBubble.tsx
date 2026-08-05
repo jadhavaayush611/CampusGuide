@@ -19,7 +19,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming 
   return (
     <div className={`flex gap-3 my-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2563EB] to-indigo-600 flex items-center justify-center text-white flex-shrink-0 shadow-sm">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2563EB] to-indigo-600 flex items-center justify-center text-white flex-shrink-0 shadow-sm" aria-hidden="true">
           <Sparkles className="w-4.5 h-4.5" />
         </div>
       )}
@@ -35,6 +35,8 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming 
         </div>
 
         <div
+          aria-live={(!isUser && !isStreaming) ? "polite" : "off"}
+          aria-atomic="false"
           className={`p-4 rounded-2xl ${
             isUser
               ? 'bg-[#2563EB] text-white rounded-tr-xs shadow-sm'
@@ -50,8 +52,8 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming 
               </Suspense>
 
               {isStreaming && (
-                <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-blue-50 text-blue-700 font-semibold text-xs rounded-full border border-blue-200 animate-pulse">
-                  <Sparkles className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 bg-blue-50 text-blue-700 font-semibold text-xs rounded-full border border-blue-200 animate-pulse" aria-live="polite">
+                  <Sparkles className="w-3.5 h-3.5 animate-spin text-blue-600" aria-hidden="true" />
                   <span>Streaming Atlas output...</span>
                 </div>
               )}
@@ -68,7 +70,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isStreaming 
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-xl bg-gray-200 flex items-center justify-center text-gray-600 flex-shrink-0 order-2">
+        <div className="w-8 h-8 rounded-xl bg-gray-200 flex items-center justify-center text-gray-600 flex-shrink-0 order-2" aria-hidden="true">
           <User className="w-4.5 h-4.5" />
         </div>
       )}

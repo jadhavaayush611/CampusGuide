@@ -355,21 +355,28 @@ const INITIAL_FALLBACK_GOALS: StudyGoalDto[] = [
   },
 ];
 
+let cachedGoals: StudyGoalDto[] | null = null;
+
 function getStoredGoals(): StudyGoalDto[] {
+  if (cachedGoals) return cachedGoals;
   if (typeof window === 'undefined') return INITIAL_FALLBACK_GOALS;
   try {
     const raw = localStorage.getItem(GOALS_STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(INITIAL_FALLBACK_GOALS));
+      cachedGoals = INITIAL_FALLBACK_GOALS;
       return INITIAL_FALLBACK_GOALS;
     }
-    return JSON.parse(raw);
+    cachedGoals = JSON.parse(raw);
+    return cachedGoals || INITIAL_FALLBACK_GOALS;
   } catch {
+    cachedGoals = INITIAL_FALLBACK_GOALS;
     return INITIAL_FALLBACK_GOALS;
   }
 }
 
 function saveStoredGoals(goals: StudyGoalDto[]): void {
+  cachedGoals = goals;
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));

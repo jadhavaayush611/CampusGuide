@@ -115,22 +115,36 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
     onDelete(task.id);
   }, [onDelete, task.id]);
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target === e.currentTarget) {
+        e.preventDefault();
+        handleCardClick();
+      }
+    }
+  }, [handleCardClick]);
+
   if (viewMode === 'list') {
     return (
       <div
         onClick={handleCardClick}
-        className={`group p-4 bg-white hover:bg-gray-50/80 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-4 shadow-xs hover:shadow-md ${
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`Task: ${task.title}, Category: ${task.category.replace('_', ' ')}, Priority: ${task.priority}, Progress: ${task.progress}%${task.dueDate ? `, Due: ${task.dueDate.split('T')[0]}` : ''}`}
+        className={`group p-4 bg-white hover:bg-gray-50/80 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col sm:flex-row sm:items-center gap-4 shadow-xs hover:shadow-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
           task.isCompleted ? 'border-gray-200 opacity-75' : isOverdue ? 'border-red-300 bg-red-50/20' : 'border-gray-100'
         }`}
       >
         {/* Quick Complete Checkbox */}
         <button
           onClick={handleCheckboxClick}
-          className="p-1 text-gray-400 hover:text-blue-600 transition-colors self-start sm:self-center"
+          className="p-1 text-gray-400 hover:text-blue-600 transition-colors self-start sm:self-center focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 rounded-full"
           title={task.isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
+          aria-label={task.isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
         >
           {task.isCompleted ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50" aria-hidden="true" />
           ) : (
             <div className="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-500 transition-colors" />
           )}
@@ -147,12 +161,12 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
             </span>
             {isOverdue && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
-                <AlertCircle className="w-3 h-3" /> Overdue
+                <AlertCircle className="w-3 h-3" aria-hidden="true" /> Overdue
               </span>
             )}
             {isDueToday && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                <Clock className="w-3 h-3" /> Due Today
+                <Clock className="w-3 h-3" aria-hidden="true" /> Due Today
               </span>
             )}
           </div>
@@ -182,7 +196,7 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
 
           {task.dueDate && (
             <div className="flex items-center gap-1 min-w-[100px]">
-              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
               <span>{task.dueDate.split('T')[0]}</span>
             </div>
           )}
@@ -191,30 +205,34 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
           <div onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
-                  <MoreVertical className="w-4 h-4" />
+                <button
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
+                  aria-label="More actions"
+                  title="More actions"
+                >
+                  <MoreVertical className="w-4 h-4" aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={handleEdit}>
-                  <Edit className="w-4 h-4 mr-2" /> Edit Task
+                  <Edit className="w-4 h-4 mr-2" aria-hidden="true" /> Edit Task
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleToggleComplete}>
-                  <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
+                  <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" aria-hidden="true" />
                   {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {task.isArchived ? (
                   <DropdownMenuItem onClick={handleRestore}>
-                    <RotateCcw className="w-4 h-4 mr-2 text-blue-500" /> Restore Task
+                    <RotateCcw className="w-4 h-4 mr-2 text-blue-500" aria-hidden="true" /> Restore Task
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem onClick={handleArchive}>
-                    <Archive className="w-4 h-4 mr-2 text-amber-500" /> Archive Task
+                    <Archive className="w-4 h-4 mr-2 text-amber-500" aria-hidden="true" /> Archive Task
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                  <Trash2 className="w-4 h-4 mr-2" /> Delete Task
+                  <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" /> Delete Task
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -227,7 +245,11 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group relative p-5 bg-white hover:bg-gray-50/50 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md ${
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`Task: ${task.title}, Category: ${task.category.replace('_', ' ')}, Priority: ${task.priority}, Progress: ${task.progress}%${task.dueDate ? `, Due: ${task.dueDate.split('T')[0]}` : ''}`}
+      className={`group relative p-5 bg-white hover:bg-gray-50/50 rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
         task.isCompleted ? 'border-gray-200 opacity-80' : isOverdue ? 'border-red-300 bg-red-50/10' : 'border-gray-100'
       }`}
     >
@@ -242,7 +264,7 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
           </span>
           {isOverdue && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
-              <AlertCircle className="w-3 h-3" /> Overdue
+              <AlertCircle className="w-3 h-3" aria-hidden="true" /> Overdue
             </span>
           )}
         </div>
@@ -250,30 +272,34 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
         <div onClick={(e) => e.stopPropagation()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
-                <MoreVertical className="w-4 h-4" />
+              <button
+                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
+                aria-label="More options"
+                title="More options"
+              >
+                <MoreVertical className="w-4 h-4" aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="w-4 h-4 mr-2" /> Edit Task
+                <Edit className="w-4 h-4 mr-2" aria-hidden="true" /> Edit Task
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleToggleComplete}>
-                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" aria-hidden="true" />
                 {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {task.isArchived ? (
                 <DropdownMenuItem onClick={handleRestore}>
-                  <RotateCcw className="w-4 h-4 mr-2 text-blue-500" /> Restore Task
+                  <RotateCcw className="w-4 h-4 mr-2 text-blue-500" aria-hidden="true" /> Restore Task
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem onClick={handleArchive}>
-                  <Archive className="w-4 h-4 mr-2 text-amber-500" /> Archive Task
+                  <Archive className="w-4 h-4 mr-2 text-amber-500" aria-hidden="true" /> Archive Task
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                <Trash2 className="w-4 h-4 mr-2" /> Delete Task
+                <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" /> Delete Task
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -285,11 +311,12 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
         <div className="flex items-start gap-2.5">
           <button
             onClick={handleCheckboxClick}
-            className="mt-0.5 text-gray-400 hover:text-blue-600 transition-colors shrink-0"
+            className="mt-0.5 text-gray-400 hover:text-blue-600 transition-colors shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 rounded-full"
             title={task.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
+            aria-label={task.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
           >
             {task.isCompleted ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-50" aria-hidden="true" />
             ) : (
               <div className="w-5 h-5 rounded-full border-2 border-gray-300 group-hover:border-blue-500 transition-colors" />
             )}
@@ -311,13 +338,13 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
         <div className="flex flex-wrap items-center gap-2 pt-1 pl-7">
           {task.tags.map((tag) => (
             <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[10px] font-medium">
-              <Tag className="w-2.5 h-2.5 text-gray-400" />
+              <Tag className="w-2.5 h-2.5 text-gray-400" aria-hidden="true" />
               {tag}
             </span>
           ))}
           {task.attachments && task.attachments.length > 0 && (
             <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 font-medium">
-              <Paperclip className="w-3 h-3 text-gray-400" />
+              <Paperclip className="w-3 h-3 text-gray-400" aria-hidden="true" />
               {task.attachments.length} {task.attachments.length === 1 ? 'file' : 'files'}
             </span>
           )}
@@ -328,23 +355,25 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
       <div className="space-y-1.5 pt-2 border-t border-gray-100">
         <div className="flex items-center justify-between text-xs">
           <span className="font-medium text-gray-500">Progress</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={(e) => handleStepProgress(e, -10)}
               disabled={task.progress <= 0}
-              className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded"
+              className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
               title="Decrease Progress"
+              aria-label="Decrease Progress"
             >
-              <Minus className="w-3 h-3" />
+              <Minus className="w-3 h-3" aria-hidden="true" />
             </button>
             <span className="font-bold text-gray-800 w-8 text-right">{task.progress}%</span>
             <button
               onClick={(e) => handleStepProgress(e, 10)}
               disabled={task.progress >= 100}
-              className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded"
+              className="p-0.5 text-gray-400 hover:text-gray-700 disabled:opacity-30 rounded focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
               title="Increase Progress"
+              aria-label="Increase Progress"
             >
-              <Plus className="w-3 h-3" />
+              <Plus className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -362,7 +391,7 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
       {task.dueDate && (
         <div className="flex items-center justify-between pt-2 text-xs text-gray-500">
           <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
-            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+            <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
             <span>Due {task.dueDate.split('T')[0]}</span>
           </div>
           {task.completedDate && (

@@ -84,10 +84,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="goal-title" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Goal Title <span className="text-red-500">*</span>
             </label>
             <input
+              id="goal-title"
               type="text"
               required
               value={title}
@@ -98,10 +99,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="goal-description" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Description
             </label>
             <textarea
+              id="goal-description"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -112,10 +114,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="goal-target-hours" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Target Hours <span className="text-red-500">*</span>
               </label>
               <input
+                id="goal-target-hours"
                 type="number"
                 min="1"
                 required
@@ -127,10 +130,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
 
             {goalToEdit && (
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label htmlFor="goal-completed-hours" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Completed Hours
                 </label>
                 <input
+                  id="goal-completed-hours"
                   type="number"
                   min="0"
                   max={targetHours}
@@ -144,10 +148,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="goal-category" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Category
               </label>
               <input
+                id="goal-category"
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -157,10 +162,11 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="goal-target-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Target Date
               </label>
               <input
+                id="goal-target-date"
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
@@ -180,6 +186,7 @@ export const StudyGoalModal: React.FC<StudyGoalModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
+              aria-busy={isSubmitting}
               className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all shadow-md hover:shadow-emerald-200 disabled:opacity-50"
             >
               {isSubmitting ? 'Saving...' : goalToEdit ? 'Save Changes' : 'Create Goal'}

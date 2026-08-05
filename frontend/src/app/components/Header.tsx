@@ -1,22 +1,29 @@
-import { useState, useCallback, memo } from "react";
+import { useCallback, memo } from "react";
 import { Bell, Clock, MessageSquare, Calendar, Settings, LogOut, User as UserIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../core/auth";
 import { useLogout } from "../../hooks/auth/useLogout";
 import { useNotifications } from "../../hooks/notifications/useNotifications";
 import { useUnreadNotificationCount } from "../../hooks/notifications/useUnreadNotificationCount";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "./ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export const Header = memo(function Header() {
-  const [notificationOpen, setNotificationOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const logoutMutation = useLogout();
   const { data: notifications = [] } = useNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
-
   const handleLogout = useCallback(() => {
-    setUserMenuOpen(false);
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         navigate("/login", { replace: true });
@@ -38,158 +45,131 @@ export const Header = memo(function Header() {
             Here's what's happening today
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <button
-              onClick={() => {
-                setNotificationOpen(!notificationOpen);
-                setUserMenuOpen(false);
-              }}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-150"
-              aria-label="Notifications"
+        <nav className="flex items-center gap-4" aria-label="Header actions">
+          <Popover modal>
+            <PopoverTrigger asChild>
+              <button
+                className="relative rounded-lg p-2 transition-all duration-150 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                aria-label={
+                  unreadCount > 0
+                    ? `Notifications, ${unreadCount} unread`
+                    : "Notifications"
+                }
+                type="button"
+              >
+                <Bell className="h-5 w-5 text-gray-700" />
+                {unreadCount > 0 && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {unreadCount}
+                    <span className="sr-only">unread notifications</span>
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-96 overflow-hidden border border-gray-200 bg-white p-0"
+              align="end"
+              sideOffset={8}
             >
-              <Bell className="w-5 h-5 text-gray-700" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notification Dropdown */}
-            {notificationOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setNotificationOpen(false)}
-                ></div>
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl border border-gray-200 shadow-lg z-20 overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900">Notifications</h3>
-                    <button
-                      onClick={() => {
-                        navigate("/profile");
-                        setNotificationOpen(false);
-                      }}
-                      className="p-1.5 hover:bg-gray-100 rounded-lg transition-all duration-150"
-                    >
-                      <Settings className="w-4 h-4 text-gray-600" />
-                    </button>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className="p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-all duration-150 cursor-pointer"
-                      >
+              <section aria-label="Recent notifications">
+                <div className="flex items-center justify-between border-b border-gray-200 p-4">
+                  <h3 className="font-semibold text-gray-900">Notifications</h3>
+                  <button
+                    onClick={() => navigate("/profile")}
+                    className="rounded-lg p-1.5 transition-all duration-150 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                    type="button"
+                    aria-label="Open profile settings"
+                  >
+                    <Settings className="h-4 w-4 text-gray-600" />
+                  </button>
+                </div>
+                <ul className="max-h-96 overflow-y-auto" aria-label="Notifications list">
+                  {notifications.map((notification) => (
+                    <li key={notification.id} className="border-b border-gray-100 last:border-0">
+                      <article className="p-4 transition-all duration-150 hover:bg-gray-50">
                         <div className="flex gap-3">
                           <div
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              notification.type === "reminder"
-                                ? "bg-blue-50"
-                                : "bg-purple-50"
-                            }`}
+                            className={`h-8 w-8 flex-shrink-0 rounded-lg ${
+                              notification.type === "reminder" ? "bg-blue-50" : "bg-purple-50"
+                            } flex items-center justify-center`}
+                            aria-hidden="true"
                           >
                             {notification.type === "reminder" ? (
-                              <Clock className="w-4 h-4 text-[#2563EB]" />
+                              <Clock className="h-4 w-4 text-[#2563EB]" />
                             ) : notification.type === "event" ? (
-                              <Calendar className="w-4 h-4 text-[#7C3AED]" />
+                              <Calendar className="h-4 w-4 text-[#7C3AED]" />
                             ) : (
-                              <MessageSquare className="w-4 h-4 text-[#7C3AED]" />
+                              <MessageSquare className="h-4 w-4 text-[#7C3AED]" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-medium text-gray-900">
-                                {notification.title}
-                              </p>
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></div>
+                              <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                              <span
+                                className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"
+                                aria-hidden="true"
+                              />
                             </div>
-                            <p className="text-sm text-gray-600 mt-0.5">
-                              {notification.description}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {notification.time}
-                            </p>
+                            <p className="mt-0.5 text-sm text-gray-600">{notification.description}</p>
+                            <p className="mt-1 text-xs text-gray-500">{notification.time}</p>
                             {notification.type === "reminder" && (
-                              <span className="inline-block mt-2 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                              <span className="mt-2 inline-block rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
                                 Reminder
                               </span>
                             )}
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-3 border-t border-gray-200 bg-gray-50">
-                    <button
-                      onClick={() => {
-                        navigate("/notifications");
-                        setNotificationOpen(false);
-                      }}
-                      className="text-sm font-semibold text-[#2563EB] hover:underline w-full text-center"
-                    >
-                      View All Notifications
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* User Profile Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setUserMenuOpen(!userMenuOpen);
-                setNotificationOpen(false);
-              }}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white font-semibold shadow-sm hover:opacity-95 transition-opacity"
-              aria-label="User menu"
-            >
-              {avatarInitial}
-            </button>
-
-            {userMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setUserMenuOpen(false)}
-                ></div>
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg z-20 py-2">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
-                      {displayName}
-                    </p>
-                    {user?.email && (
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                    )}
-                  </div>
-
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-gray-200 bg-gray-50 p-3">
                   <button
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      navigate("/profile");
-                    }}
-                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    onClick={() => navigate("/notifications")}
+                    className="w-full text-center text-sm font-semibold text-[#2563EB] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 rounded-md"
+                    type="button"
                   >
-                    <UserIcon className="w-4 h-4 text-gray-500" />
-                    <span>Your Profile</span>
-                  </button>
-
-                  <button
-                    onClick={handleLogout}
-                    disabled={logoutMutation.isPending}
-                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors border-t border-gray-100"
-                  >
-                    <LogOut className="w-4 h-4 text-red-500" />
-                    <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
+                    View All Notifications
                   </button>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+              </section>
+            </PopoverContent>
+          </Popover>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#2563EB] to-[#7C3AED] font-semibold text-white shadow-sm transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
+                aria-label={`User menu for ${displayName}`}
+                type="button"
+              >
+                {avatarInitial}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 border border-gray-200 bg-white p-2" align="end" sideOffset={8}>
+              <div className="border-b border-gray-100 px-2 py-2">
+                <p className="truncate text-sm font-semibold text-gray-900">{displayName}</p>
+                {user?.email && <p className="truncate text-xs text-gray-500">{user.email}</p>}
+              </div>
+              <DropdownMenuItem
+                onSelect={() => navigate("/profile")}
+                className="mt-1 cursor-pointer px-2.5 py-2.5 text-sm text-gray-700"
+              >
+                <UserIcon className="h-4 w-4 text-gray-500" />
+                <span>Your Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={handleLogout}
+                disabled={logoutMutation.isPending}
+                variant="destructive"
+                className="cursor-pointer px-2.5 py-2.5 text-sm"
+              >
+                <LogOut className="h-4 w-4 text-red-500" />
+                <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
       </div>
     </header>
   );

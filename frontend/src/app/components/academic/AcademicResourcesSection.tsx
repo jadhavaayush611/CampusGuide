@@ -149,7 +149,7 @@ export const AcademicResourcesSection: React.FC = () => {
               className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4 hover:border-blue-300 transition-colors"
             >
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
@@ -170,10 +170,11 @@ export const AcademicResourcesSection: React.FC = () => {
                   href={item.url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
                   title="Download / View Resource"
+                  aria-label={`Download or view resource: ${item.title || item.name}`}
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4" aria-hidden="true" />
                 </a>
               </div>
             </div>

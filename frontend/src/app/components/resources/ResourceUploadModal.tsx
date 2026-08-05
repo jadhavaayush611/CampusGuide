@@ -57,6 +57,17 @@ export function ResourceUploadModal({
     setErrorMessage('');
   }, [editingResource, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +117,7 @@ export function ResourceUploadModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
@@ -115,7 +126,7 @@ export function ResourceUploadModal({
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 id="resource-modal-title" className="text-xl font-bold text-gray-900">
                 {editingResource ? 'Edit Resource Details' : 'Upload Academic Resource'}
               </h2>
               <p className="text-xs text-gray-500">
@@ -128,6 +139,7 @@ export function ResourceUploadModal({
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 rounded-full transition-colors"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -136,7 +148,7 @@ export function ResourceUploadModal({
         {/* Body Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1">
           {errorMessage && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-sm">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-sm" role="alert">
               <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
               <span>{errorMessage}</span>
             </div>
@@ -144,10 +156,11 @@ export function ResourceUploadModal({
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label htmlFor="resource-title" className="block text-sm font-semibold text-gray-700 mb-1">
               Title <span className="text-red-500">*</span>
             </label>
             <input
+              id="resource-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -159,10 +172,11 @@ export function ResourceUploadModal({
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
+            <label htmlFor="resource-category" className="block text-sm font-semibold text-gray-700 mb-1">
               Category <span className="text-red-500">*</span>
             </label>
             <select
+              id="resource-category"
               value={category}
               onChange={(e) => setCategory(e.target.value as ResourceCategory)}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-sm bg-white"
@@ -177,8 +191,9 @@ export function ResourceUploadModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+            <label htmlFor="resource-description" className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
             <textarea
+              id="resource-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -189,8 +204,9 @@ export function ResourceUploadModal({
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Tags (Comma-separated)</label>
+            <label htmlFor="resource-tags" className="block text-sm font-semibold text-gray-700 mb-1">Tags (Comma-separated)</label>
             <input
+              id="resource-tags"
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
@@ -202,21 +218,21 @@ export function ResourceUploadModal({
           {/* File Picker / Upload zone (only if creating or replacing) */}
           {!editingResource && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <span className="block text-sm font-semibold text-gray-700 mb-1">
                 Upload File <span className="text-red-500">*</span>
-              </label>
-              <div className="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-2xl p-6 text-center transition-colors bg-gray-50/50">
+              </span>
+              <div className="border-2 border-dashed border-gray-300 hover:border-blue-500 rounded-2xl p-6 text-center transition-colors bg-gray-50/50 focus-within:ring-2 focus-within:ring-blue-600 focus-within:ring-offset-2">
                 <input
                   type="file"
                   id="resource-file-input"
-                  className="hidden"
+                  className="sr-only"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       setFile(e.target.files[0]);
                     }
                   }}
                 />
-                <label htmlFor="resource-file-input" className="cursor-pointer flex flex-col items-center">
+                <label htmlFor="resource-file-input" className="cursor-pointer flex flex-col items-center outline-none">
                   <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3">
                     <FileText className="w-6 h-6" />
                   </div>
@@ -240,8 +256,9 @@ export function ResourceUploadModal({
 
           {/* External URL Optional */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">External Resource URL (Optional)</label>
+            <label htmlFor="resource-url" className="block text-sm font-semibold text-gray-700 mb-1">External Resource URL (Optional)</label>
             <input
+              id="resource-url"
               type="url"
               value={externalUrl}
               onChange={(e) => setExternalUrl(e.target.value)}
@@ -265,6 +282,7 @@ export function ResourceUploadModal({
             type="submit"
             onClick={handleSubmit}
             disabled={isSubmitting}
+            aria-busy={isSubmitting}
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold text-sm rounded-xl hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50"
           >
             {isSubmitting ? (

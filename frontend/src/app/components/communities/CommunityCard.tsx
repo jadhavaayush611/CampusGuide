@@ -44,17 +44,32 @@ export const CommunityCard: React.FC<CommunityCardProps> = memo(function Communi
     [community.category]
   );
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target === e.currentTarget) {
+        e.preventDefault();
+        handleCardClick();
+      }
+    }
+  }, [handleCardClick]);
+
   return (
     <div
       onClick={handleCardClick}
-      className="group relative bg-white rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer hover:-translate-y-1"
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`Community: ${community.name}, Category: ${community.category}, ${community.memberCount} members. ${community.description}`}
+      className="group relative bg-white rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer hover:-translate-y-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
     >
       {/* Banner / Visual accent */}
       <div className="relative h-24 w-full bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
         {community.bannerUrl ? (
           <img
             src={community.bannerUrl}
-            alt={community.name}
+            alt=""
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -78,7 +93,9 @@ export const CommunityCard: React.FC<CommunityCardProps> = memo(function Communi
               {community.logoUrl ? (
                 <img
                   src={community.logoUrl}
-                  alt={community.name}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover rounded-lg"
                 />
               ) : (
@@ -94,12 +111,12 @@ export const CommunityCard: React.FC<CommunityCardProps> = memo(function Communi
               </h3>
               <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                 <span className="flex items-center gap-1 font-medium">
-                  <Users className="w-3.5 h-3.5 text-blue-500" />
+                  <Users className="w-3.5 h-3.5 text-blue-500" aria-hidden="true" />
                   {community.memberCount} members
                 </span>
                 {community.isTrending && (
                   <span className="flex items-center gap-1 text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
-                    <TrendingUp className="w-3 h-3" /> Trending
+                    <TrendingUp className="w-3 h-3" aria-hidden="true" /> Trending
                   </span>
                 )}
               </div>
@@ -136,22 +153,22 @@ export const CommunityCard: React.FC<CommunityCardProps> = memo(function Communi
           <button
             onClick={handleToggleJoin}
             disabled={isPending}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 ${
               isJoined
                 ? 'bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 border border-gray-200'
                 : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow'
             }`}
           >
             {isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
             ) : isJoined ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                <Check className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
                 Joined
               </>
             ) : (
               <>
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                 Join
               </>
             )}

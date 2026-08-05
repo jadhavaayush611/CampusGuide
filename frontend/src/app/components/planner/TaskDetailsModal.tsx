@@ -56,7 +56,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             </span>
             {isOverdue && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-red-100 text-red-700 font-bold rounded-full text-xs">
-                <AlertCircle className="w-3.5 h-3.5" /> Overdue
+                <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" /> Overdue
               </span>
             )}
           </div>
@@ -65,18 +65,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         {/* Title & Complete Toggle */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <h2 className={`text-2xl font-extrabold text-gray-900 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+            <DialogTitle className={`text-2xl font-extrabold text-gray-900 ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
               {task.title}
-            </h2>
+            </DialogTitle>
             <div className="flex items-center gap-4 text-xs text-gray-500">
               {task.dueDate && (
                 <div className="flex items-center gap-1.5 font-medium">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+                  <Calendar className="w-4 h-4 text-blue-600" aria-hidden="true" />
                   <span>Due: {task.dueDate.split('T')[0]}</span>
                 </div>
               )}
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4 text-gray-400" aria-hidden="true" />
                 <span>Created: {new Date(task.createdDate).toLocaleDateString()}</span>
               </div>
             </div>
@@ -84,13 +84,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
           <button
             onClick={() => onMarkComplete(task.id, !task.isCompleted)}
-            className={`px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center gap-2 shadow-xs shrink-0 ${
+            className={`px-4 py-2 rounded-xl font-semibold text-xs transition-all flex items-center gap-2 shadow-xs shrink-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
               task.isCompleted
                 ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
                 : 'bg-blue-50 text-[#2563EB] hover:bg-blue-100'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
             {task.isCompleted ? 'Completed' : 'Mark Complete'}
           </button>
         </div>
@@ -114,9 +114,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             min="0"
             max="100"
             step="5"
+            aria-label="Completion Progress"
             value={task.progress}
             onChange={(e) => onUpdateProgress(task.id, Number(e.target.value))}
-            className="w-full accent-blue-600 h-2.5 bg-gray-200 rounded-lg cursor-pointer"
+            className="w-full accent-blue-600 h-2.5 bg-gray-200 rounded-lg cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
           />
           <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden mt-1">
             <div
@@ -135,7 +136,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <div className="flex flex-wrap gap-2">
               {task.tags.map((tag) => (
                 <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold">
-                  <Tag className="w-3 h-3 text-gray-400" />
+                  <Tag className="w-3 h-3 text-gray-400" aria-hidden="true" />
                   {tag}
                 </span>
               ))}
@@ -151,7 +152,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               {task.attachments.map((att, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-200 text-xs">
                   <div className="flex items-center gap-2 truncate">
-                    <Paperclip className="w-4 h-4 text-blue-500 shrink-0" />
+                    <Paperclip className="w-4 h-4 text-blue-500 shrink-0" aria-hidden="true" />
                     <span className="font-bold text-gray-800 truncate">{att.name}</span>
                     <span className="text-gray-400">({att.size || '1 MB'})</span>
                   </div>
@@ -159,10 +160,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     href={att.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold transition-colors"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
                   >
                     <span>View File</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
                   </a>
                 </div>
               ))}
@@ -179,9 +180,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   onRestore(task.id);
                   onClose();
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
               >
-                <RotateCcw className="w-4 h-4" /> Restore
+                <RotateCcw className="w-4 h-4" aria-hidden="true" /> Restore
               </button>
             ) : (
               <button
@@ -189,9 +190,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   onArchive(task.id);
                   onClose();
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-1"
               >
-                <Archive className="w-4 h-4" /> Archive
+                <Archive className="w-4 h-4" aria-hidden="true" /> Archive
               </button>
             )}
             <button
@@ -199,9 +200,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 onDelete(task.id);
                 onClose();
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1"
             >
-              <Trash2 className="w-4 h-4" /> Delete
+              <Trash2 className="w-4 h-4" aria-hidden="true" /> Delete
             </button>
           </div>
 
@@ -211,13 +212,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 onEdit(task);
                 onClose();
               }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-1"
             >
-              <Edit className="w-4 h-4" /> Edit Task
+              <Edit className="w-4 h-4" aria-hidden="true" /> Edit Task
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-semibold transition-colors"
+              className="px-5 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-1"
             >
               Close
             </button>

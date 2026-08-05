@@ -80,6 +80,17 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
     }
   }, [noticeToEdit, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleTitleChange = (val: string) => {
     setTitle(val);
     if (!noticeToEdit) {
@@ -173,16 +184,16 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 z-10">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-50 text-[#2563EB] rounded-2xl flex items-center justify-center font-bold">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 id="notice-modal-title" className="text-xl font-bold text-gray-900">
                 {noticeToEdit ? 'Edit Notice' : 'Publish New Notice'}
               </h2>
               <p className="text-xs text-gray-500">
@@ -193,6 +204,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 rounded-xl transition-all"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -203,10 +215,11 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
           {/* Title & Slug */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="notice-title" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Notice Title <span className="text-red-500">*</span>
               </label>
               <input
+                id="notice-title"
                 type="text"
                 required
                 value={title}
@@ -217,10 +230,11 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label htmlFor="notice-slug" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 URL Slug <span className="text-red-500">*</span>
               </label>
               <input
+                id="notice-slug"
                 type="text"
                 required
                 value={slug}
@@ -234,8 +248,9 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
           {/* Category, Priority, Visibility */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Category</label>
+              <label htmlFor="notice-category" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Category</label>
               <select
+                id="notice-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as NoticeCategory)}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
@@ -249,8 +264,9 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Priority</label>
+              <label htmlFor="notice-priority" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Priority</label>
               <select
+                id="notice-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as NoticePriority)}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
@@ -264,8 +280,9 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Visibility Scope</label>
+              <label htmlFor="notice-visibility" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Visibility Scope</label>
               <select
+                id="notice-visibility"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value as NoticeVisibility)}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
@@ -282,11 +299,12 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
           {/* Dates */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
+              <label htmlFor="notice-publish-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-gray-500" />
                 Publish Date & Time
               </label>
               <input
+                id="notice-publish-date"
                 type="datetime-local"
                 value={publishedAt}
                 onChange={(e) => setPublishedAt(e.target.value)}
@@ -295,11 +313,12 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
+              <label htmlFor="notice-expiry-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5 text-gray-500" />
                 Expiry Date & Time (Optional)
               </label>
               <input
+                id="notice-expiry-date"
                 type="datetime-local"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
@@ -310,10 +329,11 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
           {/* Summary */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="notice-summary" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Executive Summary (Brief overview)
             </label>
             <input
+              id="notice-summary"
               type="text"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
@@ -324,10 +344,11 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
           {/* Content */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            <label htmlFor="notice-content" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Detailed Content <span className="text-red-500">*</span>
             </label>
             <textarea
+              id="notice-content"
               required
               rows={5}
               value={content}
@@ -339,11 +360,12 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
           {/* Tags */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
+            <label htmlFor="notice-tags" className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1">
               <Tag className="w-3.5 h-3.5 text-gray-500" />
               Tags (Comma separated)
             </label>
             <input
+              id="notice-tags"
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
@@ -354,7 +376,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
           {/* Attachments Section */}
           <div className="space-y-3 pt-2 border-t border-gray-100">
-            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Attachments</h4>
+            <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Attachments</span>
             {attachments.length > 0 && (
               <div className="space-y-2 mb-3">
                 {attachments.map((att) => (
@@ -367,6 +389,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
                       type="button"
                       onClick={() => handleRemoveAttachment(att.id)}
                       className="text-red-500 hover:text-red-700 p-1"
+                      aria-label={`Remove attachment ${att.name}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -382,6 +405,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
                 value={attName}
                 onChange={(e) => setAttName(e.target.value)}
                 className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                aria-label="Attachment Title"
               />
               <input
                 type="text"
@@ -389,11 +413,13 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
                 value={attUrl}
                 onChange={(e) => setAttUrl(e.target.value)}
                 className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                aria-label="Attachment URL"
               />
               <select
                 value={attType}
                 onChange={(e) => setAttType(e.target.value)}
                 className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
+                aria-label="Attachment Type"
               >
                 <option value="pdf">PDF</option>
                 <option value="image">Image</option>
@@ -411,9 +437,10 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
           {/* Toggles */}
           <div className="flex items-center gap-6 pt-2">
-            <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+            <label htmlFor="notice-pinned" className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
               <input
                 type="checkbox"
+                id="notice-pinned"
                 checked={isPinned}
                 onChange={(e) => setIsPinned(e.target.checked)}
                 className="w-4 h-4 text-[#2563EB] rounded border-gray-300 focus:ring-blue-500"
@@ -421,9 +448,10 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
               Pin to Top of Notice Board
             </label>
 
-            <label className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
+            <label htmlFor="notice-published" className="flex items-center gap-2 cursor-pointer font-medium text-xs text-gray-700">
               <input
                 type="checkbox"
+                id="notice-published"
                 checked={isPublished}
                 onChange={(e) => setIsPublished(e.target.checked)}
                 className="w-4 h-4 text-[#2563EB] rounded border-gray-300 focus:ring-blue-500"
@@ -444,6 +472,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
             <button
               type="submit"
               disabled={isSubmitting}
+              aria-busy={isSubmitting}
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white font-semibold rounded-xl text-xs transition-all shadow-sm active:scale-95 disabled:opacity-50"
             >
               <Send className="w-4 h-4" />

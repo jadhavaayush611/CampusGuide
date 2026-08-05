@@ -23,6 +23,8 @@ export function CouncilHeader({ council }: CouncilHeaderProps) {
           <img
             src={council.bannerUrl}
             alt={council.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover opacity-40 mix-blend-overlay"
           />
         )}
@@ -31,6 +33,7 @@ export function CouncilHeader({ council }: CouncilHeaderProps) {
             onClick={handleShare}
             className="p-2 bg-white/20 backdrop-blur-md text-white rounded-lg hover:bg-white/30 transition-all"
             title="Share Council"
+            aria-label="Share Council"
           >
             <Share2 className="w-4 h-4" />
           </button>

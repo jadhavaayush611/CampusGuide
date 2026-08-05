@@ -91,8 +91,19 @@ export const MonthView: React.FC<MonthViewProps> = memo(function MonthView({
             <div
               key={idx}
               onClick={() => onSelectDate(date)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.target === e.currentTarget) {
+                    e.preventDefault();
+                    onSelectDate(date);
+                  }
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`${date.toDateString()}. ${dayEvents.length} events.`}
               onDoubleClick={() => onOpenCreateEventForDate(date)}
-              className={`min-h-[120px] p-2 bg-white flex flex-col justify-between transition-colors hover:bg-blue-50/20 group cursor-pointer ${
+              className={`min-h-[120px] p-2 bg-white flex flex-col justify-between transition-colors hover:bg-blue-50/20 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
                 !isCurrentMonth ? 'bg-gray-50/50 text-gray-400' : 'text-gray-900'
               }`}
             >
@@ -122,7 +133,17 @@ export const MonthView: React.FC<MonthViewProps> = memo(function MonthView({
                       e.stopPropagation();
                       onSelectEvent(ev);
                     }}
-                    className={`px-2 py-1 rounded-lg text-[11px] font-semibold truncate transition-all cursor-pointer shadow-2xs hover:scale-[1.02] flex items-center justify-between ${
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onSelectEvent(ev);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Event: ${ev.title}.`}
+                    className={`px-2 py-1 rounded-lg text-[11px] font-semibold truncate transition-all cursor-pointer shadow-2xs hover:scale-[1.02] flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${
                       ev.isCompleted ? 'opacity-50 line-through' : ''
                     }`}
                     style={{

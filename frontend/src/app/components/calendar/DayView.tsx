@@ -71,7 +71,16 @@ export const DayView: React.FC<DayViewProps> = memo(function DayView({
               <div
                 key={ev.id}
                 onClick={() => onSelectEvent(ev)}
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 cursor-pointer shadow-2xs hover:border-blue-500 transition-all flex items-center gap-2"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectEvent(ev);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`All day event: ${ev.title}.`}
+                className="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 cursor-pointer shadow-2xs hover:border-blue-500 transition-all flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
               >
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: ev.color }} />
                 <span>{ev.title}</span>
@@ -98,7 +107,16 @@ export const DayView: React.FC<DayViewProps> = memo(function DayView({
             <div
               key={h}
               onClick={() => onOpenCreateEventForTime(currentDate, h)}
-              className="h-20 border-b border-gray-100 hover:bg-blue-50/20 cursor-pointer transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onOpenCreateEventForTime(currentDate, h);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Time slot: ${currentDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} at ${h === 0 ? '12:00 AM' : h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`}. Click to schedule event.`}
+              className="h-20 border-b border-gray-100 hover:bg-blue-50/20 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
             />
           ))}
 
@@ -118,7 +136,17 @@ export const DayView: React.FC<DayViewProps> = memo(function DayView({
                   e.stopPropagation();
                   onSelectEvent(ev);
                 }}
-                className="absolute left-4 right-4 rounded-2xl p-3.5 border shadow-sm cursor-pointer transition-all hover:shadow-md hover:z-20 flex flex-col justify-between"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelectEvent(ev);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Event: ${ev.title}. Starts at ${ev.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`}
+                className="absolute left-4 right-4 rounded-2xl p-3.5 border shadow-sm cursor-pointer transition-all hover:shadow-md hover:z-20 flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
                 style={{
                   top: `${topPx}px`,
                   height: `${heightPx}px`,

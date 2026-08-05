@@ -23,7 +23,7 @@ export const ThinkingTimeline = memo(function ThinkingTimeline({ items, isStream
   if (items.length === 0 && !isStreaming) {
     return (
       <div className="p-6 text-center text-gray-500 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-        <Sparkles className="w-8 h-8 mx-auto text-blue-400 mb-2 opacity-80" />
+        <Sparkles className="w-8 h-8 mx-auto text-blue-400 mb-2 opacity-80" aria-hidden="true" />
         <p className="text-xs font-semibold text-gray-700">Execution Pipeline Idle</p>
         <p className="text-[11px] text-gray-500 mt-1">
           Send a prompt to visualize Atlas reasoning, planning, tool executions, and stream lifecycle in real time.
@@ -36,7 +36,7 @@ export const ThinkingTimeline = memo(function ThinkingTimeline({ items, isStream
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-[#2563EB]" />
+          <Brain className="w-4 h-4 text-[#2563EB]" aria-hidden="true" />
           <h3 className="font-semibold text-gray-900 text-xs uppercase tracking-wider">
             Thinking Timeline
           </h3>
@@ -50,7 +50,7 @@ export const ThinkingTimeline = memo(function ThinkingTimeline({ items, isStream
         >
           {isStreaming ? (
             <>
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" aria-hidden="true" />
               LIVE PIPELINE
             </>
           ) : (
@@ -59,14 +59,18 @@ export const ThinkingTimeline = memo(function ThinkingTimeline({ items, isStream
         </span>
       </div>
 
-      <div className="relative pl-4 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
+      <div
+        aria-live="polite"
+        aria-atomic="false"
+        className="relative pl-4 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200"
+      >
         {items.map((item, idx) => (
           <TimelineNode key={item.id || idx} item={item} isLast={idx === items.length - 1} />
         ))}
 
         {isStreaming && (
           <div className="relative flex items-start gap-3 pt-1">
-            <div className="absolute -left-4 top-0.5 w-4 h-4 rounded-full bg-blue-100 border border-blue-400 flex items-center justify-center">
+            <div className="absolute -left-4 top-0.5 w-4 h-4 rounded-full bg-blue-100 border border-blue-400 flex items-center justify-center" aria-hidden="true">
               <Loader2 className="w-2.5 h-2.5 text-blue-600 animate-spin" />
             </div>
             <div className="flex-1 pl-2">
@@ -86,25 +90,25 @@ const TimelineNode = memo(function TimelineNode({ item }: { item: ThinkingTimeli
   const getIcon = (type: AtlasStreamEventType) => {
     switch (type) {
       case 'CONNECTION_OPENED':
-        return <Terminal className="w-3 h-3 text-blue-600" />;
+        return <Terminal className="w-3 h-3 text-blue-600" aria-hidden="true" />;
       case 'THINKING':
-        return <Brain className="w-3 h-3 text-purple-600" />;
+        return <Brain className="w-3 h-3 text-purple-600" aria-hidden="true" />;
       case 'REASONING':
-        return <Cpu className="w-3 h-3 text-indigo-600" />;
+        return <Cpu className="w-3 h-3 text-indigo-600" aria-hidden="true" />;
       case 'PLANNING':
-        return <GitBranch className="w-3 h-3 text-amber-600" />;
+        return <GitBranch className="w-3 h-3 text-amber-600" aria-hidden="true" />;
       case 'EXECUTION_STARTED':
-        return <Play className="w-3 h-3 text-emerald-600" />;
+        return <Play className="w-3 h-3 text-emerald-600" aria-hidden="true" />;
       case 'TOOL_STARTED':
       case 'TOOL_COMPLETED':
-        return <Wrench className="w-3 h-3 text-teal-600" />;
+        return <Wrench className="w-3 h-3 text-teal-600" aria-hidden="true" />;
       case 'EXECUTION_COMPLETED':
       case 'COMPLETION':
-        return <CheckCircle2 className="w-3 h-3 text-emerald-600" />;
+        return <CheckCircle2 className="w-3 h-3 text-emerald-600" aria-hidden="true" />;
       case 'ERROR':
-        return <AlertTriangle className="w-3 h-3 text-red-600" />;
+        return <AlertTriangle className="w-3 h-3 text-red-600" aria-hidden="true" />;
       default:
-        return <Clock className="w-3 h-3 text-gray-600" />;
+        return <Clock className="w-3 h-3 text-gray-600" aria-hidden="true" />;
     }
   };
 

@@ -44,6 +44,8 @@ export function ResourcePreview({ resource, onDownload }: ResourcePreviewProps) 
         <img
           src={url}
           alt={resource.title}
+          loading="lazy"
+          decoding="async"
           className="max-h-[460px] object-contain rounded shadow-lg"
           onError={(e) => {
             (e.target as HTMLElement).style.display = 'none';

@@ -72,7 +72,7 @@ export const ResourceCard = memo(function ResourceCard({
     return (
       <div className="bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          <div className={`w-11 h-11 rounded-lg flex items-center justify-center border flex-shrink-0 ${badge.bg}`}>
+          <div className={`w-11 h-11 rounded-lg flex items-center justify-center border flex-shrink-0 ${badge.bg}`} aria-hidden="true">
             <BadgeIcon className="w-5 h-5" />
           </div>
           <div className="min-w-0 flex-1">
@@ -88,18 +88,22 @@ export const ResourceCard = memo(function ResourceCard({
             </div>
             <h3
               onClick={() => onViewDetails(resource)}
-              className="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors cursor-pointer"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewDetails(resource); } }}
+              role="button"
+              tabIndex={0}
+              aria-label={`View details for ${resource.title}`}
+              className="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 rounded-sm w-fit"
             >
               {resource.title}
             </h3>
             <p className="text-xs text-gray-500 flex items-center gap-3 mt-1 flex-wrap">
               <span className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-gray-400" />
+                <User className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
                 {resource.uploaderName || resource.uploaderId}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true" />
                 {formatDate(resource.createdAt)}
               </span>
               <span>•</span>
@@ -113,49 +117,53 @@ export const ResourceCard = memo(function ResourceCard({
         <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
           <button
             onClick={() => onToggleBookmark(resource)}
-            className={`p-2 rounded-lg border transition-colors ${
+            className={`p-2 rounded-lg border transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
               resource.isBookmarked
                 ? 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
                 : 'text-gray-400 border-gray-200 hover:bg-gray-50 hover:text-gray-600'
             }`}
             title={resource.isBookmarked ? 'Remove Bookmark' : 'Bookmark Resource'}
+            aria-label={resource.isBookmarked ? 'Remove Bookmark' : 'Bookmark Resource'}
           >
-            {resource.isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+            {resource.isBookmarked ? <BookmarkCheck className="w-4 h-4" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
           </button>
 
           <button
             onClick={() => onViewDetails(resource)}
-            className="p-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="p-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
             title="Preview Details"
+            aria-label="Preview Details"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-4 h-4" aria-hidden="true" />
           </button>
 
           {isOwnerOrAdmin && onEdit && (
             <button
               onClick={() => onEdit(resource)}
-              className="p-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="p-2 text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
               title="Edit Resource"
+              aria-label="Edit Resource"
             >
-              <Edit2 className="w-4 h-4" />
+              <Edit2 className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
 
           {isOwnerOrAdmin && onDelete && (
             <button
               onClick={() => onDelete(resource)}
-              className="p-2 text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+              className="p-2 text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
               title="Delete Resource"
+              aria-label="Delete Resource"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
 
           <button
             onClick={() => onDownload(resource)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
             Download
           </button>
         </div>
@@ -178,14 +186,15 @@ export const ResourceCard = memo(function ResourceCard({
             </span>
             <button
               onClick={() => onToggleBookmark(resource)}
-              className={`p-1.5 rounded-lg transition-colors ${
+              className={`p-1.5 rounded-lg transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
                 resource.isBookmarked
                   ? 'text-amber-500 bg-amber-50 hover:bg-amber-100'
                   : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
               }`}
               title={resource.isBookmarked ? 'Remove Bookmark' : 'Bookmark Resource'}
+              aria-label={resource.isBookmarked ? 'Remove Bookmark' : 'Bookmark Resource'}
             >
-              {resource.isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+              {resource.isBookmarked ? <BookmarkCheck className="w-4 h-4" aria-hidden="true" /> : <Bookmark className="w-4 h-4" aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -193,7 +202,11 @@ export const ResourceCard = memo(function ResourceCard({
         {/* Title & Description */}
         <h3
           onClick={() => onViewDetails(resource)}
-          className="font-semibold text-gray-900 text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 cursor-pointer"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewDetails(resource); } }}
+          role="button"
+          tabIndex={0}
+          aria-label={`View details for ${resource.title}`}
+          className="font-semibold text-gray-900 text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 rounded-sm w-full text-left"
         >
           {resource.title}
         </h3>
@@ -208,7 +221,7 @@ export const ResourceCard = memo(function ResourceCard({
           <div className="flex flex-wrap gap-1.5 mb-4">
             {resource.tags.slice(0, 3).map((tag, idx) => (
               <span key={idx} className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded flex items-center gap-1">
-                <Tag className="w-3 h-3 text-gray-400" />
+                <Tag className="w-3 h-3 text-gray-400" aria-hidden="true" />
                 {tag}
               </span>
             ))}
@@ -235,38 +248,42 @@ export const ResourceCard = memo(function ResourceCard({
         <div className="flex items-center gap-1">
           <button
             onClick={() => onViewDetails(resource)}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
             title="View Details & Preview"
+            aria-label="View Details & Preview"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-4 h-4" aria-hidden="true" />
           </button>
 
           {isOwnerOrAdmin && onEdit && (
             <button
               onClick={() => onEdit(resource)}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
               title="Edit"
+              aria-label="Edit"
             >
-              <Edit2 className="w-4 h-4" />
+              <Edit2 className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
 
           {isOwnerOrAdmin && onDelete && (
             <button
               onClick={() => onDelete(resource)}
-              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1"
               title="Delete"
+              aria-label="Delete"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" aria-hidden="true" />
             </button>
           )}
 
           <button
             onClick={() => onDownload(resource)}
-            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm ml-1"
+            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm ml-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
             title="Download Resource"
+            aria-label="Download Resource"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>

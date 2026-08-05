@@ -63,7 +63,16 @@ const AtlasConversationItem = memo(function AtlasConversationItem({
   return (
     <div
       onClick={() => !isEditing && onSelectConversation(conv)}
-      className={`group relative p-3 rounded-xl cursor-pointer transition-all border ${
+      onKeyDown={(e) => {
+        if (!isEditing && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onSelectConversation(conv);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Conversation: ${conv.title || 'Untitled Conversation'}. ${conv.messageCount ?? 0} messages. Type: ${conv.type || 'GENERAL'}`}
+      className={`group relative p-3 rounded-xl cursor-pointer transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
         isActive
           ? 'bg-blue-50/80 border-blue-200 text-[#2563EB] shadow-xs'
           : 'bg-white border-transparent hover:bg-gray-50 text-gray-700'
@@ -114,39 +123,39 @@ const AtlasConversationItem = memo(function AtlasConversationItem({
             </span>
           </div>
 
-          {/* Actions overlay on hover */}
-          <div className="absolute right-2 top-2 hidden group-hover:flex items-center gap-1 bg-white/95 p-1 rounded-lg border border-gray-200 shadow-xs">
+          {/* Actions overlay on hover and focus */}
+          <div className="absolute right-2 top-2 hidden group-hover:flex group-focus-within:flex items-center gap-1 bg-white/95 p-1 rounded-lg border border-gray-200 shadow-xs">
             <button
               onClick={(e) => onStartRename(conv, e)}
               title="Rename"
-              className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded"
+              className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
 
-            {tab === 'ACTIVE' ? (
+             {tab === 'ACTIVE' ? (
               <button
                 onClick={(e) => onArchive(conv.id, e)}
                 title="Archive"
-                className="p-1 text-gray-600 hover:text-amber-600 hover:bg-gray-100 rounded"
+                className="p-1 text-gray-600 hover:text-amber-600 hover:bg-gray-100 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
                 <Archive className="w-3.5 h-3.5" />
               </button>
-            ) : (
+             ) : (
               <button
                 onClick={(e) => onRestore(conv.id, e)}
                 title="Restore"
-                className="p-1 text-gray-600 hover:text-emerald-600 hover:bg-gray-100 rounded"
+                className="p-1 text-gray-600 hover:text-emerald-600 hover:bg-gray-100 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
-            )}
+             )}
 
-            <button
-              onClick={(e) => onDelete(conv.id, e)}
-              title="Delete"
-              className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded"
-            >
+             <button
+               onClick={(e) => onDelete(conv.id, e)}
+               title="Delete"
+               className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -425,25 +434,31 @@ export const AtlasSidebar = memo(function AtlasSidebar({
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="p-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-600 bg-gray-50">
+        <nav
+          role="navigation"
+          aria-label="Pagination"
+          className="p-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-600 bg-gray-50"
+        >
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
-            className="p-1 hover:bg-gray-200 rounded disabled:opacity-40"
+            aria-label="Go to previous page"
+            className="p-1 hover:bg-gray-200 rounded disabled:opacity-40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </button>
-          <span>
+          <span aria-current="page">
             Page {page} of {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
-            className="p-1 hover:bg-gray-200 rounded disabled:opacity-40"
+            aria-label="Go to next page"
+            className="p-1 hover:bg-gray-200 rounded disabled:opacity-40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </button>
-        </div>
+        </nav>
       )}
     </aside>
   );

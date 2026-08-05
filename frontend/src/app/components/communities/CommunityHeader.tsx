@@ -36,6 +36,8 @@ export const CommunityHeader: React.FC<CommunityHeaderProps> = ({ community, onE
           <img
             src={community.bannerUrl}
             alt={community.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         ) : (
@@ -66,6 +68,8 @@ export const CommunityHeader: React.FC<CommunityHeaderProps> = ({ community, onE
                 <img
                   src={community.logoUrl}
                   alt={community.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover rounded-xl"
                 />
               ) : (
@@ -100,6 +104,7 @@ export const CommunityHeader: React.FC<CommunityHeaderProps> = ({ community, onE
               onClick={handleShare}
               className="p-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
               title="Share community"
+              aria-label="Share community link"
             >
               <Share2 className="w-4 h-4" />
             </button>
@@ -109,6 +114,7 @@ export const CommunityHeader: React.FC<CommunityHeaderProps> = ({ community, onE
                 onClick={onEdit}
                 className="p-2.5 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
                 title="Edit Community"
+                aria-label="Edit Community Details"
               >
                 <Edit3 className="w-4 h-4" />
               </button>
@@ -117,6 +123,7 @@ export const CommunityHeader: React.FC<CommunityHeaderProps> = ({ community, onE
             <button
               onClick={handleToggleJoin}
               disabled={isPending}
+              aria-busy={isPending}
               className={`px-6 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md ${
                 isJoined
                   ? 'bg-gray-100 hover:bg-red-50 text-gray-800 hover:text-red-600 border border-gray-200'

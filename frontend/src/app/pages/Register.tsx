@@ -59,6 +59,18 @@ export function Register() {
     }
 
     setFieldErrors(errors);
+
+    // Focus the first invalid field
+    if (errors.name) {
+      document.getElementById('name')?.focus();
+    } else if (errors.email) {
+      document.getElementById('email')?.focus();
+    } else if (errors.password) {
+      document.getElementById('password')?.focus();
+    } else if (errors.confirmPassword) {
+      document.getElementById('confirmPassword')?.focus();
+    }
+
     return Object.keys(errors).length === 0;
   };
 
@@ -95,7 +107,7 @@ export function Register() {
         </div>
 
         {registerMutation.isError && (
-          <Alert variant="destructive" className="bg-red-50 text-red-700 border border-red-200 rounded-xl">
+          <Alert variant="destructive" role="alert" className="bg-red-50 text-red-700 border border-red-200 rounded-xl">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-sm">
               {registerMutation.error?.message || 'Failed to create account. Please check your information.'}
@@ -122,9 +134,11 @@ export function Register() {
                 disabled={registerMutation.isPending}
                 className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                 aria-invalid={Boolean(fieldErrors.name)}
+                aria-describedby={fieldErrors.name ? "name-error" : undefined}
+                autoComplete="name"
               />
             </div>
-            {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
+            {fieldErrors.name && <p id="name-error" className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
           </div>
 
           <div className="space-y-1.5">
@@ -145,9 +159,11 @@ export function Register() {
                 disabled={registerMutation.isPending}
                 className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                 aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                autoComplete="email"
               />
             </div>
-            {fieldErrors.email && <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
+            {fieldErrors.email && <p id="email-error" className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -224,17 +240,19 @@ export function Register() {
                   disabled={registerMutation.isPending}
                   className="pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                   aria-invalid={Boolean(fieldErrors.password)}
+                  aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-md"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {fieldErrors.password && <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
+              {fieldErrors.password && <p id="password-error" className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -256,10 +274,12 @@ export function Register() {
                   disabled={registerMutation.isPending}
                   className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                   aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                  aria-describedby={fieldErrors.confirmPassword ? "confirmPassword-error" : undefined}
+                  autoComplete="new-password"
                 />
               </div>
               {fieldErrors.confirmPassword && (
-                <p className="text-xs text-red-600 mt-1">{fieldErrors.confirmPassword}</p>
+                <p id="confirmPassword-error" className="text-xs text-red-600 mt-1">{fieldErrors.confirmPassword}</p>
               )}
             </div>
           </div>
@@ -267,6 +287,7 @@ export function Register() {
           <Button
             type="submit"
             disabled={registerMutation.isPending}
+            aria-busy={registerMutation.isPending}
             className="w-full h-11 bg-[#7C3AED] hover:bg-purple-700 text-white font-medium rounded-xl transition-colors shadow-sm disabled:opacity-50 mt-2"
           >
             {registerMutation.isPending ? (

@@ -28,6 +28,14 @@ export function Login() {
       errors.password = 'Password is required';
     }
     setFieldErrors(errors);
+
+    // Focus the first invalid field
+    if (errors.email) {
+      document.getElementById('email')?.focus();
+    } else if (errors.password) {
+      document.getElementById('password')?.focus();
+    }
+
     return Object.keys(errors).length === 0;
   };
 
@@ -57,7 +65,7 @@ export function Login() {
         </div>
 
         {loginMutation.isError && (
-          <Alert variant="destructive" className="bg-red-50 text-red-700 border border-red-200 rounded-xl">
+          <Alert variant="destructive" role="alert" className="bg-red-50 text-red-700 border border-red-200 rounded-xl">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-sm">
               {loginMutation.error?.message || 'Invalid credentials or server error. Please try again.'}
@@ -84,10 +92,12 @@ export function Login() {
                 disabled={loginMutation.isPending}
                 className="pl-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                 aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                autoComplete="username"
               />
             </div>
             {fieldErrors.email && (
-              <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+              <p id="email-error" className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
             )}
           </div>
 
@@ -111,24 +121,27 @@ export function Login() {
                 disabled={loginMutation.isPending}
                 className="pl-10 pr-10 h-11 rounded-xl bg-gray-50 border-gray-200 focus:bg-white text-gray-900"
                 aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-md"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {fieldErrors.password && (
-              <p className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>
+              <p id="password-error" className="text-xs text-red-600 mt-1">{fieldErrors.password}</p>
             )}
           </div>
 
           <Button
             type="submit"
             disabled={loginMutation.isPending}
+            aria-busy={loginMutation.isPending}
             className="w-full h-11 bg-[#2563EB] hover:bg-blue-700 text-white font-medium rounded-xl transition-colors shadow-sm disabled:opacity-50"
           >
             {loginMutation.isPending ? (

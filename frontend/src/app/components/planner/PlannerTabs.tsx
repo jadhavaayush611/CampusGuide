@@ -28,23 +28,54 @@ export const PlannerTabs: React.FC<PlannerTabsProps> = ({
     { id: 'ARCHIVED', label: 'Archived Tasks', icon: Archive, badge: archivedCount, badgeColor: 'bg-gray-100 text-gray-700' },
   ];
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex = index;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (index + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    const parent = e.currentTarget.parentElement;
+    if (parent) {
+      const children = Array.from(parent.children) as HTMLButtonElement[];
+      children[nextIndex]?.focus();
+      onTabChange(tabs[nextIndex].id);
+    }
+  };
+
   return (
     <div className="border-b border-gray-200 overflow-x-auto scrollbar-none">
-      <nav className="flex space-x-2 sm:space-x-4 min-w-max pb-1">
-        {tabs.map((tab) => {
+      <nav
+        role="tablist"
+        aria-label="Planner Sections"
+        className="flex space-x-2 sm:space-x-4 min-w-max pb-1"
+      >
+        {tabs.map((tab, idx) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              tabIndex={isActive ? 0 : -1}
+              id={`tab-${tab.id}`}
               onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-2.5 px-4 py-3 text-sm font-semibold rounded-t-2xl border-b-2 transition-all ${
+              onKeyDown={(e) => handleKeyDown(e, idx)}
+              className={`flex items-center gap-2.5 px-4 py-3 text-sm font-semibold rounded-t-2xl border-b-2 transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1 ${
                 isActive
                   ? 'border-[#2563EB] text-[#2563EB] bg-blue-50/50'
                   : 'border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-[#2563EB]' : 'text-gray-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#2563EB]' : 'text-gray-400'}`} aria-hidden="true" />
               <span>{tab.label}</span>
               {tab.badge !== undefined && tab.badge > 0 && (
                 <span className={`px-2 py-0.5 rounded-full text-xs ${tab.badgeColor || 'bg-gray-100 text-gray-700'}`}>

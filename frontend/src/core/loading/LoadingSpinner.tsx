@@ -26,6 +26,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     <div
       aria-label={label || 'Loading...'}
       role="status"
+      aria-live="polite"
       style={{
         display: 'inline-flex',
         flexDirection: 'column',
@@ -36,6 +37,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       className={className}
     >
       <svg
+        className="cg-spinner motion-reduce:animate-none"
         style={{
           width: pixelSize,
           height: pixelSize,
@@ -64,10 +66,21 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           {label}
         </span>
       )}
+      {!label && <span className="sr-only">Loading</span>}
       <style>{`
+        .cg-spinner {
+          animation: spin 0.8s linear infinite;
+        }
+
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .cg-spinner {
+            animation: none;
+          }
         }
       `}</style>
     </div>

@@ -84,7 +84,16 @@ export const AgendaView: React.FC<AgendaViewProps> = memo(function AgendaView({ 
                 <div
                   key={ev.id}
                   onClick={() => onSelectEvent(ev)}
-                  className={`bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 ${
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectEvent(ev);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Event: ${ev.title}. Module: ${ev.sourceModule}. Category: ${ev.category}. ${ev.hasConflict ? 'Has scheduling conflict.' : ''}`}
+                  className={`bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
                     ev.isCompleted ? 'opacity-60 bg-gray-50/60' : ''
                   }`}
                   style={{ borderLeftColor: ev.color }}

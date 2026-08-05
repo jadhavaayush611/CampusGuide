@@ -123,7 +123,16 @@ export const WeekView: React.FC<WeekViewProps> = memo(function WeekView({
                     <div
                       key={ev.id}
                       onClick={() => onSelectEvent(ev)}
-                      className="px-2 py-1 rounded-md text-[11px] font-bold text-white truncate cursor-pointer shadow-2xs transition-all hover:opacity-90"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onSelectEvent(ev);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`All day event: ${ev.title}.`}
+                      className="px-2 py-1 rounded-md text-[11px] font-bold text-white truncate cursor-pointer shadow-2xs transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
                       style={{ backgroundColor: ev.color }}
                       title={ev.title}
                     >
@@ -171,8 +180,17 @@ export const WeekView: React.FC<WeekViewProps> = memo(function WeekView({
                   <div
                     key={h}
                     onClick={() => onOpenCreateEventForTime(d, h)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onOpenCreateEventForTime(d, h);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Time slot: ${d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} at ${h}:00. Click to schedule event.`}
                     onDrop={(e) => handleDrop(e, d, h)}
-                    className="h-16 border-b border-gray-100/80 hover:bg-blue-50/20 cursor-pointer transition-colors group"
+                    className="h-16 border-b border-gray-100/80 hover:bg-blue-50/20 cursor-pointer transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1"
                   />
                 ))}
 
@@ -196,7 +214,17 @@ export const WeekView: React.FC<WeekViewProps> = memo(function WeekView({
                         e.stopPropagation();
                         onSelectEvent(ev);
                       }}
-                      className={`absolute left-1 right-1 rounded-xl p-2 text-xs font-semibold overflow-hidden cursor-pointer shadow-sm transition-all hover:z-20 hover:shadow-md ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onSelectEvent(ev);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Event: ${ev.title}. Starts at ${ev.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`}
+                      className={`absolute left-1 right-1 rounded-xl p-2 text-xs font-semibold overflow-hidden cursor-pointer shadow-sm transition-all hover:z-20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-1 ${
                         isPersonal ? 'cursor-grab active:cursor-grabbing' : ''
                       }`}
                       style={{

@@ -113,6 +113,8 @@ export function NoticeAttachmentViewer({ attachments }: NoticeAttachmentViewerPr
                 <img
                   src={activePreview.url}
                   alt={activePreview.name}
+                  loading="lazy"
+                  decoding="async"
                   className="max-h-[60vh] rounded-lg object-contain border border-gray-200 shadow-sm"
                 />
               ) : activePreview.fileType.includes('pdf') ? (

@@ -9,6 +9,7 @@ import { AtlasWidget } from '../components/dashboard/AtlasWidget';
 import { NotificationsWidget } from '../components/dashboard/NotificationsWidget';
 import { Calendar, LayoutDashboard, Search } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import { prefetchRoute } from '../../core/routing/routePrefetch';
 
 export const Dashboard = memo(function Dashboard() {
   const navigate = useNavigate();
@@ -17,9 +18,17 @@ export const Dashboard = memo(function Dashboard() {
     navigate('/calendar');
   }, [navigate]);
 
+  const handlePrefetchCalendar = useCallback(() => {
+    prefetchRoute('/calendar');
+  }, []);
+
   const handleNavigateResources = useCallback(() => {
     navigate('/resources');
   }, [navigate]);
+
+  const handlePrefetchResources = useCallback(() => {
+    prefetchRoute('/resources');
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -35,6 +44,8 @@ export const Dashboard = memo(function Dashboard() {
             </div>
             <button
               onClick={handleNavigateCalendar}
+              onMouseEnter={handlePrefetchCalendar}
+              onFocus={handlePrefetchCalendar}
               className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-all"
             >
               <Calendar className="w-4 h-4 text-blue-600" />
@@ -95,6 +106,8 @@ export const Dashboard = memo(function Dashboard() {
       {/* Quick Search Floating Action Button */}
       <button
         onClick={handleNavigateResources}
+        onMouseEnter={handlePrefetchResources}
+        onFocus={handlePrefetchResources}
         className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-blue-700 hover:scale-105 transition-all flex items-center justify-center ring-4 ring-blue-100 z-40"
         title="Quick Search Campus Resources"
       >

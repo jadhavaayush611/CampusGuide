@@ -97,6 +97,8 @@ export const UserOverviewWidget: React.FC = memo(function UserOverviewWidget() {
               <img
                 src={currentUser.avatarUrl}
                 alt={currentUser.name}
+                loading="lazy"
+                decoding="async"
                 className="w-16 h-16 rounded-2xl object-cover ring-4 ring-blue-100 shadow-md"
               />
             ) : (

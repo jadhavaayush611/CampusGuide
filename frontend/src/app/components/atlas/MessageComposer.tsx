@@ -50,6 +50,7 @@ export function MessageComposer({
       <form onSubmit={handleSubmit} className="relative bg-gray-50 rounded-2xl border border-gray-200 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/20 transition-all p-3">
         <textarea
           ref={textareaRef}
+          id="chat-composer-prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -57,6 +58,7 @@ export function MessageComposer({
           disabled={isStreaming || disabled}
           rows={1}
           className="w-full bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none resize-none min-h-[42px] max-h-[180px] leading-relaxed"
+          aria-label="Atlas prompt message"
         />
 
         <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 mt-1">
@@ -66,6 +68,9 @@ export function MessageComposer({
                 type="button"
                 onClick={() => setShowOptions(!showOptions)}
                 className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-gray-600 hover:text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors shadow-2xs"
+                aria-label="Select Atlas engine"
+                aria-haspopup="listbox"
+                aria-expanded={showOptions}
               >
                 <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                 <span>{selectedModel}</span>
@@ -78,7 +83,7 @@ export function MessageComposer({
                     className="fixed inset-0 z-10"
                     onClick={() => setShowOptions(false)}
                   />
-                  <div className="absolute left-0 bottom-full mb-2 w-48 bg-white rounded-xl border border-gray-200 shadow-lg z-20 py-1 text-xs">
+                  <div className="absolute left-0 bottom-full mb-2 w-48 bg-white rounded-xl border border-gray-200 shadow-lg z-20 py-1 text-xs" role="listbox" aria-label="Atlas engines">
                     <div className="px-3 py-1.5 font-semibold text-gray-400 border-b border-gray-100 text-[10px] uppercase">
                       Select Atlas Engine
                     </div>
@@ -90,6 +95,8 @@ export function MessageComposer({
                           setSelectedModel(model);
                           setShowOptions(false);
                         }}
+                        role="option"
+                        aria-selected={selectedModel === model}
                         className={`w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between ${
                           selectedModel === model ? 'font-bold text-[#2563EB]' : 'text-gray-700'
                         }`}

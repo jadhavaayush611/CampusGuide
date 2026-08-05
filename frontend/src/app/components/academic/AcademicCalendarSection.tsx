@@ -45,7 +45,7 @@ export const AcademicCalendarSection: React.FC<AcademicCalendarSectionProps> = (
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
             Deadline
           </span>
         );

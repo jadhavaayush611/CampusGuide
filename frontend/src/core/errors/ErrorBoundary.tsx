@@ -67,7 +67,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           justifyContent: 'center',
           textAlign: 'center',
           fontFamily: 'system-ui, -apple-system, sans-serif'
-        }}>
+        }}
+        role="alert"
+        aria-live="assertive"
+        >
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
             Something went wrong
           </h2>
@@ -76,6 +79,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </p>
           <button
             onClick={this.handleReset}
+            type="button"
             style={{
               padding: '0.5rem 1rem',
               backgroundColor: '#dc2626',

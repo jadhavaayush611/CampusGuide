@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { councilSdk, CouncilQueryParams, PaginatedCouncilsResponse } from '../../sdk/council/CouncilSdk';
 import { queryKeys } from '../../sdk/queryKeys';
 
@@ -7,5 +7,6 @@ export function useCouncils(params?: CouncilQueryParams) {
     queryKey: queryKeys.councils.list(params),
     queryFn: () => councilSdk.getCouncils(params),
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 }

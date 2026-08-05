@@ -1,0 +1,11 @@
+/**
+ * Font Optimization Strategy:
+ * - font-display: swap to eliminate Flash of Unseen Text (FOIT)
+ * - Modern font stack fallback (Inter -> system-ui -> sans-serif) to minimize layout shift (CLS)
+ * - Limited to required weights (400, 500, 600, 700)
+ */
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-display: swap;
+}

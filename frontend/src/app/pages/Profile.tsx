@@ -72,10 +72,10 @@ export function Profile() {
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Notification Preferences</h2>
             <div className="max-w-2xl">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-900 mb-3">
+              <fieldset className="mb-4">
+                <legend className="block text-sm font-medium text-gray-900 mb-3">
                   Reminder Notifications
-                </label>
+                </legend>
                 <div className="space-y-2">
                   {[
                     { value: "off", label: "Off" },
@@ -99,7 +99,7 @@ export function Profile() {
                     </label>
                   ))}
                 </div>
-              </div>
+              </fieldset>
             </div>
           </div>
 

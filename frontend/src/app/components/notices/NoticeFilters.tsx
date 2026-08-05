@@ -138,6 +138,8 @@ export function NoticeFilters({
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === 'grid' ? 'bg-white text-[#2563EB] shadow-2xs' : 'text-gray-500 hover:text-gray-800'
               }`}
+              aria-label="Grid View"
+              aria-pressed={viewMode === 'grid'}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
@@ -147,6 +149,8 @@ export function NoticeFilters({
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === 'list' ? 'bg-white text-[#2563EB] shadow-2xs' : 'text-gray-500 hover:text-gray-800'
               }`}
+              aria-label="List View"
+              aria-pressed={viewMode === 'list'}
             >
               <List className="w-4 h-4" />
             </button>
@@ -161,15 +165,18 @@ export function NoticeFilters({
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            id="notice-search"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search notices by title, content, publisher, tags..."
             className="w-full pl-10 pr-9 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all shadow-2xs"
+            aria-label="Search notices"
           />
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              aria-label="Clear search query"
             >
               <X className="w-4 h-4" />
             </button>
@@ -200,6 +207,7 @@ export function NoticeFilters({
             value={sortBy}
             onChange={(e) => onSortByChange(e.target.value as any)}
             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2563EB] shadow-2xs"
+            aria-label="Sort notices by"
           >
             <option value="publishedAt">Sort: Newest First</option>
             <option value="priority">Sort: Highest Priority</option>

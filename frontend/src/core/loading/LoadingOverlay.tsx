@@ -41,7 +41,14 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       };
 
   return (
-    <div style={containerStyle} className={className}>
+    <div
+      style={containerStyle}
+      className={className}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label={message}
+    >
       <LoadingSpinner size="lg" label={message} />
     </div>
   );

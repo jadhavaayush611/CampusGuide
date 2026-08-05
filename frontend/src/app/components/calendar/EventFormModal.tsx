@@ -100,6 +100,17 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     }
   }, [eventToEdit, presetDate, presetHour, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -144,7 +155,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
       <div className="fixed inset-0" onClick={onClose} />
 
       <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden z-10 p-6 sm:p-8 space-y-6">
@@ -155,7 +166,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               {eventToEdit ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-lg">
+              <h3 id="event-modal-title" className="font-bold text-gray-900 text-lg">
                 {eventToEdit ? 'Edit Personal Event' : 'Create Personal Event'}
               </h3>
               <p className="text-xs text-gray-500">
@@ -166,6 +177,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 text-gray-400 hover:text-gray-700 rounded-full transition-colors"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -175,10 +187,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+            <label htmlFor="event-title" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
               Event Title <span className="text-red-500">*</span>
             </label>
             <input
+              id="event-title"
               type="text"
               required
               placeholder="e.g. Midterm Group Prep, Gym Session..."
@@ -191,10 +204,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           {/* Type & Color Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              <label htmlFor="event-type" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                 Category / Type
               </label>
               <select
+                id="event-type"
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
@@ -208,9 +222,9 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                 Color Badge
-              </label>
+              </span>
               <div className="flex items-center gap-2 pt-1">
                 {COLOR_PRESETS.map((c) => (
                   <button
@@ -221,6 +235,8 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       color === c ? 'ring-2 ring-offset-2 ring-blue-600 scale-110' : 'hover:scale-105'
                     }`}
                     style={{ backgroundColor: c }}
+                    aria-label={`Color preset ${c}`}
+                    aria-pressed={color === c}
                   />
                 ))}
               </div>
@@ -229,8 +245,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
           {/* All Day Switch */}
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-200/60">
-            <span className="text-xs font-bold text-gray-800">All-Day Event</span>
+            <label htmlFor="event-all-day" className="text-xs font-bold text-gray-800 cursor-pointer flex-1">
+              All-Day Event
+            </label>
             <input
+              id="event-all-day"
               type="checkbox"
               checked={isAllDay}
               onChange={(e) => setIsAllDay(e.target.checked)}
@@ -241,10 +260,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           {/* Start Date & Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              <label htmlFor="event-start-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                 Start Date
               </label>
               <input
+                id="event-start-date"
                 type="date"
                 required
                 value={startDateStr}
@@ -254,10 +274,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             </div>
             {!isAllDay && (
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                <label htmlFor="event-start-time" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   Start Time
                 </label>
                 <input
+                  id="event-start-time"
                   type="time"
                   required
                   value={startTimeStr}
@@ -271,10 +292,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           {/* End Date & Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+              <label htmlFor="event-end-date" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                 End Date
               </label>
               <input
+                id="event-end-date"
                 type="date"
                 required
                 value={endDateStr}
@@ -284,10 +306,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             </div>
             {!isAllDay && (
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                <label htmlFor="event-end-time" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
                   End Time
                 </label>
                 <input
+                  id="event-end-time"
                   type="time"
                   required
                   value={endTimeStr}
@@ -300,10 +323,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
           {/* Location */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+            <label htmlFor="event-location" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
               Location
             </label>
             <input
+              id="event-location"
               type="text"
               placeholder="Building, room number, or online meeting link..."
               value={location}
@@ -314,10 +338,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+            <label htmlFor="event-description" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
               Description / Notes
             </label>
             <textarea
+              id="event-description"
               rows={3}
               placeholder="Add event agenda or details..."
               value={description}
@@ -338,6 +363,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting || !title.trim()}
+              aria-busy={isSubmitting}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md disabled:opacity-50"
             >
               <Save className="w-4 h-4" />

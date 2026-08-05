@@ -83,7 +83,7 @@ END:VCALENDAR`;
               <div>
                 <div className="h-44 relative bg-gradient-to-r from-blue-500 to-indigo-600 overflow-hidden">
                   {event.imageUrl && (
-                    <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                    <img src={event.imageUrl} alt={event.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   )}
                   <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold text-gray-900 shadow-xs flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />

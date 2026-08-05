@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { CampusResult } from '../../../models/atlas.model';
+import { prefetchRoute } from '../../../core/routing/routePrefetch';
 
 interface CampusResultCardProps {
   result: CampusResult;
@@ -20,6 +21,12 @@ interface CampusResultCardProps {
 
 export const CampusResultCard = memo(function CampusResultCard({ result }: CampusResultCardProps) {
   const navigate = useNavigate();
+
+  const handlePrefetch = useCallback(() => {
+    if (result.deepLink) {
+      prefetchRoute(result.deepLink);
+    }
+  }, [result.deepLink]);
 
   const icon = useMemo(() => {
     switch (result.type) {
@@ -104,6 +111,8 @@ export const CampusResultCard = memo(function CampusResultCard({ result }: Campu
       <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-end">
         <button
           onClick={handleNavigate}
+          onMouseEnter={handlePrefetch}
+          onFocus={handlePrefetch}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] font-medium text-xs rounded-lg transition-colors"
         >
           <span>{result.deepLinkLabel || 'View Module'}</span>

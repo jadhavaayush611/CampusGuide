@@ -15,6 +15,7 @@ import {
   LogOut
 } from "lucide-react";
 import { useLogout } from "../../hooks/auth/useLogout";
+import { prefetchRoute } from "../../core/routing/routePrefetch";
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -36,13 +37,20 @@ const SidebarNavItem = memo(function SidebarNavItem({
   item: typeof navItems[number];
 }) {
   const Icon = item.icon;
+
+  const handlePrefetch = useCallback(() => {
+    prefetchRoute(item.path);
+  }, [item.path]);
+
   return (
     <li>
       <NavLink
         to={item.path}
         end={item.path === "/"}
+        onMouseEnter={handlePrefetch}
+        onFocus={handlePrefetch}
         className={({ isActive }) =>
-          `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+          `flex items-center gap-3 px-4 py-3 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2 ${
             isActive
               ? "bg-blue-50 text-[#2563EB] border-l-4 border-[#2563EB]"
               : "text-gray-700 hover:bg-gray-100"
@@ -73,7 +81,7 @@ export const Sidebar = memo(function Sidebar() {
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-xl font-semibold text-gray-900">CampusGuide</h1>
       </div>
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4" aria-label="Primary">
         <ul className="space-y-2">
           {navItems.map((item) => (
             <SidebarNavItem key={item.path} item={item} />
@@ -84,7 +92,8 @@ export const Sidebar = memo(function Sidebar() {
         <button
           onClick={handleLogout}
           disabled={logoutMutation.isPending}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors font-medium text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+          type="button"
         >
           <LogOut className="w-5 h-5 text-red-500" />
           <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
