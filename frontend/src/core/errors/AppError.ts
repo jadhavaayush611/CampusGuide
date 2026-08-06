@@ -23,6 +23,7 @@ export class ApiError extends AppError {
   readonly statusCode: number;
   readonly responseData?: unknown;
   readonly correlationId?: string;
+  config?: any;
 
   constructor(
     message: string,

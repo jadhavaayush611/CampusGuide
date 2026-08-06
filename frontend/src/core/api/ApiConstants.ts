@@ -41,5 +41,5 @@ export const HTTP_STATUS = {
 } as const;
 
 export const DEFAULT_API_TIMEOUT_MS = 15000; // 15 seconds
-export const DEFAULT_MAX_RETRIES = 2;
+export const DEFAULT_MAX_RETRIES = 0;
 export const RETRY_BACKOFF_FACTOR_MS = 500;

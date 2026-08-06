@@ -132,8 +132,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
   // Setup API Client Interceptors for Authentication
   useEffect(() => {
     // Request Interceptor: Attach JWT Bearer Token
-    const unbindRequest = apiClient.addRequestInterceptor((reqConfig) => {
+    const unbindRequest = apiClient.addRequestInterceptor(async (reqConfig) => {
       if (reqConfig.skipAuth) return reqConfig;
+
+      // Preemptively refresh token if expired
+      if (tokenMgr.isAccessTokenExpired()) {
+        const refreshToken = tokenMgr.getRefreshToken();
+        if (refreshToken && !reqConfig.url.includes('/auth/refresh') && !reqConfig.url.includes('/auth/login')) {
+          try {
+            logger.info('[AuthProvider] Access token expired. Preemptively refreshing token before request...');
+            await tokenMgr.refreshTokens();
+          } catch (refreshErr) {
+            logger.error('[AuthProvider] Preemptive token refresh failed:', refreshErr);
+          }
+        }
+      }
 
       const token = tokenMgr.getAccessToken();
       if (token) {
@@ -150,12 +163,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, tokenMgr =
     const unbindError = apiClient.addErrorInterceptor(async (apiError) => {
       if (apiError.statusCode === 401) {
         logger.warn('[AuthProvider] Received 401 Unauthorized.');
+        
+        // Prevent infinite loops if the request itself is skipAuth or is refresh token request
+        if (apiError.config?.skipAuth || apiError.config?.url.includes('/auth/refresh') || apiError.config?.url.includes('/auth/login')) {
+          await logout();
+          throw apiError;
+        }
+
         const refreshToken = tokenMgr.getRefreshToken();
         if (refreshToken) {
           try {
             logger.info('[AuthProvider] Attempting silent token refresh on 401...');
             await tokenMgr.refreshTokens();
-            return;
+
+            // Retry the original request
+            if (apiError.config) {
+              const newAccessToken = tokenMgr.getAccessToken();
+              const updatedConfig = {
+                ...apiError.config,
+                headers: {
+                  ...apiError.config.headers,
+                  [HTTP_HEADER.AUTHORIZATION]: newAccessToken ? `Bearer ${newAccessToken}` : '',
+                }
+              };
+              logger.info('[AuthProvider] Retrying original request after token refresh:', updatedConfig.url);
+              return await apiClient.request(updatedConfig);
+            }
           } catch (refreshErr) {
             logger.error('[AuthProvider] Silent token refresh failed on 401. Performing forced logout:', refreshErr);
           }

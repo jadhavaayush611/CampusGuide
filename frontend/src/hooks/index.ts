@@ -1,4 +1,5 @@
 export * from './common/useOptimisticMutation';
+export * from './common/useOnlineStatus';
 
 export * from './auth/useCurrentUser';
 export * from './auth/useLogin';

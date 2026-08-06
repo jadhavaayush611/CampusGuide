@@ -135,6 +135,12 @@ export class ApiClient {
     attempt = 0
   ): Promise<ApiResponse<T>> {
     const method = reqConfig.method ?? HTTP_METHOD.GET;
+    
+    // Offline detection: block destructive mutations immediately
+    if (typeof navigator !== 'undefined' && !navigator.onLine && method !== HTTP_METHOD.GET) {
+      throw new NetworkError('Destructive actions are disabled while offline. Please reconnect and try again.');
+    }
+
     const fullUrl = this.buildUrl(reqConfig.url, reqConfig.params);
     const timeoutMs = reqConfig.timeoutMs ?? this.clientConfig.timeoutMs;
     const maxRetries = reqConfig.retryCount ?? this.clientConfig.retryCount;
@@ -185,13 +191,15 @@ export class ApiClient {
           (typeof responseData === 'object' && responseData?.message) ||
           `HTTP ${response.status}: ${response.statusText}`;
 
-        throw new ApiError(
+        const apiError = new ApiError(
           errorMessage,
           response.status,
           responseData,
           correlationId,
           `HTTP_${response.status}`
         );
+        (apiError as any).config = reqConfig; // Attach request config for interceptor recovery
+        throw apiError;
       }
 
       return {
@@ -216,6 +224,11 @@ export class ApiClient {
         apiError = new ApiError(error.message || 'Network error', 0, null, correlationId, 'NETWORK_ERROR');
       }
 
+      // Ensure config is attached
+      if (!(apiError as any).config) {
+        (apiError as any).config = reqConfig;
+      }
+
       // Check if transient error suitable for automatic retry
       const isTransient =
         apiError.statusCode >= 502 ||
@@ -232,9 +245,13 @@ export class ApiClient {
       // Run error interceptors
       for (const errorInterceptor of this.errorInterceptors) {
         try {
-          await errorInterceptor(apiError);
+          const recoveryResult = await errorInterceptor(apiError);
+          if (recoveryResult !== undefined) {
+            return recoveryResult; // Recovered from error (e.g. silent retry on token refresh)
+          }
         } catch (interceptErr) {
           logger.error('[ApiClient] Error in error interceptor:', interceptErr);
+          throw interceptErr;
         }
       }
 

@@ -124,6 +124,14 @@ export function useAtlasStreamChat() {
     (promptText: string, options: StreamChatOptions = {}) => {
       if (!promptText.trim() || isStreaming) return;
 
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setCurrentPrompt(promptText);
+        activePromptRef.current = promptText;
+        setError(new Error('You are currently offline. Please reconnect and try again.'));
+        setIsStreaming(false);
+        return;
+      }
+
       setIsStreaming(true);
       setError(null);
       setCurrentPrompt(promptText);

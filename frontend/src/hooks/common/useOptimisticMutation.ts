@@ -54,7 +54,7 @@ export function useOptimisticMutation<TData, TVariables, TContext = { previousDa
     },
     onError: (error: Error, variables: TVariables, context: TContext | undefined) => {
       // Rollback cache if mutation fails
-      if (targetQueryKey && (context as any)?.previousData !== undefined) {
+      if (targetQueryKey && context && 'previousData' in (context as any)) {
         queryClient.setQueryData(targetQueryKey, (context as any).previousData);
       }
 

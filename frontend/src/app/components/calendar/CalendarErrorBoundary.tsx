@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -41,7 +42,7 @@ export class CalendarErrorBoundary extends Component<Props, State> {
               {this.props.fallbackTitle || 'Something went wrong rendering the calendar view.'}
             </h3>
             <p className="text-xs text-gray-600 mt-1 max-w-md mx-auto">
-              {this.state.error?.message || 'An unexpected rendering error occurred inside this section.'}
+              {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected rendering error occurred inside this section.'}
             </p>
           </div>
           <button

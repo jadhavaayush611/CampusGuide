@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   title?: string;
@@ -44,7 +45,7 @@ export class WidgetErrorBoundary extends Component<Props, State> {
             {this.props.title || 'Widget Unavailable'}
           </h4>
           <p className="text-xs text-gray-600 mb-4 max-w-sm">
-            {this.state.error?.message || 'An error occurred while loading this section.'}
+            {ErrorHandler.getUserMessage(this.state.error) || 'An error occurred while loading this section.'}
           </p>
           <button
             onClick={this.handleRetry}

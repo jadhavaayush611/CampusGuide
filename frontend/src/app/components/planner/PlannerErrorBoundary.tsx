@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -40,7 +41,7 @@ export class PlannerErrorBoundary extends Component<Props, State> {
             {this.props.fallbackTitle || 'Failed to load Planner Section'}
           </h3>
           <p className="text-sm text-red-700 max-w-md mx-auto">
-            {this.state.error?.message || 'An unexpected rendering error occurred while loading this section.'}
+            {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected rendering error occurred while loading this section.'}
           </p>
           <button
             onClick={this.handleReset}

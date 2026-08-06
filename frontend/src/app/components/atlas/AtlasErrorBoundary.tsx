@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -40,7 +41,7 @@ export class AtlasErrorBoundary extends Component<Props, State> {
             {this.props.fallbackTitle || 'Atlas Component Encountered an Error'}
           </h3>
           <p className="text-xs text-red-700 max-w-md mx-auto">
-            {this.state.error?.message || 'An unexpected rendering error occurred inside this section.'}
+            {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected rendering error occurred inside this section.'}
           </p>
           <button
             onClick={this.handleReset}

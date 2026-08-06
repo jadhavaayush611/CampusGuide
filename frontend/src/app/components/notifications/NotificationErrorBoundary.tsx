@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -40,7 +41,7 @@ export class NotificationErrorBoundary extends Component<Props, State> {
               {this.props.fallbackTitle || 'Unable to load notifications section'}
             </h3>
             <p className="text-xs text-red-600 mt-1 max-w-md mx-auto">
-              {this.state.error?.message || 'An unexpected rendering error occurred in this module view.'}
+              {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected rendering error occurred in this module view.'}
             </p>
           </div>
           <button

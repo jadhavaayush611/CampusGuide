@@ -80,7 +80,7 @@ export class ErrorHandler {
     }
 
     if (normalized instanceof NetworkError) {
-      return 'Unable to reach server. Please check your internet connection.';
+      return normalized.message || 'Unable to reach server. Please check your internet connection.';
     }
 
     if (normalized instanceof TimeoutError) {
@@ -89,6 +89,12 @@ export class ErrorHandler {
 
     if (normalized instanceof AuthError) {
       return normalized.message;
+    }
+
+    // Hide stack traces and JavaScript/rendering technical details
+    const isTechnical = /TypeError|ReferenceError|SyntaxError|Cannot read|undefined|null|object|internal|stack|database|sql/i.test(normalized.message);
+    if (isTechnical || normalized.code === 'UNKNOWN_ERROR') {
+      return 'An unexpected error occurred. Please try again.';
     }
 
     return normalized.message || 'An unexpected error occurred.';

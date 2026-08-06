@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   title?: string;
@@ -39,7 +40,7 @@ export class AcademicSectionErrorBoundary extends Component<Props, State> {
             Failed to load {this.props.title || 'academic section'}
           </h3>
           <p className="text-xs text-gray-600 mb-4 max-w-md mx-auto">
-            {this.state.error?.message || 'An unexpected error occurred while fetching section data.'}
+            {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected error occurred while fetching section data.'}
           </p>
           <button
             onClick={this.handleRetry}

@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ErrorHandler } from '../../../core/errors/ErrorHandler';
 
 interface Props {
   children: ReactNode;
@@ -43,7 +44,7 @@ export class ResourceErrorBoundary extends Component<Props, State> {
             {this.props.fallbackTitle || 'Failed to Load Resources'}
           </h3>
           <p className="text-sm text-gray-600 mb-6 max-w-md mx-auto">
-            {this.state.error?.message || 'An unexpected error occurred while processing this section. Please try again.'}
+            {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected error occurred while processing this section. Please try again.'}
           </p>
           <button
             onClick={this.handleReset}

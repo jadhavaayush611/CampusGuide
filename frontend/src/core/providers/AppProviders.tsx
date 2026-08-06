@@ -4,6 +4,7 @@ import { ToastProvider } from '../toast/ToastProvider';
 import { LoadingProvider } from '../loading/LoadingProvider';
 import { QueryClientProvider } from '../query/QueryClientProvider';
 import { AuthProvider } from '../auth/AuthProvider';
+import { OfflineBanner } from '../../app/components/OfflineBanner';
 
 export interface AppProvidersProps {
   children: ReactNode;
@@ -24,7 +25,10 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <ToastProvider>
         <LoadingProvider>
           <QueryClientProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              <OfflineBanner />
+            </AuthProvider>
           </QueryClientProvider>
         </LoadingProvider>
       </ToastProvider>
