@@ -33,21 +33,21 @@ export class CalendarErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="p-8 bg-amber-50 border border-amber-200 rounded-3xl text-center space-y-4 shadow-sm my-4">
-          <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
+        <div className="p-6 bg-destructive/5 dark:bg-destructive/10 border border-destructive/20 rounded-2xl text-center space-y-4 shadow-xs my-4">
+          <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-gray-900">
+            <h3 className="text-base font-bold text-foreground">
               {this.props.fallbackTitle || 'Something went wrong rendering the calendar view.'}
             </h3>
-            <p className="text-xs text-gray-600 mt-1 max-w-md mx-auto">
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
               {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected rendering error occurred inside this section.'}
             </p>
           </div>
           <button
             onClick={this.handleReset}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-xs"
           >
             <RefreshCw className="w-4 h-4" />
             Try Again

@@ -32,19 +32,19 @@ export class AcademicSectionErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="bg-red-50/70 border border-red-200 rounded-2xl p-6 text-center shadow-sm my-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-destructive/5 dark:bg-destructive/10 border border-destructive/20 rounded-2xl p-6 text-center shadow-xs my-4">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-3">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-gray-900 mb-1">
+          <h3 className="text-base font-bold text-foreground mb-1">
             Failed to load {this.props.title || 'academic section'}
           </h3>
-          <p className="text-xs text-gray-600 mb-4 max-w-md mx-auto">
+          <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto leading-relaxed">
             {ErrorHandler.getUserMessage(this.state.error) || 'An unexpected error occurred while fetching section data.'}
           </p>
           <button
             onClick={this.handleRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-white font-semibold text-xs rounded-lg shadow-xs transition-all active:scale-[0.98] cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Retry Loading</span>

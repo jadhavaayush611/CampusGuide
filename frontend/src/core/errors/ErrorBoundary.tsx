@@ -53,43 +53,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default modern fallback UI
       return (
-        <div style={{
-          minHeight: '200px',
-          padding: '2rem',
-          margin: '1rem',
-          borderRadius: '0.75rem',
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
-          color: '#991b1b',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
-        }}
-        role="alert"
-        aria-live="assertive"
+        <div
+          className="min-h-[200px] p-8 m-4 rounded-xl bg-destructive/5 dark:bg-destructive/10 border border-destructive/20 text-destructive flex flex-col items-center justify-center text-center font-sans"
+          role="alert"
+          aria-live="assertive"
         >
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+          <h2 className="text-lg font-bold mb-2">
             Something went wrong
           </h2>
-          <p style={{ fontSize: '0.875rem', marginBottom: '1.25rem', color: '#7f1d1d' }}>
+          <p className="text-sm mb-5 text-destructive/80 max-w-md leading-relaxed">
             {ErrorHandler.getUserMessage(this.state.error)}
           </p>
           <button
             onClick={this.handleReset}
             type="button"
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#dc2626',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '0.375rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              fontSize: '0.875rem'
-            }}
+            className="px-4 py-2 bg-destructive text-white hover:bg-destructive/90 rounded-lg text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer"
           >
             Try Again
           </button>

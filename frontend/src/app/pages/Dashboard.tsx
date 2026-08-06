@@ -31,14 +31,14 @@ export const Dashboard = memo(function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-background text-foreground transition-colors duration-150">
       <Header />
 
-      <main className="p-4 sm:p-6 lg:p-8 max-w-[1500px] mx-auto space-y-8">
+      <main className="p-4 sm:p-6 lg:p-8 max-w-[1440px] mx-auto space-y-8">
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between border-b border-gray-200/80 pb-3">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex gap-6">
-            <div className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600">
+            <div className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-primary text-primary">
               <LayoutDashboard className="w-4 h-4" />
               <span>Production Dashboard</span>
             </div>
@@ -46,14 +46,14 @@ export const Dashboard = memo(function Dashboard() {
               onClick={handleNavigateCalendar}
               onMouseEnter={handlePrefetchCalendar}
               onFocus={handlePrefetchCalendar}
-              className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-transparent text-gray-500 hover:text-gray-800 transition-all"
+              className="flex items-center gap-2 pb-2 text-sm font-bold border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-all cursor-pointer"
             >
-              <Calendar className="w-4 h-4 text-blue-600" />
+              <Calendar className="w-4 h-4 text-primary" />
               <span>Full Campus Calendar</span>
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs">
+          <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border px-3 py-1.5 rounded-lg shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Live SDK Integration</span>
           </div>
@@ -108,7 +108,7 @@ export const Dashboard = memo(function Dashboard() {
         onClick={handleNavigateResources}
         onMouseEnter={handlePrefetchResources}
         onFocus={handlePrefetchResources}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl hover:bg-blue-700 hover:scale-105 transition-all flex items-center justify-center ring-4 ring-blue-100 z-40"
+        className="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-2xl shadow-xl hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all flex items-center justify-center ring-4 ring-primary/20 z-40 cursor-pointer"
         title="Quick Search Campus Resources"
       >
         <Search className="w-6 h-6" />

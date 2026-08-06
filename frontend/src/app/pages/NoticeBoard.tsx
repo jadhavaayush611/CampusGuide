@@ -84,7 +84,7 @@ export function NoticeBoard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground transition-colors duration-150">
       <Header />
       <main className="p-4 sm:p-8">
         <div className="max-w-[1440px] mx-auto space-y-8">
@@ -149,13 +149,13 @@ export function NoticeBoard() {
 
             {/* Error state */}
             {isError && (
-              <div className="p-6 bg-red-50 border border-red-200 rounded-2xl text-center space-y-3">
-                <AlertCircle className="w-8 h-8 text-red-600 mx-auto" />
-                <h3 className="text-base font-bold text-red-900">Failed to fetch notices</h3>
-                <p className="text-xs text-red-700">Check your network connection and try again.</p>
+              <div className="p-6 bg-destructive/5 dark:bg-destructive/10 border border-destructive/20 rounded-2xl text-center space-y-4 shadow-xs">
+                <AlertCircle className="w-8 h-8 text-destructive mx-auto" />
+                <h3 className="text-base font-bold text-foreground">Failed to fetch notices</h3>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">Check your network connection and try again.</p>
                 <button
                   onClick={() => refetch()}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-xs"
                 >
                   Retry Loading
                 </button>

@@ -22,7 +22,7 @@ export function Profile() {
   const [reminderTiming, setReminderTiming] = useState("30min");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-background text-foreground transition-colors duration-150">
       <Header />
       <main className="p-8">
         <div className="max-w-[1440px] mx-auto">

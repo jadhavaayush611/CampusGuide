@@ -143,45 +143,31 @@
   }
 
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-3xl font-bold tracking-tight text-foreground;
   }
 
   h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-2xl font-semibold tracking-tight text-foreground;
   }
 
   h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-xl font-semibold tracking-tight text-foreground;
   }
 
   h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-lg font-semibold text-foreground;
   }
 
   label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-sm font-medium text-foreground;
   }
 
   button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    @apply text-sm font-medium;
   }
 
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
+  input, textarea, select {
+    @apply text-sm font-normal text-foreground bg-background;
   }
 }
 

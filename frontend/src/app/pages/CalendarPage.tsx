@@ -196,7 +196,7 @@ export function CalendarPage() {
   }, [events]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground transition-colors duration-150">
       <Header />
 
       <main className="p-4 sm:p-8">

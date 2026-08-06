@@ -22,7 +22,7 @@ export function CommunityDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 p-6 sm:p-8">
+      <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground p-6 sm:p-8 transition-colors duration-150">
         <div className="max-w-[1440px] mx-auto space-y-6">
           <CommunityHeaderSkeleton />
         </div>
@@ -32,22 +32,22 @@ export function CommunityDetail() {
 
   if (isError || !community) {
     return (
-      <div className="min-h-screen bg-gray-50/50 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl border border-gray-200 p-12 text-center max-w-md w-full shadow-md space-y-4">
-          <h2 className="text-2xl font-extrabold text-gray-900">Community Not Found</h2>
-          <p className="text-sm text-gray-500">
+      <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground p-8 flex items-center justify-center transition-colors duration-150">
+        <div className="bg-card text-card-foreground rounded-2xl border border-border p-12 text-center max-w-md w-full shadow-md space-y-4">
+          <h2 className="text-2xl font-extrabold text-foreground">Community Not Found</h2>
+          <p className="text-sm text-muted-foreground">
             The community you are looking for may have been removed or does not exist.
           </p>
           <div className="flex justify-center gap-3 pt-2">
             <button
               onClick={() => navigate('/communities')}
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow hover:bg-blue-700 transition-all"
+              className="px-5 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] cursor-pointer"
             >
               Back to Communities
             </button>
             <button
               onClick={() => refetch()}
-              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all"
+              className="px-5 py-2.5 bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-xl text-xs font-bold transition-all active:scale-[0.98] cursor-pointer"
             >
               Retry
             </button>
@@ -58,13 +58,13 @@ export function CommunityDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground p-4 sm:p-8 transition-colors duration-150">
       <div className="max-w-[1440px] mx-auto space-y-8">
         {/* Navigation header */}
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate('/communities')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-xs font-bold text-foreground/80 hover:bg-accent hover:text-accent-foreground shadow-sm transition-all active:scale-[0.98] cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Communities
@@ -80,13 +80,13 @@ export function CommunityDetail() {
         </ErrorBoundary>
 
         {/* Detail Navigation Tabs */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-2 flex items-center gap-2 shadow-sm max-w-fit">
+        <div className="bg-card text-card-foreground rounded-2xl border border-border p-2 flex items-center gap-2 shadow-sm max-w-fit">
           <button
             onClick={() => setActiveTab('feed')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
               activeTab === 'feed'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             <MessageSquare className="w-4 h-4" />
@@ -94,10 +94,10 @@ export function CommunityDetail() {
           </button>
           <button
             onClick={() => setActiveTab('members')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
               activeTab === 'members'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             <Users className="w-4 h-4" />
@@ -105,10 +105,10 @@ export function CommunityDetail() {
           </button>
           <button
             onClick={() => setActiveTab('about')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer active:scale-[0.98] ${
               activeTab === 'about'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             <Info className="w-4 h-4" />

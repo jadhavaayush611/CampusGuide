@@ -80,7 +80,7 @@ export function AtlasPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-81px)] bg-gray-100/60 overflow-hidden font-sans">
+    <div className="flex h-[calc(100vh-81px)] bg-gray-100/60 dark:bg-background overflow-hidden font-sans text-foreground transition-colors duration-150">
       {/* Left Column: Conversations Sidebar */}
       <AtlasErrorBoundary fallbackTitle="Sidebar Error">
         <AtlasSidebar

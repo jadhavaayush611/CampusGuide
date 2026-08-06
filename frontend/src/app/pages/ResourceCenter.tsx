@@ -121,7 +121,7 @@ export function ResourceCenter() {
       : false;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col font-sans text-foreground transition-colors duration-150">
       <Header />
 
       <main className="p-4 sm:p-6 lg:p-8 flex-1 max-w-[1440px] w-full mx-auto">
@@ -258,12 +258,12 @@ export function ResourceCenter() {
           {isCurrentLoading ? (
             <ResourceSkeleton viewMode={viewMode} count={6} />
           ) : isMainError ? (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center my-6">
-              <h3 className="font-semibold text-red-800 text-lg mb-2">Error Loading Resource Catalog</h3>
-              <p className="text-sm text-red-600 mb-4">Could not connect to resources service.</p>
+            <div className="bg-destructive/5 dark:bg-destructive/10 border border-destructive/20 rounded-2xl p-8 text-center my-6 space-y-4 shadow-xs">
+              <h3 className="font-bold text-foreground text-lg mb-2">Error Loading Resource Catalog</h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">Could not connect to resources service.</p>
               <button
                 onClick={() => refetchMain()}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-destructive hover:bg-destructive/90 text-white rounded-lg text-xs font-semibold transition-all active:scale-[0.98] cursor-pointer shadow-xs"
               >
                 Try Again
               </button>
