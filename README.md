@@ -93,7 +93,7 @@ CampusGuide
 - Node.js 20+ & npm 10+
 - MongoDB Atlas instance or local MongoDB server
 
-### Quick Start
+### Quick Start (Development)
 
 1. **Clone the repository**:
    ```bash
@@ -104,7 +104,7 @@ CampusGuide
 2. **Run Backend**:
    ```bash
    cd backend
-   mvn clean spring-boot:run
+   ./mvnw clean spring-boot:run
    ```
    *Backend runs on `http://localhost:8080`.*
 
@@ -115,6 +115,39 @@ CampusGuide
    npm run dev
    ```
    *Frontend dev server runs on `http://localhost:5173`.*
+
+---
+
+## Production Deployment & Administration
+
+For complete configuration and deployment specifications, please refer to the detailed operational manuals:
+- **Environment Variable Definitions**: [ENVIRONMENT.md](file:///D:/CampusGuide/docs/ENVIRONMENT.md)
+- **Profile, CORS, & Security Configs**: [CONFIGURATION.md](file:///D:/CampusGuide/docs/CONFIGURATION.md)
+- **Deployment & Migration Playbook**: [DEPLOYMENT.md](file:///D:/CampusGuide/docs/DEPLOYMENT.md)
+- **Operational Verification Checklist**: [production-checklist.md](file:///D:/CampusGuide/docs/production-checklist.md)
+
+### Quick Start (Production Setup)
+
+1. **Build Backend Service Bundle**:
+   ```bash
+   cd backend
+   ./mvnw clean package -DskipTests
+   # Output is ready at backend/target/campusguide-0.0.1-SNAPSHOT.jar
+   ```
+
+2. **Build Frontend Static Assets**:
+   ```bash
+   cd ../frontend
+   npm ci
+   npm run build
+   # Compiled files are ready in frontend/dist/
+   ```
+
+3. **Production Execution**:
+   Export the required environment variables (defined in `backend/.env.example`) and start the backend service using the `prod` profile:
+   ```bash
+   java -jar backend/target/campusguide-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+   ```
 
 ---
 

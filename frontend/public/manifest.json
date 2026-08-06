@@ -1,0 +1,16 @@
+{
+  "short_name": "CampusGuide",
+  "name": "CampusGuide Portal",
+  "description": "Centralized Academic & Campus Operations Platform",
+  "icons": [
+    {
+      "src": "vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1e3a8a",
+  "background_color": "#ffffff"
+}

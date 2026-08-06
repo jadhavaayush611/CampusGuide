@@ -1,0 +1,6 @@
+# CampusGuide Robots Exclusion Rules
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://campusguide.example.com/sitemap.xml
