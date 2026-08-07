@@ -32,11 +32,14 @@ import java.util.UUID;
 public class AchievementProgress {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Achievement code must not be blank")
     @Indexed
     private String achievementCode;
 
@@ -61,6 +64,9 @@ public class AchievementProgress {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class AchievementProgressBuilder {
         public AchievementProgressBuilder createdAt(Instant instant) {

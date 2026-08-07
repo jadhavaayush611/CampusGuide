@@ -28,11 +28,14 @@ import java.util.UUID;
 public class CalendarEntry {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
     private String description;
@@ -47,9 +50,11 @@ public class CalendarEntry {
 
     private String location;
 
+    @jakarta.validation.constraints.NotNull(message = "Start time must not be null")
     @Indexed
     private LocalDateTime startTime;
 
+    @jakarta.validation.constraints.NotNull(message = "End time must not be null")
     @Indexed
     private LocalDateTime endTime;
 
@@ -65,6 +70,9 @@ public class CalendarEntry {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class CalendarEntryBuilder {
         public CalendarEntryBuilder createdAt(Instant instant) {

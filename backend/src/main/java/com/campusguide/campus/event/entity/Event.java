@@ -28,10 +28,13 @@ import java.util.UUID;
 public class Event {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
+    @jakarta.validation.constraints.NotBlank(message = "Slug must not be blank")
     @Indexed(unique = true)
     private String slug;
 
@@ -39,6 +42,7 @@ public class Event {
 
     private String summary;
 
+    @jakarta.validation.constraints.NotNull(message = "Council ID must not be null")
     @Indexed
     private UUID councilId;
 
@@ -56,12 +60,15 @@ public class Event {
 
     private Integer capacity;
 
+    @jakarta.validation.constraints.NotNull(message = "Start time must not be null")
     private LocalDateTime startTime;
 
+    @jakarta.validation.constraints.NotNull(message = "End time must not be null")
     private LocalDateTime endTime;
 
     private String bannerUrl;
 
+    @jakarta.validation.constraints.Email(message = "Contact email must be valid")
     private String contactEmail;
 
     private String contactNumber;
@@ -71,6 +78,9 @@ public class Event {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class EventBuilder {
         public EventBuilder createdAt(Instant instant) {

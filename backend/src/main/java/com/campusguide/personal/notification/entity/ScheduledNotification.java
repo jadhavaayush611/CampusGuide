@@ -34,13 +34,17 @@ import java.util.UUID;
 public class ScheduledNotification {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
+    @jakarta.validation.constraints.NotBlank(message = "Message must not be blank")
     private String message;
 
     private NotificationType type;
@@ -48,6 +52,7 @@ public class ScheduledNotification {
     @Indexed
     private NotificationStatus status;
 
+    @jakarta.validation.constraints.NotNull(message = "Scheduled time must not be null")
     @Indexed
     private LocalDateTime scheduledFor;
 
@@ -78,6 +83,9 @@ public class ScheduledNotification {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class ScheduledNotificationBuilder {
         public ScheduledNotificationBuilder createdAt(Instant instant) {

@@ -31,12 +31,15 @@ public class Comment {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Post ID must not be blank")
     @Indexed
     private String postId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Author ID must not be blank")
     @Indexed
     private String authorId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Content must not be blank")
     private String content;
 
     private Boolean isEdited;
@@ -48,6 +51,9 @@ public class Comment {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class CommentBuilder {
         public CommentBuilder createdAt(Instant instant) {

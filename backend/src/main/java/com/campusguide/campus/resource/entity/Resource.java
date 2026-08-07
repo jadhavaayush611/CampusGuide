@@ -33,10 +33,12 @@ public class Resource {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
     private String description;
 
+    @jakarta.validation.constraints.NotBlank(message = "Uploader ID must not be blank")
     @Indexed
     private String uploaderId;
 
@@ -48,6 +50,7 @@ public class Resource {
 
     private List<String> tags;
 
+    @jakarta.validation.constraints.NotBlank(message = "File name must not be blank")
     private String fileName;
 
     private String originalFileName;
@@ -56,6 +59,7 @@ public class Resource {
 
     private Long fileSize;
 
+    @jakarta.validation.constraints.NotBlank(message = "Download URL must not be blank")
     private String downloadUrl;
 
     @Builder.Default
@@ -66,6 +70,9 @@ public class Resource {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class ResourceBuilder {
         public ResourceBuilder createdAt(Instant instant) {

@@ -29,11 +29,14 @@ import java.util.UUID;
 public class PlannerTask {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
     private String description;
@@ -60,6 +63,9 @@ public class PlannerTask {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class PlannerTaskBuilder {
         public PlannerTaskBuilder createdAt(Instant instant) {

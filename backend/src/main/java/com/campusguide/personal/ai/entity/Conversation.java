@@ -34,6 +34,7 @@ public class Conversation {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
@@ -52,6 +53,9 @@ public class Conversation {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class ConversationBuilder {
         public ConversationBuilder createdAt(Instant instant) {

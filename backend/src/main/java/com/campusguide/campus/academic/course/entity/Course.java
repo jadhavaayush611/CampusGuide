@@ -33,18 +33,25 @@ public class Course {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Course code must not be blank")
     @Indexed(unique = true)
     private String courseCode;
 
+    @jakarta.validation.constraints.NotBlank(message = "Course name must not be blank")
     private String courseName;
 
     private String description;
 
+    @jakarta.validation.constraints.NotBlank(message = "Department must not be blank")
     @Indexed
     private String department;
 
+    @jakarta.validation.constraints.NotNull(message = "Credits must not be null")
+    @jakarta.validation.constraints.Min(value = 0, message = "Credits cannot be negative")
     private Integer credits;
 
+    @jakarta.validation.constraints.NotNull(message = "Semester must not be null")
+    @jakarta.validation.constraints.Min(value = 1, message = "Semester must be at least 1")
     @Indexed
     private Integer semester;
 
@@ -59,6 +66,9 @@ public class Course {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class CourseBuilder {
         public CourseBuilder createdAt(Instant instant) {

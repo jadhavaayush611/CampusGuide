@@ -34,11 +34,14 @@ public class Notification {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "User ID must not be blank")
     @Indexed
     private String userId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
+    @jakarta.validation.constraints.NotBlank(message = "Message must not be blank")
     private String message;
 
     private NotificationType type;
@@ -54,6 +57,9 @@ public class Notification {
     private Instant createdAt;
 
     private Instant readAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class NotificationBuilder {
         public NotificationBuilder createdAt(Instant instant) {

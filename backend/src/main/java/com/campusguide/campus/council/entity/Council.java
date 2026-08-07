@@ -23,11 +23,14 @@ import java.util.UUID;
 public class Council {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Name must not be blank")
     @Indexed(unique = true)
     private String name;
 
+    @jakarta.validation.constraints.NotBlank(message = "Slug must not be blank")
     @Indexed(unique = true)
     private String slug;
 
@@ -35,6 +38,7 @@ public class Council {
 
     private String logoUrl;
 
+    @jakarta.validation.constraints.Email(message = "Email must be valid")
     private String email;
 
     private String contactNumber;
@@ -48,6 +52,9 @@ public class Council {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class CouncilBuilder {
         public CouncilBuilder createdAt(Instant instant) {

@@ -32,13 +32,16 @@ public class Roadmap {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
     private String description;
 
+    @jakarta.validation.constraints.NotBlank(message = "Degree program must not be blank")
     @Indexed
     private String degreeProgram;
 
+    @jakarta.validation.constraints.NotBlank(message = "Department must not be blank")
     @Indexed
     private String department;
 
@@ -46,6 +49,7 @@ public class Roadmap {
 
     private Integer expectedGraduationYear;
 
+    @jakarta.validation.constraints.NotBlank(message = "Created by must not be blank")
     @Indexed
     private String createdBy;
 
@@ -57,6 +61,9 @@ public class Roadmap {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class RoadmapBuilder {
         public RoadmapBuilder createdAt(Instant instant) {

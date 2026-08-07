@@ -30,12 +30,12 @@ public class User {
 
     @NotBlank(message = "Email must not be blank")
     @Email(message = "Email must be valid")
-    @Indexed(unique = true)
+    @Indexed(unique = true, partialFilter = "{'email': {$type: 'string'}}")
     private String email;
 
     @NotBlank(message = "Username must not be blank")
     @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters")
-    @Indexed(unique = true)
+    @Indexed(unique = true, partialFilter = "{'username': {$type: 'string'}}")
     private String username;
 
     @NotBlank(message = "Password hash must not be blank")
@@ -55,6 +55,9 @@ public class User {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public String getPassword() {
         return this.passwordHash;

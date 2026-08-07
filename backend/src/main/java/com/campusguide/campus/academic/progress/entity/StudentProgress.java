@@ -30,14 +30,18 @@ public class StudentProgress {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Student ID must not be blank")
     @Indexed(unique = true)
     private String studentId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Roadmap ID must not be blank")
     @Indexed
     private String roadmapId;
 
     private List<String> completedCourseIds;
 
+    @jakarta.validation.constraints.NotNull(message = "Current semester must not be null")
+    @jakarta.validation.constraints.Min(value = 1, message = "Current semester must be at least 1")
     private Integer currentSemester;
 
     private Integer totalCreditsEarned;
@@ -51,6 +55,9 @@ public class StudentProgress {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class StudentProgressBuilder {
         public StudentProgressBuilder createdAt(Instant instant) {

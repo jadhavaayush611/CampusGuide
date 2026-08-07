@@ -31,14 +31,18 @@ import java.util.UUID;
 public class Notice {
 
     @Id
+    @jakarta.validation.constraints.NotNull(message = "ID must not be null")
     private UUID id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     @Indexed
     private String title;
 
+    @jakarta.validation.constraints.NotBlank(message = "Slug must not be blank")
     @Indexed(unique = true)
     private String slug;
 
+    @jakarta.validation.constraints.NotBlank(message = "Content must not be blank")
     private String content;
 
     private String summary;
@@ -66,6 +70,9 @@ public class Notice {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class NoticeBuilder {
         public NoticeBuilder createdAt(Instant instant) {

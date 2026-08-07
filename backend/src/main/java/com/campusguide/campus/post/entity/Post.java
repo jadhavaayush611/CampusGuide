@@ -32,13 +32,17 @@ public class Post {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Title must not be blank")
     private String title;
 
+    @jakarta.validation.constraints.NotBlank(message = "Content must not be blank")
     private String content;
 
+    @jakarta.validation.constraints.NotBlank(message = "Author ID must not be blank")
     @Indexed
     private String authorId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Community ID must not be blank")
     @Indexed
     private String communityId;
 
@@ -59,6 +63,9 @@ public class Post {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class PostBuilder {
         public PostBuilder createdAt(Instant instant) {

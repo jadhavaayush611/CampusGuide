@@ -30,11 +30,13 @@ public class Message {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Conversation ID must not be blank")
     @Indexed
     private String conversationId;
 
     private MessageRole role;
 
+    @jakarta.validation.constraints.NotBlank(message = "Content must not be blank")
     private String content;
 
     @Builder.Default
@@ -42,4 +44,7 @@ public class Message {
 
     @CreatedDate
     private Instant timestamp;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 }

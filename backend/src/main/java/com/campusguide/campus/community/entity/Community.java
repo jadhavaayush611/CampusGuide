@@ -29,6 +29,7 @@ public class Community {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Name must not be blank")
     @Indexed(unique = true)
     private String name;
 
@@ -36,6 +37,7 @@ public class Community {
 
     private String bannerUrl;
 
+    @jakarta.validation.constraints.NotBlank(message = "Council ID must not be blank")
     @Indexed
     private String councilId;
 
@@ -48,6 +50,9 @@ public class Community {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class CommunityBuilder {
         public CommunityBuilder createdAt(Instant instant) {

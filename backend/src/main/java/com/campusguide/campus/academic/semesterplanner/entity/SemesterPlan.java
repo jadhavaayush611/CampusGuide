@@ -32,12 +32,16 @@ public class SemesterPlan {
     @Id
     private String id;
 
+    @jakarta.validation.constraints.NotBlank(message = "Student ID must not be blank")
     @Indexed
     private String studentId;
 
+    @jakarta.validation.constraints.NotBlank(message = "Roadmap ID must not be blank")
     @Indexed
     private String roadmapId;
 
+    @jakarta.validation.constraints.NotNull(message = "Semester number must not be null")
+    @jakarta.validation.constraints.Min(value = 1, message = "Semester number must be at least 1")
     @Indexed
     private Integer semesterNumber;
 
@@ -52,6 +56,9 @@ public class SemesterPlan {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    @org.springframework.data.annotation.Version
+    private Long version;
 
     public static class SemesterPlanBuilder {
         public SemesterPlanBuilder createdAt(Instant instant) {
