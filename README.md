@@ -132,7 +132,7 @@ For complete configuration and deployment specifications, please refer to the de
    ```bash
    cd backend
    ./mvnw clean package -DskipTests
-   # Output is ready at backend/target/campusguide-0.0.1-SNAPSHOT.jar
+   # Output is ready at backend/target/campusguide-1.0.0-MVP.jar
    ```
 
 2. **Build Frontend Static Assets**:
@@ -146,7 +146,7 @@ For complete configuration and deployment specifications, please refer to the de
 3. **Production Execution**:
    Export the required environment variables (defined in `backend/.env.example`) and start the backend service using the `prod` profile:
    ```bash
-   java -jar backend/target/campusguide-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+   java -jar backend/target/campusguide-1.0.0-MVP.jar --spring.profiles.active=prod
    ```
 
 ---

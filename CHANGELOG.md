@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-MVP] - 2026-08-06
+
+### Added
+- Complete MVP Release Candidate stabilization and code audit.
+- Full verification of all core domains: Platform, Academic, Campus, and Personal.
+- Atlas AI streaming response workflow orchestrator with thinking timeline visualization.
+- Production-grade security configuration, hardened CORS profile, secure request headers, and custom exception boundaries.
+- Offline support capabilities, dynamic query caching with TanStack Query, and optimized route prefetching.
+- Complete visual styling audit supporting modern aesthetics (glassmorphism, vibrant colors, premium skeletons, and dark/light modes).
+- Full suite of 300 passing backend tests covering critical controllers, security authorization configurations, and services.
+
+### Changed
+- Standardized package versions in pom.xml and package.json to release v1.0.0-MVP.
+- Cleaned up source code repositories, removed redundant logs and development comments.
+
+
 ## [0.2.0] - 2026-07-25
 
 ### Added

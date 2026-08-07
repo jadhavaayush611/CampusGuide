@@ -30,7 +30,7 @@ Follow this process for a standard clean production deployment:
    ./mvnw clean package -DskipTests
    ```
    *(Note: Skip tests during packaging only if they have already been verified locally or via CI/CD pipelines to speed up build cycles).*
-3. The packaged JAR will be located at `target/campusguide-0.0.1-SNAPSHOT.jar`.
+3. The packaged JAR will be located at `target/campusguide-1.0.0-MVP.jar`.
 
 ### Step B: Build & Bundle Frontend
 1. Navigate to the frontend folder:
@@ -76,7 +76,7 @@ Services must be launched in this order to prevent connection failures:
 2. **Launch AI Gateway (Optional)**: If running a secondary Python recommendations server, launch it first.
 3. **Launch Backend Service**: Run the Spring Boot application jar:
    ```bash
-   java -jar campusguide-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+   java -jar campusguide-1.0.0-MVP.jar --spring.profiles.active=prod
    ```
    Ensure the application console outputs `Startup Configuration Validation complete` with no exceptions.
 4. **Deploy Frontend Web Server**: Spin up the static web hosting for the React `dist/` bundle pointing to the Backend URL.
