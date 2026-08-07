@@ -8,17 +8,40 @@ This guide describes the release architecture, deployment procedure, dependencie
 
 To run CampusGuide in production, the following baseline resources must be provisioned:
 
-1. **Java Runtime**: JDK 25.
-2. **Node.js**: Version 20+ (with npm 10+).
-3. **MongoDB Cluster**: MongoDB Atlas (v6.0 or v7.0 recommended).
-4. **AI Gateway Provider**: Access keys for OpenAI API (`gpt-4o-mini` model capability) or OpenRouter API.
-5. **SMTP Gateway**: Standard SMTP mail relay (e.g., SendGrid, Mailgun, Amazon SES).
+1. **Docker Runtime**: Docker Engine v24.0+ and Docker Compose v2.20+.
+2. **MongoDB Database**: MongoDB Atlas cluster (v6.0 or v7.0 recommended) or self-hosted secure MongoDB service.
+3. **AI Gateway Provider**: Access credentials for OpenAI API (`gpt-4o-mini` model capability) or OpenRouter API.
+4. **SMTP Gateway**: Standard SMTP mail relay (e.g., SendGrid, Mailgun, Amazon SES).
 
 ---
 
-## 2. Deployment Procedure (Step-by-Step)
+## 2. Docker & Containerized Deployment (Recommended)
 
-Follow this process for a standard clean production deployment:
+CampusGuide is fully containerized for production deployment.
+
+### A. Directory Structure of Docker Assets
+* [frontend/Dockerfile](file:///D:/CampusGuide/frontend/Dockerfile): Multi-stage build (Node 20 build stage -> Nginx 1.25 runtime stage).
+* [backend/Dockerfile](file:///D:/CampusGuide/backend/Dockerfile): Multi-stage build (Temurin Java 25 builder -> Temurin 17 JRE runtime stage running as non-root user).
+* [docker-compose.yml](file:///D:/CampusGuide/docker-compose.yml): Base container configuration for development/testing.
+* [docker-compose.prod.yml](file:///D:/CampusGuide/docker-compose.prod.yml): Production overrides ensuring non-exposed ports for internal services, volume persistence, and logging configurations.
+
+### B. Deployment via Docker Compose (Staging/Production)
+1. Copy [backend/.env.example](file:///D:/CampusGuide/backend/.env.example) to `.env` in the root workspace directory.
+2. Update the environment variables in the newly created `.env` file with production secrets.
+3. Launch the container stack:
+   ```bash
+   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+   ```
+4. Verify container execution status:
+   ```bash
+   docker-compose ps
+   ```
+
+---
+
+## 3. Virtual Private Server (VPS) Deployment (Manual)
+
+If deploying directly to a Virtual Private Server (VPS) without Docker containers:
 
 ### Step A: Build & Package Backend
 1. Clone the master repository and navigate to the backend folder:
@@ -27,9 +50,8 @@ Follow this process for a standard clean production deployment:
    ```
 2. Build the production jar using the wrapper:
    ```bash
-   ./mvnw clean package -DskipTests
+   ./mvnw.cmd clean package -DskipTests
    ```
-   *(Note: Skip tests during packaging only if they have already been verified locally or via CI/CD pipelines to speed up build cycles).*
 3. The packaged JAR will be located at `target/campusguide-1.0.0-MVP.jar`.
 
 ### Step B: Build & Bundle Frontend
@@ -45,64 +67,123 @@ Follow this process for a standard clean production deployment:
    ```bash
    npm run build
    ```
-4. The generated assets will be located in the `dist/` directory and are ready to be served by a CDN, Nginx webserver, or Spring Boot static resources mapping.
-
-### Step C: Configure Environment Variables
-Prepare the container orchestration configurations (e.g. Docker Compose, Kubernetes manifests, or systemd services) with the appropriate environment variables. Review the [Environment Specification](file:///D:/CampusGuide/docs/ENVIRONMENT.md) for a complete list of required values.
+4. The generated assets will be located in the `dist/` directory and are ready to be served by Nginx.
 
 ---
 
-## 3. Database Migration Order
+## 4. Nginx Reverse Proxy Setup
 
-CampusGuide uses MongoDB, a document database. While schema migrations are flexible (handled dynamically by spring-data-mongodb document mapping), the indexes and structural collections must be loaded in the following order:
+Nginx is used to host the static frontend assets and reverse proxy `/api` requests to the backend Spring Boot instance.
+
+### Configurations
+* **Main Configuration**: [deployment/nginx/nginx.conf](file:///D:/CampusGuide/deployment/nginx/nginx.conf)
+* **Site Configuration**: [deployment/nginx/campusguide.conf](file:///D:/CampusGuide/deployment/nginx/campusguide.conf)
+
+### Core Features Implemented:
+1. **SPA Fallback Routing**: All non-file URI requests resolve to `index.html` to support client-side React Routing.
+2. **API Proxying**: Requests to `/api/` are forwarded to the backend container (`http://backend:8080`).
+3. **Atlas SSE Compatibility**: Server-Sent Events `/api/v1/atlas/chat/stream` are explicitly exempted from proxy buffering (`proxy_buffering off`) and caching, allowing chunked token streaming.
+4. **WebSocket Compatibility**: Upgrades connections matching `$http_upgrade` seamlessly.
+5. **Caching Policies**:
+   * HTML index: Cache-Control: `no-store, no-cache, must-revalidate` (forces fresh client reads).
+   * Static Assets (`/assets/*`): Cache-Control: `public, max-age=31536000, immutable` (leverages browser caching for hashed bundles).
+6. **Security Headers**: Injects protection headers including `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and custom Content-Security-Policy (CSP) settings.
+7. **Body Size Limits**: Extended to `client_max_body_size 25M` to align with the backend's 20MB file upload limit.
+
+---
+
+## 5. HTTPS & SSL Certificate Guidance
+
+In a production environment, all HTTP traffic must be redirected to HTTPS. 
+
+### A. SSL Termination Options
+* **Option 1 (Cloudflare/CDN)**: Terminate SSL at the DNS CDN level (Flexible/Full mode). Nginx container continues listening on Port 80.
+* **Option 2 (Let's Encrypt / Certbot)**: Install Certbot on the host machine to obtain a free Let's Encrypt certificate.
+  ```bash
+  sudo apt-get install certbot python3-certbot-nginx
+  sudo certbot --nginx -d campusguide.example.com
+  ```
+
+### B. Updating Nginx Site Config for SSL (Port 443)
+Configure Nginx server block to use certificates:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name campusguide.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/campusguide.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/campusguide.example.com/privkey.pem;
+    
+    # Modern TLS configurations...
+}
+```
+
+---
+
+## 6. Database Migration & Seed Order
+
+CampusGuide uses MongoDB. While schema changes are handled dynamically by Spring Data document models, indexes and structural collections must be loaded in the following order during cold-starts:
 
 1. **Academic Collections**:
-   - Save the default courses list to the `courses` collection.
-   - Run prerequisite link validations to ensure roadmaps match course credits.
+   * Pre-seed standard course offerings in `courses` collection.
+   * Run prerequisite link validations to ensure roadmaps match course credits.
 2. **Platform & Auth Roles**:
-   - Pre-populate user roles index on the `users` collection to prevent duplicates.
-   - Create compound index on `email` and `username`.
+   * Create unique indexes on user `email` and `username`.
 3. **AI Knowledge Store**:
-   - Seed the initial campus knowledge graphs (`knowledge_catalog` collection).
-   - Ensure the vector embeddings indexes are initialized for semantic retrieval.
+   * Seed the initial campus knowledge graphs (`knowledge_catalog` collection).
+   * Initialize Vector Indexes in MongoDB Atlas for semantic vector search in the Atlas advisor module.
 
 ---
 
-## 4. Startup Sequence
+## 7. Backup Recommendations
 
-Services must be launched in this order to prevent connection failures:
+To prevent data loss, implement these regular backup policies:
 
-1. **Launch MongoDB**: Verify that the MongoDB instance is online and reachable from the application host.
-2. **Launch AI Gateway (Optional)**: If running a secondary Python recommendations server, launch it first.
-3. **Launch Backend Service**: Run the Spring Boot application jar:
+1. **Database Backups (MongoDB)**:
+   * **Staged / Local**: Run a daily cron job utilizing `mongodump`:
+     ```bash
+     mongodump --uri="mongodb://localhost:27017/campusguide" --out=/backups/mongo/$(date +%F)
+     ```
+   * **Production**: Enable MongoDB Atlas cloud backup policies (hourly snapshot retention).
+2. **File Storage Backups**:
+   * Back up the persistent uploaded resources directory (`STORAGE_LOCATION` target) daily using `tar` or synchronizing to a secure cloud bucket (e.g. AWS S3 Glacier):
+     ```bash
+     tar -czf /backups/uploads/resources-$(date +%F).tar.gz /app/uploads
+     ```
+
+---
+
+## 8. Rolling Deployments & Rollback Strategy
+
+### A. Rolling Deployment Process
+To minimize downtime during production upgrades:
+1. Pre-build the new Docker images on a CI build machine.
+2. Run docker-compose using the new image tag:
    ```bash
-   java -jar campusguide-1.0.0-MVP.jar --spring.profiles.active=prod
+   # Pull the new images
+   docker-compose -f docker-compose.yml -f docker-compose.prod.yml pull
+   # Re-create containers one by one with zero downtime
+   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps backend
+   # After backend is healthy, update Nginx/frontend
+   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps frontend
    ```
-   Ensure the application console outputs `Startup Configuration Validation complete` with no exceptions.
-4. **Deploy Frontend Web Server**: Spin up the static web hosting for the React `dist/` bundle pointing to the Backend URL.
 
----
-
-## 5. Rollback Procedure
-
-If a failure is detected in production (e.g., crash loops, API breaks), execute these recovery steps:
-
+### B. Rollback Strategy
+If an issue is detected during post-release verifications:
 1. **Frontend Rollback**:
-   - Re-deploy the last verified build directory (`dist/` bundle) to the CDN or static host.
+   * Revert the container image tag to the last stable release version and run `docker-compose up -d frontend`.
 2. **Backend Rollback**:
-   - Terminate the active failing application process.
-   - Pull the previous stable JAR package release.
-   - Restart the process using the previous JAR package.
-3. **Database Restore**:
-   - If migrations made breaking database schema adjustments, restore the database from the last automated snapshot (e.g., MongoDB Atlas point-in-time recovery) taken immediately prior to deployment.
+   * Stop the failing container immediately.
+   * Pull the last stable jar version or container image.
+   * Restart the service container.
+3. **Database Rollback**:
+   * If a release included structural schema changes that broke compatibility, restore database state from the last snapshot backup taken immediately before the release window.
 
 ---
 
-## 6. MVP Limitations
+## 9. MVP Limitations
 
-The MVP release of CampusGuide contains several structural constraints that should be resolved in subsequent iterations:
+* **Local Storage Fallback**: Attached resources are uploaded to a local disk folder. In multi-instance deployments, switch to a cloud storage provider (AWS S3) by injecting S3 variables.
+* **Actuator Endpoint Exposure**: Monitoring metrics are visible. Block external access to `/actuator` path in cloud firewall or private VPC settings.
+* **FCM Simulated Alerts**: Browser notification relays default to local UI alerts because simulated FCM parameters are used in local configs.
 
-- **Local Storage Limitations**: Attached resources are uploaded to a local disk folder. In a scaled or multi-instance deployment, this must be switched to a cloud storage provider (like Amazon S3).
-- **Embedded Database for Tests**: The test suite spins up an ephemeral database that takes around 30 seconds to extract during first compilation; subsequent test runs utilize caching.
-- **Actuator Endpoint Exposure**: Probes are exposed openly. They must be secured behind admin roles or restricted to internal VPC subnets in network configurations.
-- **FCM Simulated Alerts**: In-app notifications are stored inside the database, but Firebase Cloud Messaging client integrations rely on simulated parameters.

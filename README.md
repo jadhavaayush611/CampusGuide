@@ -121,17 +121,30 @@ CampusGuide
 ## Production Deployment & Administration
 
 For complete configuration and deployment specifications, please refer to the detailed operational manuals:
+- **Canonical Production Release Guide**: [production-release.md](file:///D:/CampusGuide/docs/release/production-release.md)
 - **Environment Variable Definitions**: [ENVIRONMENT.md](file:///D:/CampusGuide/docs/ENVIRONMENT.md)
 - **Profile, CORS, & Security Configs**: [CONFIGURATION.md](file:///D:/CampusGuide/docs/CONFIGURATION.md)
 - **Deployment & Migration Playbook**: [DEPLOYMENT.md](file:///D:/CampusGuide/docs/DEPLOYMENT.md)
 - **Operational Verification Checklist**: [production-checklist.md](file:///D:/CampusGuide/docs/production-checklist.md)
 
-### Quick Start (Production Setup)
+### Quick Start (Docker Production Setup)
+
+To deploy the entire production stack (Nginx proxy + Frontend SPA + Spring Boot Backend + MongoDB Database) using Docker Compose:
+
+1. **Configure Environment Variables**:
+   Copy [backend/.env.example](file:///D:/CampusGuide/backend/.env.example) to `.env` in the root folder, and fill in the required database credentials, JWT secrets, and API keys.
+
+2. **Launch Stack**:
+   ```bash
+   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+   ```
+
+### Quick Start (Manual Setup)
 
 1. **Build Backend Service Bundle**:
    ```bash
    cd backend
-   ./mvnw clean package -DskipTests
+   ./mvnw.cmd clean package -DskipTests
    # Output is ready at backend/target/campusguide-1.0.0-MVP.jar
    ```
 
@@ -144,7 +157,7 @@ For complete configuration and deployment specifications, please refer to the de
    ```
 
 3. **Production Execution**:
-   Export the required environment variables (defined in `backend/.env.example`) and start the backend service using the `prod` profile:
+   Export the required environment variables and start the backend service:
    ```bash
    java -jar backend/target/campusguide-1.0.0-MVP.jar --spring.profiles.active=prod
    ```

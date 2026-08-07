@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  database:
+    image: mongo:6.0
+    container_name: campusguide-db-prod
+    environment:
+      - MONGO_INITDB_DATABASE=campusguide
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongo-prod-data:/data/db
+    ports:
+      - "127.0.0.1:27017:27017" # Bound to localhost only for secure access if needed
+    networks:
+      - campusguide-prod-net
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: campusguide-backend-prod
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DATABASE_URL=mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@database:27017/campusguide?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
+      - STORAGE_LOCATION=/app/uploads
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - AI_GATEWAY_BASE_URL=${AI_GATEWAY_BASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+    volumes:
+      - backend-prod-uploads:/app/uploads
+    depends_on:
+      - database
+    expose:
+      - "8080" # Exposed internally to the Docker network only
+    networks:
+      - campusguide-prod-net
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api/v1 # Nginx handles routing as reverse proxy
+    container_name: campusguide-frontend-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/nginx/campusguide.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - campusguide-prod-net
+    restart: always
+
+volumes:
+  mongo-prod-data:
+  backend-prod-uploads:
+
+networks:
+  campusguide-prod-net:
+    driver: bridge

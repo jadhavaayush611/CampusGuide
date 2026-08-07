@@ -56,6 +56,9 @@ All variables used by the backend are defined below. Example file can be found i
 | `DATABASE_URL` | String | All | *(None in prod)* | Connection URI for the MongoDB Atlas database instance. |
 | `DATABASE_USERNAME` | String | Optional | *(None)* | Database username (if not embedded directly in the connection URI). |
 | `DATABASE_PASSWORD` | String | Optional | *(None)* | Database password (if not embedded directly in the connection URI). |
+| `MONGO_ROOT_USER` | String | Docker Prod | *(None)* | Root username for the production database container. |
+| `MONGO_ROOT_PASSWORD` | String | Docker Prod | *(None)* | Root password for the production database container. |
+
 
 ### 4. Notification & SMTP Config
 
