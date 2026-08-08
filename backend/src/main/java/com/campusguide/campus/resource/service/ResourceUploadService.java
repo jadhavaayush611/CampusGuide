@@ -20,16 +20,16 @@ public class ResourceUploadService {
 
     private static final long MAX_FILE_SIZE = 20 * 1024 * 1024L; // 20 MB
 
-    private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.ms-powerpoint",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "image/jpeg",
-            "image/png"
+    private static final java.util.Map<String, Set<String>> MIME_TO_EXTENSIONS = java.util.Map.of(
+            "application/pdf", Set.of(".pdf"),
+            "application/msword", Set.of(".doc"),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Set.of(".docx"),
+            "application/vnd.ms-powerpoint", Set.of(".ppt"),
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", Set.of(".pptx"),
+            "application/vnd.ms-excel", Set.of(".xls"),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Set.of(".xlsx"),
+            "image/jpeg", Set.of(".jpg", ".jpeg"),
+            "image/png", Set.of(".png")
     );
 
     /**
@@ -47,8 +47,24 @@ public class ResourceUploadService {
         }
 
         String mimeType = file.getContentType();
-        if (mimeType == null || !ALLOWED_MIME_TYPES.contains(mimeType)) {
+        if (mimeType == null || !MIME_TO_EXTENSIONS.containsKey(mimeType)) {
             throw new BadRequestException("Unsupported MIME type: " + mimeType);
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new BadRequestException("Original filename is missing");
+        }
+
+        int extensionIndex = originalFilename.lastIndexOf('.');
+        if (extensionIndex == -1) {
+            throw new BadRequestException("File extension is missing");
+        }
+        String extension = originalFilename.substring(extensionIndex).toLowerCase();
+
+        Set<String> allowedExtensions = MIME_TO_EXTENSIONS.get(mimeType);
+        if (allowedExtensions == null || !allowedExtensions.contains(extension)) {
+            throw new BadRequestException("File extension " + extension + " does not match MIME type " + mimeType);
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {

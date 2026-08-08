@@ -20,8 +20,17 @@ public class CorsConfig {
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private List<String> allowedOrigins;
 
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+            if (allowedOrigins != null && (allowedOrigins.contains("*") || allowedOrigins.contains("all"))) {
+                throw new IllegalStateException("Wildcard CORS origins are not allowed in production profile");
+            }
+        }
+
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));

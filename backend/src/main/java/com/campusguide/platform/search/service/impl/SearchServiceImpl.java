@@ -50,6 +50,9 @@ public class SearchServiceImpl implements SearchService {
         if (request == null || request.getQuery() == null || request.getQuery().trim().isEmpty()) {
             throw new BadRequestException("Search query cannot be blank");
         }
+        if (request.getQuery().length() > 255) {
+            throw new BadRequestException("Search query too long (max 255 characters)");
+        }
 
         // Verify user exists to respect "authenticated access"
         User user = currentUserService.getCurrentUser(userDetails);
