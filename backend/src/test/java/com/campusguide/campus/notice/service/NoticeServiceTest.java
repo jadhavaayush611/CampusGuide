@@ -206,8 +206,8 @@ class NoticeServiceTest {
                 .expiresAt(now.minusDays(1))
                 .build();
 
-        when(noticeRepository.findByIsPublishedTrue())
-                .thenReturn(List.of(normalHigh, pinnedLow, pinnedUrgent, expiredNotice));
+        when(noticeRepository.findActiveNotices(org.mockito.ArgumentMatchers.any(LocalDateTime.class)))
+                .thenReturn(List.of(normalHigh, pinnedLow, pinnedUrgent));
 
         List<NoticeResponse> responses = noticeService.getAllNotices(false);
 

@@ -19,5 +19,11 @@ public interface NoticeRepository extends MongoRepository<Notice, UUID> {
 
     List<Notice> findByIsPublishedTrue();
 
+    @org.springframework.data.mongodb.repository.Query("{ 'isPublished': true, '$and': [ " +
+           "  { '$or': [ { 'publishedAt': null }, { 'publishedAt': { '$lte': ?0 } } ] }, " +
+           "  { '$or': [ { 'expiresAt': null }, { 'expiresAt': { '$gt': ?0 } } ] } " +
+           "] }")
+    List<Notice> findActiveNotices(java.time.LocalDateTime now);
+
     List<Notice> findByCouncilId(UUID councilId);
 }

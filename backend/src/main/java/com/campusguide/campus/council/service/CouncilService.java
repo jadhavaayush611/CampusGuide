@@ -14,6 +14,8 @@ import com.campusguide.campus.council.repository.CouncilRepository;
 import com.campusguide.campus.event.repository.EventRepository;
 import com.campusguide.campus.resource.repository.ResourceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -38,6 +40,7 @@ public class CouncilService {
      * @return created CouncilResponse
      * @throws DuplicateCouncilException if name or slug already exists
      */
+    @CacheEvict(value = "councils", allEntries = true)
     public CouncilResponse createCouncil(CreateCouncilRequest request) {
         if (councilRepository.existsByName(request.getName())) {
             throw new DuplicateCouncilException("Council with name '" + request.getName() + "' already exists");
@@ -56,6 +59,7 @@ public class CouncilService {
      *
      * @return list of CouncilResponse
      */
+    @Cacheable(value = "councils")
     public List<CouncilResponse> getAllCouncils() {
         List<Council> councils = councilRepository.findAll();
         return councilMapper.toResponseList(councils);
@@ -68,6 +72,7 @@ public class CouncilService {
      * @return CouncilResponse
      * @throws CouncilNotFoundException if no council exists with given id
      */
+    @Cacheable(value = "councils", key = "#id")
     public CouncilResponse getCouncilById(UUID id) {
         Council council = councilRepository.findById(id)
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with ID: " + id));
@@ -81,6 +86,7 @@ public class CouncilService {
      * @return CouncilResponse
      * @throws CouncilNotFoundException if no council exists with given slug
      */
+    @Cacheable(value = "councils", key = "#slug")
     public CouncilResponse getCouncilBySlug(String slug) {
         Council council = councilRepository.findBySlug(slug)
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with slug: " + slug));
@@ -96,6 +102,7 @@ public class CouncilService {
      * @throws CouncilNotFoundException if no council exists with given id
      * @throws DuplicateCouncilException if updated name or slug collides with another council
      */
+    @CacheEvict(value = "councils", allEntries = true)
     public CouncilResponse updateCouncil(UUID id, UpdateCouncilRequest request) {
         Council council = councilRepository.findById(id)
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with ID: " + id));
@@ -120,6 +127,7 @@ public class CouncilService {
      * @return updated CouncilResponse
      * @throws CouncilNotFoundException if no council exists with given id
      */
+    @CacheEvict(value = "councils", allEntries = true)
     public CouncilResponse updateCouncilStatus(UUID id, UpdateCouncilStatusRequest request) {
         Council council = councilRepository.findById(id)
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with ID: " + id));
@@ -139,6 +147,7 @@ public class CouncilService {
      * @throws CouncilNotFoundException if no council exists with given id
      * @throws CouncilHasDependenciesException if dependent entities exist
      */
+    @CacheEvict(value = "councils", allEntries = true)
     public void deleteCouncil(UUID id) {
         Council council = councilRepository.findById(id)
                 .orElseThrow(() -> new CouncilNotFoundException("Council not found with ID: " + id));

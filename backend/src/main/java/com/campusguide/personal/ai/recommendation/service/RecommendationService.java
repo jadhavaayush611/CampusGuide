@@ -87,7 +87,7 @@ public class RecommendationService {
         }
 
         if (!recommendations.isEmpty() && !notificationService.hasUnreadNotificationOfType(user.getId(), NotificationType.AI)) {
-            notificationService.createNotification(
+            notificationService.createNotificationAsync(
                     user.getId(),
                     "New Recommendations Available",
                     "We have generated new personalized recommendations for you. Explore them in the AI dashboard!",

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,20 @@ public class ExecutionDispatcher {
     private final ToolExecutor toolExecutor;
     private final EventPublisher eventPublisher;
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+    @PreDestroy
+    public void shutdown() {
+        log.info("Shutting down ExecutionDispatcher executorService...");
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
 
     public Map<String, ToolResult> dispatchUnits(WorkflowInstance instance, ExecutionStage stage) {
         Map<String, ToolResult> results = new ConcurrentHashMap<>();

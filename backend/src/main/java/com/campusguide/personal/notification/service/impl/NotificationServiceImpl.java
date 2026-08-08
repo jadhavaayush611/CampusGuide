@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -140,6 +141,19 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public boolean hasUnreadNotificationOfType(String userId, NotificationType type) {
         return notificationRepository.existsByUserIdAndTypeAndReadFalse(userId, type);
+    }
+
+    @Override
+    @Async("taskExecutor")
+    public void createNotificationAsync(String userId, String title, String message, 
+                                        NotificationType type, NotificationPriority priority, 
+                                        Map<String, Object> metadata) {
+        log.debug("Asynchronously dispatching notification of type {} to user {}", type, userId);
+        try {
+            createNotification(userId, title, message, type, priority, metadata);
+        } catch (Exception e) {
+            log.error("Failed to asynchronously dispatch notification to user {}: {}", userId, e.getMessage(), e);
+        }
     }
 
     private User getUser(UserDetails userDetails) {

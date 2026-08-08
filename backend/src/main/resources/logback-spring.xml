@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Use Spring Boot default patterns and rules if available -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Standardized Log Pattern including MDC properties for request tracking -->
+    <property name="CONSOLE_LOG_PATTERN" 
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%thread]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} [correlationId=%X{correlationId:-} requestPath=%X{requestPath:-} httpMethod=%X{httpMethod:-}] %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Configure Root log level -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Project-specific logger configuration with additivity="false" to prevent duplicate logging -->
+    <logger name="com.campusguide" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Quiet down chatty libraries in production -->
+    <logger name="org.springframework" level="INFO" />
+    <logger name="org.mongodb.driver" level="WARN" />
+</configuration>

@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import jakarta.annotation.PreDestroy;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +30,20 @@ public class AtlasStreamingServiceImpl implements AtlasStreamingService {
     private final AtlasSecurityManager securityManager;
 
     private final ExecutorService streamingExecutor = Executors.newCachedThreadPool();
+
+    @PreDestroy
+    public void shutdown() {
+        log.info("Shutting down AtlasStreamingServiceImpl streamingExecutor...");
+        streamingExecutor.shutdown();
+        try {
+            if (!streamingExecutor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                streamingExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            streamingExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
 
     @Override
     public SseEmitter streamChat(AtlasChatRequest request, String lastEventId, UserDetails userDetails) {

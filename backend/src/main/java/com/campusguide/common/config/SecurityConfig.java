@@ -73,7 +73,10 @@ public class SecurityConfig {
                         "/error",
                         "/api/v1/atlas/health",
                         "/api/v1/atlas/ready",
-                        "/api/v1/atlas/live"
+                        "/api/v1/atlas/live",
+                        "/actuator/health",
+                        "/actuator/health/**",
+                        "/actuator/info"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

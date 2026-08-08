@@ -53,12 +53,9 @@ public class NoticeService {
 
         boolean allowUnpublished = Boolean.TRUE.equals(includeUnpublished) && isCurrentUserAdmin();
         if (allowUnpublished) {
-            notices = noticeRepository.findAll();
+            notices = new java.util.ArrayList<>(noticeRepository.findAll());
         } else {
-            notices = noticeRepository.findByIsPublishedTrue().stream()
-                    .filter(n -> n.getPublishedAt() == null || !n.getPublishedAt().isAfter(now))
-                    .filter(n -> n.getExpiresAt() == null || n.getExpiresAt().isAfter(now))
-                    .collect(Collectors.toList());
+            notices = new java.util.ArrayList<>(noticeRepository.findActiveNotices(now));
         }
 
         notices.sort(NOTICE_COMPARATOR);

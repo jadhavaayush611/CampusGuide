@@ -53,7 +53,7 @@ public class EventRegistrationService {
         event.setUpdatedAt(Instant.now());
         event = eventRepository.save(event);
 
-        notificationService.createNotification(
+        notificationService.createNotificationAsync(
                 user.getId(),
                 "Event Registration Confirmed",
                 "You have successfully registered for the event: " + event.getTitle(),

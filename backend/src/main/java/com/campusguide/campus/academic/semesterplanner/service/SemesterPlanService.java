@@ -299,7 +299,7 @@ public class SemesterPlanService {
 
         plan.setUpdatedAt(Instant.now());
         plan = semesterPlanRepository.save(plan);
-        notificationService.createNotification(
+        notificationService.createNotificationAsync(
                 user.getId(),
                 "Semester Plan Finalized",
                 "Your plan for Semester " + plan.getSemesterNumber() + " has been successfully finalized.",

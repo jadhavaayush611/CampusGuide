@@ -77,7 +77,7 @@ public class RoadmapService {
                 .build();
 
         roadmap = roadmapRepository.save(roadmap);
-        notificationService.createNotification(
+        notificationService.createNotificationAsync(
                 user.getId(),
                 "Roadmap Published",
                 "Your academic roadmap '" + roadmap.getTitle() + "' has been successfully published.",

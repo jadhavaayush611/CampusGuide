@@ -18,6 +18,10 @@ public interface NotificationService {
                                             NotificationType type, NotificationPriority priority, 
                                             Map<String, Object> metadata);
 
+    void createNotificationAsync(String userId, String title, String message, 
+                                 NotificationType type, NotificationPriority priority, 
+                                 Map<String, Object> metadata);
+
     Page<NotificationResponse> listNotifications(UserDetails userDetails, Pageable pageable);
 
     Page<NotificationResponse> listUnreadNotifications(UserDetails userDetails, Pageable pageable);
