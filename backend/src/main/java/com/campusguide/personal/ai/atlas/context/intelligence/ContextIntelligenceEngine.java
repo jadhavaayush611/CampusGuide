@@ -201,6 +201,9 @@ public class ContextIntelligenceEngine {
             // Enrich with CampusKnowledgeService if prompt contains matching entities
             if (queryContext != null && queryContext.getRawQuery() != null) {
                 String q = queryContext.getRawQuery();
+                String qLower = q.toLowerCase();
+
+                // 1. Buildings match
                 campusKnowledgeService.getBuilding(q).ifPresent(b -> {
                     RetrievalEvidence bEv = RetrievalEvidence.builder()
                             .type(EvidenceType.CAMPUS_KNOWLEDGE)
@@ -213,6 +216,120 @@ public class ContextIntelligenceEngine {
                     bEv.getScore().calculateOverallScore();
                     campusEvList.add(bEv);
                 });
+
+                // 2. Departments match
+                for (var d : campusKnowledgeService.getDepartments()) {
+                    if (qLower.contains(d.getCode().toLowerCase()) || qLower.contains(d.getName().toLowerCase())) {
+                        RetrievalEvidence dEv = RetrievalEvidence.builder()
+                                .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                                .source(EvidenceSource.KNOWLEDGE_BASE)
+                                .entityKey("department:" + d.getCode())
+                                .contentSnippet(String.format("Department: %s (%s). Floor/Location: %s HOD Office and Staff Room. HOD: %s. Contact Email: %s. Phone: %s.",
+                                        d.getName(), d.getCode(), 
+                                        d.getCode().equals("ECS") ? "Ground Floor" :
+                                        d.getCode().equals("AURO") ? "1st Floor" :
+                                        d.getCode().equals("AIDS") ? "2nd Floor" :
+                                        d.getCode().equals("CMPN") ? "3rd Floor" :
+                                        d.getCode().equals("EXTC") ? "4th Floor" : "5th Floor",
+                                        d.getHeadOfDepartment(), d.getContactEmail(), d.getPhone()))
+                                .rationale("Knowledge service match for department query")
+                                .score(EvidenceScore.builder().relevanceScore(0.98).confidenceScore(0.95).sourceAuthorityScore(0.90).qualityScore(0.95).build())
+                                .build();
+                        dEv.getScore().calculateOverallScore();
+                        campusEvList.add(dEv);
+                    }
+                }
+
+                // 3. Classrooms, Facilities, Lifts, Washrooms match
+                for (var c : campusKnowledgeService.getClassrooms()) {
+                    String roomLower = c.getRoomNumber().toLowerCase();
+                    boolean match = qLower.contains(roomLower);
+                    if (!match) {
+                        if (qLower.contains("library") && roomLower.contains("library")) match = true;
+                        else if (qLower.contains("principal") && roomLower.contains("principal")) match = true;
+                        else if (qLower.contains("amphitheatre") && roomLower.contains("amphi")) match = true;
+                        else if (qLower.contains("lift") && roomLower.contains("lift")) match = true;
+                        else if (qLower.contains("washroom") && (roomLower.contains("washroom") || roomLower.contains("toilet"))) match = true;
+                        else if (qLower.contains("workshop") && (roomLower.contains("workshop") || roomLower.contains("woodwork") || roomLower.contains("metalwork"))) match = true;
+                        else if (qLower.contains("canteen") && roomLower.contains("canteen")) match = true;
+                        else if (qLower.contains("common room") && roomLower.contains("common room")) match = true;
+                    }
+                    if (match) {
+                        RetrievalEvidence cEv = RetrievalEvidence.builder()
+                                .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                                .source(EvidenceSource.KNOWLEDGE_BASE)
+                                .entityKey("classroom:" + c.getClassroomId())
+                                .contentSnippet(String.format("Facility/Room: %s. Building: %s. Features: %s.",
+                                        c.getRoomNumber(), c.getBuildingId(), String.join(", ", c.getFeatures())))
+                                .rationale("Knowledge service match for facility/classroom query")
+                                .score(EvidenceScore.builder().relevanceScore(0.98).confidenceScore(0.95).sourceAuthorityScore(0.90).qualityScore(0.95).build())
+                                .build();
+                        cEv.getScore().calculateOverallScore();
+                        campusEvList.add(cEv);
+                    }
+                }
+
+                // 4. Batches query match
+                if (qLower.contains("batch") || qLower.contains("batches")) {
+                    RetrievalEvidence bEv = RetrievalEvidence.builder()
+                            .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                            .source(EvidenceSource.KNOWLEDGE_BASE)
+                            .entityKey("academic_batches")
+                            .contentSnippet("Authoritative VESIT academic batch structure:\n" +
+                                    "- ECS: D1EC (FE), D6EC (SE), D11EC (TE), D16EC (BE)\n" +
+                                    "- AIDS: D1ADA, D1ADB (FE), D6ADA, D6ADB (SE), D11ADA, D11ADB (TE), D16ADA, D16ADB (BE)\n" +
+                                    "- CMPN: D2A, D2B, D2C (FE), D7A, D7B, D7C (SE), D12A, D12B, D12C (TE), D17A, D17B, D17C (BE)\n" +
+                                    "- AURO: D3 (FE), D8 (SE), D13 (TE), D18 (BE)\n" +
+                                    "- EXTC: D4A, D4B (FE), D9A, D9B (SE), D14A, D14B (TE), D19A, D19B (BE)\n" +
+                                    "- IT: D5A, D5B, D5C (FE), D10A, D10B, D10C (SE), D15A, D15B, D15C (TE), D20A, D20B, D20C (BE)")
+                            .rationale("Authoritative academic batch listing query match")
+                            .score(EvidenceScore.builder().relevanceScore(0.99).confidenceScore(0.99).sourceAuthorityScore(0.99).qualityScore(0.99).build())
+                            .build();
+                    bEv.getScore().calculateOverallScore();
+                    campusEvList.add(bEv);
+                }
+
+                // 5. Councils query match
+                if (qLower.contains("council") || qLower.contains("councils")) {
+                    RetrievalEvidence cEv = RetrievalEvidence.builder()
+                            .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                            .source(EvidenceSource.KNOWLEDGE_BASE)
+                            .entityKey("campus_councils")
+                            .contentSnippet("Authoritative list of VESIT Councils:\n" +
+                                    "- VESLANG: VES's Language Council, promoting debate and public speaking.\n" +
+                                    "- VESLIT: VES's Literature Council, celebrating writing, poetry, and literature.\n" +
+                                    "- SORT: Social Outreach and Reflexive Tribulations (SORT) - Donation drives and social work.\n" +
+                                    "- CC: Cultural Council (CC), organizing music, dance, and drama events.\n" +
+                                    "- Sports: Sports Council, managing athletic events and tournaments.\n" +
+                                    "- IEEE: Technical Council, IEEE Student Branch VESIT facilitating technical growth.\n" +
+                                    "- iSTE: Technical Council, Indian Society for Technical Education (iSTE) VESIT Chapter.\n" +
+                                    "- ISA: Technical Council, International Society of Automation (ISA) VESIT Chapter.\n" +
+                                    "- CSI: Technical Council, Computer Society of India (CSI) VESIT Chapter.")
+                            .rationale("Authoritative council listing query match")
+                            .score(EvidenceScore.builder().relevanceScore(0.99).confidenceScore(0.99).sourceAuthorityScore(0.99).qualityScore(0.99).build())
+                            .build();
+                    cEv.getScore().calculateOverallScore();
+                    campusEvList.add(cEv);
+                }
+
+                // 6. Communities query match
+                if (qLower.contains("communit") || qLower.contains("club") || qLower.contains("ai")) {
+                    RetrievalEvidence coEv = RetrievalEvidence.builder()
+                            .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                            .source(EvidenceSource.KNOWLEDGE_BASE)
+                            .entityKey("campus_communities")
+                            .contentSnippet("Authoritative list of VESIT Communities:\n" +
+                                    "- Google Developer Groups (GDG): Google Developer Groups VESIT (AI and tech club).\n" +
+                                    "- AI & ML Club: Artificial Intelligence & Machine Learning Club.\n" +
+                                    "- Cybersecurity Club: Cybersecurity and Ethical Hacking Club (IEEE).\n" +
+                                    "- Web Development Club: Modern Web Development and Design Club.\n" +
+                                    "- Photography Club: Capturing moments and creative expression (CC).")
+                            .rationale("Authoritative community listing query match")
+                            .score(EvidenceScore.builder().relevanceScore(0.99).confidenceScore(0.99).sourceAuthorityScore(0.99).qualityScore(0.99).build())
+                            .build();
+                    coEv.getScore().calculateOverallScore();
+                    campusEvList.add(coEv);
+                }
             }
 
             EvidenceBundle campusBundle = EvidenceBundle.builder()

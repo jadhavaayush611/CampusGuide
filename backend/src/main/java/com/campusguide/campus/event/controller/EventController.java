@@ -36,6 +36,13 @@ public class EventController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/upcoming")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<EventResponse>> getUpcomingEvents() {
+        List<EventResponse> response = eventService.getPublicUpcomingEvents();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<EventResponse> getEventById(@PathVariable UUID id) {

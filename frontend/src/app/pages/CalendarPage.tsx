@@ -192,8 +192,9 @@ export function CalendarPage() {
 
   // Count conflict events
   const conflictEventsCount = useMemo(() => {
+    if (isError) return 0;
     return events.filter((e) => e.hasConflict).length;
-  }, [events]);
+  }, [events, isError]);
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground transition-colors duration-150">
