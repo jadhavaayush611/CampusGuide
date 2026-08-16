@@ -225,9 +225,10 @@ export function useAtlasStreamChat() {
             setIsStreaming(false);
 
             // Invalidate conversation history cache if conversationId is provided
-            if (options.conversationId) {
+            const finalConvId = options.conversationId || data?.conversationId;
+            if (finalConvId) {
               queryClient.invalidateQueries({
-                queryKey: queryKeys.conversations.history(options.conversationId),
+                queryKey: queryKeys.conversations.history(finalConvId),
               });
               queryClient.invalidateQueries({
                 queryKey: queryKeys.conversations.all,

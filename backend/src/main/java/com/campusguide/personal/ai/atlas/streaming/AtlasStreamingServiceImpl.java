@@ -57,6 +57,7 @@ public class AtlasStreamingServiceImpl implements AtlasStreamingService {
         }
 
         String convId = request.getConversationId() != null ? request.getConversationId() : "conv_" + UUID.randomUUID().toString();
+        request.setConversationId(convId);
         StreamSession session = streamPublisher.createSession(convId, userId);
         SseEmitter emitter = streamPublisher.subscribeSse(session.getSessionId(), lastEventId);
 
