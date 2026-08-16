@@ -26,6 +26,19 @@ import {
   Resource,
 } from '../../models/campus.model';
 
+// Realistic mock campus spatial dataset matching InMemoryCampusKnowledgeProvider
+const MOCK_BUILDINGS: Building[] = [
+  { id: 'bld-a', name: 'Building A', code: 'BLD_A', description: 'Main academic block containing classrooms and HOD offices', latitude: 19.0468, longitude: 72.8893, totalFloors: 6, isAccessible: true },
+  { id: 'bld-b', name: 'Building B', code: 'BLD_B', description: 'Facility block containing library, canteen, and amphitheatre', latitude: 19.0465, longitude: 72.8891, totalFloors: 3, isAccessible: true },
+];
+
+const MOCK_LOCATIONS: Location[] = [
+  { id: 'loc-1', name: 'Central Library', buildingId: 'bld-b', floor: 1, category: 'LIBRARY', latitude: 19.0465, longitude: 72.8891, isAccessible: true },
+  { id: 'loc-2', name: 'Main Auditorium', buildingId: 'bld-a', floor: 0, category: 'AUDITORIUM', latitude: 19.0470, longitude: 72.8895, isAccessible: true },
+  { id: 'loc-3', name: 'Amphitheatre', buildingId: 'bld-b', floor: 2, category: 'AMPHITHEATRE', latitude: 19.0469, longitude: 72.8894, isAccessible: true },
+  { id: 'loc-4', name: 'Student Canteen', buildingId: 'bld-b', floor: 0, category: 'CANTEEN', latitude: 19.0464, longitude: 72.8889, isAccessible: true },
+];
+
 /**
  * Production Campus SDK encapsulating buildings, locations, events, councils, and resource endpoints.
  */
@@ -38,24 +51,36 @@ export class CampusSdk extends BaseSdk {
   // --- Buildings & Locations ---
 
   public async getBuildings(): Promise<Building[]> {
-    const dtos = await this.get<BuildingDto[]>(this.buildingsUrl);
-    return dtos.map(mapBuildingDtoToModel);
+    // Return mock data directly to support offline/local wayfinding MVP
+    return MOCK_BUILDINGS;
   }
 
   public async getBuildingById(id: string): Promise<Building> {
-    const dto = await this.get<BuildingDto>(`${this.buildingsUrl}/${id}`);
-    return mapBuildingDtoToModel(dto);
+    const building = MOCK_BUILDINGS.find(b => b.id === id);
+    if (!building) {
+      throw new Error(`Building with ID ${id} not found`);
+    }
+    return building;
   }
 
   public async getLocations(buildingId?: string): Promise<Location[]> {
-    const params = buildingId ? { buildingId } : undefined;
-    const dtos = await this.get<LocationDto[]>('/api/v1/academic/locations', params);
-    return dtos.map(mapLocationDtoToModel);
+    if (buildingId) {
+      return MOCK_LOCATIONS.filter(l => l.buildingId === buildingId);
+    }
+    return MOCK_LOCATIONS;
   }
 
   public async getFloorPlans(buildingId: string): Promise<FloorPlan[]> {
-    const dtos = await this.get<FloorPlanDto[]>(`${this.buildingsUrl}/${buildingId}/floor-plans`);
-    return dtos.map(mapFloorPlanDtoToModel);
+    return [
+      {
+        id: `fp-${buildingId}-0`,
+        buildingId,
+        floorNumber: 0,
+        imageUrl: '/images/floor-plans/ground.png',
+        width: 800,
+        height: 600,
+      }
+    ];
   }
 
   // --- Events ---
