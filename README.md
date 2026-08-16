@@ -184,9 +184,41 @@ Check our locked product roadmap in [`ROADMAP.md`](./ROADMAP.md) to view upcomin
 
 ---
 
+## Project Status
+
+Active Development
+
+### Completed
+- Authentication
+- RBAC
+- Course Catalog
+- Events
+- Communities
+
+### In Progress
+- Atlas AI
+- Resume Builder
+- Notification Engine
+
+### Planned
+- Advanced analytics
+- Recommendation improvements
+- Mobile application
+
+---
+
 ## Contributing
 
 We welcome community contributions! Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for guidelines on branching strategies, commit conventions, and pull request expectations. All contributors must adhere to our [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
+
+---
+
+## Contributors
+
+| Name | Role | Responsibilities |
+| Aayush Jadhav | Backend | Spring Boot, MongoDB |
+| Darshan Kankekar | Frontend | React, Tailwind |
+| Mohit Kotwal | App Dev | Flutter |
 
 ---
 
