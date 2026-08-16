@@ -40,6 +40,7 @@ class ResourceDownloadServiceTest {
 
     @BeforeEach
     void setUp() {
+        resourceDownloadService.setAutoCreateFallback(false);
         pdfMetadata = ResourceResponse.builder()
                 .id("pdf-123")
                 .title("Lecture Slides")

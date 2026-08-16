@@ -55,7 +55,7 @@ export const DegreeProgressSection: React.FC<DegreeProgressSectionProps> = ({
         <div className="bg-purple-50 border border-purple-200 px-3.5 py-1.5 rounded-xl text-right self-start sm:self-auto">
           <span className="text-[11px] text-purple-600 font-medium block uppercase tracking-wider">Program</span>
           <span className="text-xs font-extrabold text-purple-950">
-            {degreePlan?.programName || 'B.S. Computer Science'}
+            {degreePlan?.programName || 'B.Tech Computer Science'}
           </span>
         </div>
       </div>

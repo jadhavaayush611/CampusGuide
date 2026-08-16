@@ -302,7 +302,7 @@ public class ContextIntelligenceEngine {
                                     "- CC: Cultural Council (CC), organizing music, dance, and drama events.\n" +
                                     "- Sports: Sports Council, managing athletic events and tournaments.\n" +
                                     "- IEEE: Technical Council, IEEE Student Branch VESIT facilitating technical growth.\n" +
-                                    "- iSTE: Technical Council, Indian Society for Technical Education (iSTE) VESIT Chapter.\n" +
+                                    "- ISTE: Technical Council, Indian Society for Technical Education (ISTE) VESIT Chapter.\n" +
                                     "- ISA: Technical Council, International Society of Automation (ISA) VESIT Chapter.\n" +
                                     "- CSI: Technical Council, Computer Society of India (CSI) VESIT Chapter.")
                             .rationale("Authoritative council listing query match")

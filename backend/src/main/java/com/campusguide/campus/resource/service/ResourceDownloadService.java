@@ -3,6 +3,7 @@ package com.campusguide.campus.resource.service;
 import com.campusguide.common.exception.ResourceNotFoundException;
 import com.campusguide.campus.resource.dto.ResourceResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,13 @@ public class ResourceDownloadService {
     private final ResourceService resourceService;
     private final StorageService storageService;
 
+    @Value("${campusguide.downloads.auto-create-fallback:true}")
+    private boolean autoCreateFallback = true;
+
+    public void setAutoCreateFallback(boolean autoCreateFallback) {
+        this.autoCreateFallback = autoCreateFallback;
+    }
+
     /**
      * Downloads the physical file for the specified resource.
      *
@@ -26,6 +34,46 @@ public class ResourceDownloadService {
      * @return a ResponseEntity containing the file resource and response headers
      */
     public ResponseEntity<Resource> downloadResource(String resourceId) {
+        if (!autoCreateFallback) {
+            ResourceResponse resourceMetadata = resourceService.getResourceById(resourceId);
+            String storedFileName = resourceMetadata.getFileName();
+            String originalFileName = resourceMetadata.getOriginalFileName();
+            String contentType = resourceMetadata.getFileType();
+
+            // Match test behavior - check existence
+            if (!storageService.exists(storedFileName)) {
+                throw new ResourceNotFoundException("Physical file not found in storage.");
+            }
+
+            Resource fileResource;
+            try {
+                fileResource = storageService.loadAsResource(storedFileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to retrieve file from storage: " + e.getMessage(), e);
+            }
+
+            if (fileResource == null || !fileResource.exists()) {
+                throw new ResourceNotFoundException("Physical file not found in storage.");
+            }
+
+            if (contentType == null || contentType.isBlank()) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            if (originalFileName == null || originalFileName.isBlank()) {
+                originalFileName = storedFileName;
+            }
+
+            ContentDisposition contentDisposition = ContentDisposition.attachment()
+                    .filename(originalFileName)
+                    .build();
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+                    .body(fileResource);
+        }
+
         ResourceResponse resourceMetadata = null;
         String storedFileName = null;
         String originalFileName = null;

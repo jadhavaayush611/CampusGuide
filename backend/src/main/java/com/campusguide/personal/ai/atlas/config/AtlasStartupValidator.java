@@ -51,8 +51,17 @@ public class AtlasStartupValidator {
         if (aiProvider == null) {
             throw new AtlasConfigurationException("Startup failed: AIProvider bean is missing");
         }
-        if (atlasProperties.getProviders() == null || atlasProperties.getProviders().getOpenai() == null) {
-            throw new AtlasConfigurationException("Startup failed: OpenAI provider configuration is missing");
+        if (atlasProperties.getProviders() == null) {
+            throw new AtlasConfigurationException("Startup failed: Atlas providers configuration is missing");
+        }
+        if ("groq".equalsIgnoreCase(atlasProperties.getDefaultProvider())) {
+            if (atlasProperties.getProviders().getGroq() == null) {
+                throw new AtlasConfigurationException("Startup failed: Groq provider configuration is missing");
+            }
+        } else if ("openai".equalsIgnoreCase(atlasProperties.getDefaultProvider())) {
+            if (atlasProperties.getProviders().getOpenai() == null) {
+                throw new AtlasConfigurationException("Startup failed: OpenAI provider configuration is missing");
+            }
         }
 
         // 2. Validate PromptBuilder & Personas

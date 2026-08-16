@@ -217,6 +217,37 @@ public class V1_1__MVPSeedDataset implements Migration {
     private Map<String, Council> seedCouncils() {
         log.info("Seeding Councils...");
         Map<String, Council> map = new HashMap<>();
+
+        // Auto-fix existing iSTE entries in DB to ISTE
+        for (Council c : councilRepository.findAll()) {
+            if (c.getName().contains("iSTE") || c.getDescription().contains("iSTE")) {
+                c.setName(c.getName().replace("iSTE", "ISTE"));
+                c.setDescription(c.getDescription().replace("iSTE", "ISTE"));
+                councilRepository.save(c);
+            }
+        }
+        for (Event e : eventRepository.findAll()) {
+            if (e.getTitle().contains("iSTE") || e.getDescription().contains("iSTE")) {
+                e.setTitle(e.getTitle().replace("iSTE", "ISTE"));
+                e.setDescription(e.getDescription().replace("iSTE", "ISTE"));
+                eventRepository.save(e);
+            }
+        }
+        for (Notice n : noticeRepository.findAll()) {
+            if (n.getTitle().contains("iSTE") || n.getContent().contains("iSTE")) {
+                n.setTitle(n.getTitle().replace("iSTE", "ISTE"));
+                n.setContent(n.getContent().replace("iSTE", "ISTE"));
+                noticeRepository.save(n);
+            }
+        }
+        for (Resource r : resourceRepository.findAll()) {
+            if (r.getTitle().contains("iSTE") || r.getDescription().contains("iSTE")) {
+                r.setTitle(r.getTitle().replace("iSTE", "ISTE"));
+                r.setDescription(r.getDescription().replace("iSTE", "ISTE"));
+                resourceRepository.save(r);
+            }
+        }
+
         String[][] councilData = {
                 {"VESLANG", "veslang", "VES's Language Council, promoting debate and public speaking.", "veslang@ves.ac.in"},
                 {"VESLIT", "veslit", "VES's Literature Council, celebrating writing, poetry, and literature.", "veslit@ves.ac.in"},
@@ -224,7 +255,7 @@ public class V1_1__MVPSeedDataset implements Migration {
                 {"CC", "cc", "Cultural Council (CC), organizing music, dance, and drama events.", "cc@ves.ac.in"},
                 {"Sports", "sports", "Sports Council, managing athletic events and tournaments.", "sports@ves.ac.in"},
                 {"IEEE", "ieee", "IEEE Student Branch VESIT, facilitating technical growth.", "ieee@ves.ac.in"},
-                {"iSTE", "iste", "Indian Society for Technical Education (iSTE) VESIT Chapter.", "iste@ves.ac.in"},
+                {"ISTE", "iste", "Indian Society for Technical Education (ISTE) VESIT Chapter.", "iste@ves.ac.in"},
                 {"ISA", "isa", "International Society of Automation (ISA) VESIT Chapter.", "isa@ves.ac.in"},
                 {"CSI", "csi", "Computer Society of India (CSI) VESIT Chapter.", "csi@ves.ac.in"}
         };
@@ -249,6 +280,10 @@ public class V1_1__MVPSeedDataset implements Migration {
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())
                         .build();
+                council = councilRepository.save(council);
+            } else {
+                council.setName(name);
+                council.setDescription(desc);
                 council = councilRepository.save(council);
             }
             map.put(slug, council);
@@ -317,40 +352,19 @@ public class V1_1__MVPSeedDataset implements Migration {
             }
             map.put(cd.code, course);
         }
-
-        // Second stage: Set prerequisites
-        log.info("Linking Course Prerequisites...");
-        linkPrerequisite(map, "DS", "PF");
-        linkPrerequisite(map, "OOP", "PF");
-        linkPrerequisite(map, "DBMS", "DS");
-        linkPrerequisite(map, "CN", "PF");
-        linkPrerequisite(map, "OS", "DS");
-        linkPrerequisite(map, "ML", "PS");
-        linkPrerequisite(map, "DL", "ML");
-        linkPrerequisite(map, "GenAI", "DL");
-        linkPrerequisite(map, "MPMC_ECS", "DE_ECS");
-        linkPrerequisite(map, "ES_ECS", "MPMC_ECS");
-        linkPrerequisite(map, "IoT_ECS", "ES_ECS");
-        linkPrerequisite(map, "PS", "EM1");
+        // Clear all course prerequisites in database to support prerequisite removal
+        for (Course c : courseRepository.findAll()) {
+            if (c.getPrerequisiteCourseIds() != null && !c.getPrerequisiteCourseIds().isEmpty()) {
+                c.setPrerequisiteCourseIds(new ArrayList<>());
+                courseRepository.save(c);
+            }
+        }
 
         return map;
     }
 
     private void linkPrerequisite(Map<String, Course> map, String courseCode, String prereqCode) {
-        Course target = map.get(courseCode);
-        Course prereq = map.get(prereqCode);
-        if (target != null && prereq != null) {
-            List<String> prereqs = target.getPrerequisiteCourseIds();
-            if (prereqs == null) {
-                prereqs = new ArrayList<>();
-            }
-            if (!prereqs.contains(prereq.getId())) {
-                prereqs.add(prereq.getId());
-                target.setPrerequisiteCourseIds(prereqs);
-                target.setUpdatedAt(Instant.now());
-                courseRepository.save(target);
-            }
-        }
+        // No-op to remove prerequisites feature
     }
 
     private Map<String, Roadmap> seedRoadmaps() {
@@ -366,7 +380,7 @@ public class V1_1__MVPSeedDataset implements Migration {
                         .title(title)
                         .description("Default academic curriculum roadmap for " + dept + " department.")
                         .department(dept)
-                        .degreeProgram("B.E. " + dept)
+                        .degreeProgram("B.Tech " + dept)
                         .totalCredits(160)
                         .expectedGraduationYear(2028)
                         .createdBy("SYSTEM")
@@ -374,6 +388,9 @@ public class V1_1__MVPSeedDataset implements Migration {
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())
                         .build();
+                roadmap = roadmapRepository.save(roadmap);
+            } else {
+                roadmap.setDegreeProgram("B.Tech " + dept);
                 roadmap = roadmapRepository.save(roadmap);
             }
             map.put(dept, roadmap);
@@ -735,7 +752,7 @@ public class V1_1__MVPSeedDataset implements Migration {
                 {"VESIT CC Utsav Cultural Brochure", "List of events, schedules, rules, and guidelines for Utsav 2026.", "utsav-brochure.pdf", "PDF", "1200000", "http://vesit.edu/utsav-brochure"},
                 {"Sports Council Tournament Rulebook", "Guidelines, teams, schedules, and code of conduct for tournaments.", "sports-rulebook.pdf", "PDF", "900000", "http://vesit.edu/sports-rulebook"},
                 {"SORT Blood Donation Drive Pamphlet", "Pre-donation checklists and facts about blood donation.", "sort-blood-pamphlet.pdf", "PDF", "300000", "http://vesit.edu/sort-blood"},
-                {"iSTE Technical Workshop Notes", "Basic web technologies, HTML, CSS, and JS reference guide.", "iste-web-notes.pdf", "PDF", "1000000", "http://vesit.edu/iste-notes"},
+                {"ISTE Technical Workshop Notes", "Basic web technologies, HTML, CSS, and JS reference guide.", "iste-web-notes.pdf", "PDF", "1000000", "http://vesit.edu/iste-notes"},
                 {"ISA PLC & Industrial Automation PPT", "Slides from PLC and automation industrial seminar.", "isa-plc-slides.pptx", "PPTX", "2200000", "http://vesit.edu/isa-plc"},
                 {"VESLANG Public Speaking Guide", "Tips and tricks for debating, MUN, and elocution.", "veslang-guide.pdf", "PDF", "750000", "http://vesit.edu/veslang-guide"},
                 {"VESLIT Writing Workshop Anthology", "Compilation of student poems, stories, and articles.", "veslit-anthology.pdf", "PDF", "1500000", "http://vesit.edu/veslit-anthology"},
@@ -783,7 +800,7 @@ public class V1_1__MVPSeedDataset implements Migration {
                 resource.setCouncilId(sportsId);
             } else if (title.contains("SORT")) {
                 resource.setCouncilId(sortId);
-            } else if (title.contains("iSTE")) {
+            } else if (title.contains("ISTE")) {
                 resource.setCouncilId(isteId);
             } else if (title.contains("ISA")) {
                 resource.setCouncilId(isaId);
@@ -834,7 +851,7 @@ public class V1_1__MVPSeedDataset implements Migration {
                 {"Blood Donation Drive - SORT", "blood-donation-sort", "SORT is organizing a Blood Donation Camp at the Ground Floor Lobby. Show up and save lives.", NoticeCategory.GENERAL, NoticePriority.HIGH, NoticeVisibility.PUBLIC, sortId, now.minusDays(3), now.plusDays(1), false, true},
                 {"VESIT Literature Debate Competition", "veslit-debate-comp", "Join the VESLIT Debate challenge this Saturday in the 1st Floor Auditorium. Exciting prizes!", NoticeCategory.EVENT, NoticePriority.LOW, NoticeVisibility.STUDENTS, veslitId, now.minusDays(5), now.minusDays(1), false, true},
                 {"CSI Membership Registrations Open", "csi-membership-registrations", "Register for the Computer Society of India (CSI) VESIT Chapter. Perks include workshops and coding tests.", NoticeCategory.EVENT, NoticePriority.LOW, NoticeVisibility.PUBLIC, csiId, now.minusDays(8), now.plusDays(15), false, true},
-                {"iSTE Tech Week Inauguration notice", "iste-tech-week-2026", "Welcome to iSTE Tech Week. A series of hands-on electronics and coding challenges starting next Monday.", NoticeCategory.EVENT, NoticePriority.MEDIUM, NoticeVisibility.PUBLIC, isteId, now.minusDays(2), now.plusDays(6), false, true},
+                {"ISTE Tech Week Inauguration notice", "iste-tech-week-2026", "Welcome to ISTE Tech Week. A series of hands-on electronics and coding challenges starting next Monday.", NoticeCategory.EVENT, NoticePriority.MEDIUM, NoticeVisibility.PUBLIC, isteId, now.minusDays(2), now.plusDays(6), false, true},
                 {"ISA Robotics Exhibition call", "isa-robotics-exhibition", "Call for projects and models for the annual ISA Robotics Exhibition. Showcase your autonomous designs.", NoticeCategory.EVENT, NoticePriority.HIGH, NoticeVisibility.PUBLIC, isaId, now, now.plusDays(12), false, true},
                 {"Cultural Council: Auditions for Music and Dance teams", "cc-auditions-2026", "Auditions for music, dance, and drama teams are scheduled at the Music Room and Amphitheatre this week.", NoticeCategory.EVENT, NoticePriority.LOW, NoticeVisibility.STUDENTS, ccId, now.minusDays(2), now.plusDays(3), false, true},
                 {"Cyber Club: Capture The Flag (CTF) hacker tournament notice", "cyber-ctf-tournament", "Participate in the IEEE Cybersecurity Club's 12-hour CTF. Teams of up to 3 are welcome.", NoticeCategory.EVENT, NoticePriority.HIGH, NoticeVisibility.PUBLIC, ieeeId, now, now.plusDays(8), false, true},
@@ -912,8 +929,8 @@ public class V1_1__MVPSeedDataset implements Migration {
                 {"VESLANG Elocution Championship", "veslang-elocution", "Public speaking and debate contest.", veslangId, "Auditorium", EventType.OTHER, EventStatus.PUBLISHED, day1.withHour(11).withMinute(0), day1.withHour(13).withMinute(0), 50}, // Overlaps with CSI workshop in Auditorium
                 
                 // 3rd Floor (CMPN Lab 302 Overlaps)
-                {"iSTE Web Development Bootcamp", "iste-web-bootcamp", "Hands-on HTML/CSS and Javascript coding boot camp.", isteId, "CMPN Lab 302", EventType.WORKSHOP, EventStatus.PUBLISHED, day2.withHour(14).withMinute(0), day2.withHour(17).withMinute(0), 40},
-                {"ISA Automation Lab Demo Session", "isa-automation-demo", "Demo on industrial automation tools and PLC devices.", isaId, "CMPN Lab 302", EventType.WORKSHOP, EventStatus.PUBLISHED, day2.withHour(15).withMinute(0), day2.withHour(16).withMinute(0), 30}, // Overlaps with iSTE bootcamp in CMPN Lab 302
+                {"ISTE Web Development Bootcamp", "iste-web-bootcamp", "Hands-on HTML/CSS and Javascript coding boot camp.", isteId, "CMPN Lab 302", EventType.WORKSHOP, EventStatus.PUBLISHED, day2.withHour(14).withMinute(0), day2.withHour(17).withMinute(0), 40},
+                {"ISA Automation Lab Demo Session", "isa-automation-demo", "Demo on industrial automation tools and PLC devices.", isaId, "CMPN Lab 302", EventType.WORKSHOP, EventStatus.PUBLISHED, day2.withHour(15).withMinute(0), day2.withHour(16).withMinute(0), 30}, // Overlaps with ISTE bootcamp in CMPN Lab 302
                 
                 // Other Academic / Technical events
                 {"VESIT Hackathon 2026", "vesit-hack-2026", "24-hour programming hackathon with cash rewards.", csiId, "CMPN Lab 302", EventType.HACKATHON, EventStatus.PUBLISHED, now.plusDays(15), now.plusDays(16), 100},

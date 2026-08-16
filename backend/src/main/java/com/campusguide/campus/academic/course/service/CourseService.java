@@ -293,7 +293,7 @@ public class CourseService {
                 .department(course.getDepartment())
                 .credits(course.getCredits())
                 .semester(course.getSemester())
-                .prerequisiteCourseIds(course.getPrerequisiteCourseIds())
+                .prerequisiteCourseIds(course.getPrerequisiteCourseIds() != null ? course.getPrerequisiteCourseIds() : new java.util.ArrayList<>())
                 .elective(course.getElective())
                 .active(course.getActive())
                 .createdAt(course.getCreatedAt() != null ? java.time.LocalDateTime.ofInstant(course.getCreatedAt(), java.time.ZoneId.systemDefault()) : null)

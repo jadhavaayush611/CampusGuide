@@ -109,7 +109,7 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
             Course Catalog & Enrolled Courses
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Search, filter by department or semester, and view course prerequisites & syllabi.
+            Search, filter by department or semester, and view course details & syllabi.
           </p>
         </div>
         <div className="text-xs font-semibold text-gray-600 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl self-start sm:self-auto" aria-live="polite">
@@ -256,16 +256,6 @@ export const CourseCatalogSection: React.FC<CourseCatalogSectionProps> = ({
                   </div>
                 </div>
 
-                {/* Prerequisites Pills */}
-                {course.prerequisites && course.prerequisites.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {course.prerequisites.map((prereq, idx) => (
-                      <span key={idx} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                        Pre: {prereq}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
 
               <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-blue-600 font-medium group-hover:underline">

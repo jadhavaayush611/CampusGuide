@@ -134,10 +134,10 @@ export function ResourceCenter() {
               <Sparkles className="w-4 h-4 text-blue-400" />
               Academic Knowledge Base & Resource Hub
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3 text-white">
               Resource Center
             </h1>
-            <p className="text-blue-100/90 text-base sm:text-lg mb-8 leading-relaxed">
+            <p className="text-blue-100/90 text-base sm:text-lg mb-8 leading-relaxed text-white">
               Discover, preview, download, and share lecture notes, lab manuals, past exam papers, syllabi, and administrative templates.
             </p>
 

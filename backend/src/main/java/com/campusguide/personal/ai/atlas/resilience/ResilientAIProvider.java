@@ -23,7 +23,7 @@ public class ResilientAIProvider implements AIProvider {
     private final AtlasMetrics atlasMetrics;
 
     public ResilientAIProvider(
-            @Qualifier("openAIProvider") AIProvider delegate,
+            @Qualifier("targetAiProvider") AIProvider delegate,
             AtlasProperties atlasProperties,
             CircuitBreaker circuitBreaker,
             AtlasMetrics atlasMetrics

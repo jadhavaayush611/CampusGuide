@@ -14,7 +14,7 @@ export const AcademicResourcesSection: React.FC = () => {
       author: 'Dr. Ramesh Kumar',
       downloads: 142,
       type: 'PDF',
-      url: 'https://campusguide.edu/resources/cs301-notes.pdf',
+      url: '/api/v1/resources/download/res-1',
     },
     {
       id: 'res-2',
@@ -23,7 +23,7 @@ export const AcademicResourcesSection: React.FC = () => {
       author: 'Prof. Ananya Sharma',
       downloads: 215,
       type: 'PDF',
-      url: 'https://campusguide.edu/resources/dbms-past-papers.pdf',
+      url: '/api/v1/resources/download/res-2',
     },
     {
       id: 'res-3',
@@ -32,7 +32,7 @@ export const AcademicResourcesSection: React.FC = () => {
       author: 'Dr. Suresh Mehta',
       downloads: 98,
       type: 'PDF',
-      url: 'https://campusguide.edu/resources/os-lab-manual.pdf',
+      url: '/api/v1/resources/download/res-3',
     },
     {
       id: 'res-4',
@@ -41,7 +41,7 @@ export const AcademicResourcesSection: React.FC = () => {
       author: 'Dean of Academic Affairs',
       downloads: 380,
       type: 'PDF',
-      url: 'https://campusguide.edu/resources/cse-syllabus.pdf',
+      url: '/api/v1/resources/download/res-4',
     },
   ];
 
@@ -167,7 +167,7 @@ export const AcademicResourcesSection: React.FC = () => {
                   </span>
                 )}
                 <a
-                  href={item.url || '#'}
+                  href={item.downloadUrl || item.url || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"

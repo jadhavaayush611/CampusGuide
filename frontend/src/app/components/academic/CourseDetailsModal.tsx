@@ -82,27 +82,12 @@ export const CourseDetailsModal: React.FC<CourseDetailsModalProps> = ({
                 </div>
               </div>
 
-              {/* Prerequisites */}
-              <div>
-                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Prerequisites</h3>
-                {course.prerequisites && course.prerequisites.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {course.prerequisites.map((prereq, idx) => (
-                      <span key={idx} className="px-2.5 py-1 bg-gray-100 border border-gray-200 text-gray-800 text-xs font-semibold rounded-lg flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" aria-hidden="true" /> {prereq}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-gray-500 italic">No prerequisites required for this course.</p>
-                )}
-              </div>
             </div>
 
             {/* Footer */}
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
               <a
-                href={course.syllabusUrl || 'https://campusguide.edu/syllabi/sample.pdf'}
+                href={course.syllabusUrl || `/api/v1/resources/download/${course.code}-syllabus.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"

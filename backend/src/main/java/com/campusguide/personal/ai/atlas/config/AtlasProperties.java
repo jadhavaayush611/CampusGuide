@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 public class AtlasProperties {
 
     private boolean enabled = true;
-    private String defaultProvider = "openai";
-    private String defaultModel = "gpt-4o-mini";
+    private String defaultProvider = "groq";
+    private String defaultModel = "llama-3.3-70b-versatile";
     private String defaultSystemPrompt = "You are Atlas, an intelligent, empathetic, and helpful academic AI advisor for CampusGuide. Provide clear, accurate, and structured advice for university students.";
     private int maxPromptLength = 4096;
     private int promptTokenBudgetCap = 4096;
@@ -70,6 +70,22 @@ public class AtlasProperties {
             }
         }
 
+        if ("groq".equalsIgnoreCase(defaultProvider)) {
+            GroqProperties groq = providers.getGroq();
+            if (groq == null) {
+                throw new AtlasConfigurationException("Groq provider properties must not be null");
+            }
+            if (groq.getBaseUrl() == null || groq.getBaseUrl().isBlank()) {
+                throw new AtlasConfigurationException("Groq baseUrl must not be null or blank");
+            }
+            if (groq.getModel() == null || groq.getModel().isBlank()) {
+                throw new AtlasConfigurationException("Groq model must not be null or blank");
+            }
+            if (groq.getApiKey() == null) {
+                throw new AtlasConfigurationException("Groq apiKey must not be null");
+            }
+        }
+
         if (retry != null) {
             if (retry.getMaxAttempts() < 1) {
                 throw new AtlasConfigurationException("Atlas retry maxAttempts must be at least 1");
@@ -110,6 +126,7 @@ public class AtlasProperties {
     @Data
     public static class ProvidersProperties {
         private OpenAIProperties openai = new OpenAIProperties();
+        private GroqProperties groq = new GroqProperties();
     }
 
     @Data
@@ -117,6 +134,15 @@ public class AtlasProperties {
         private String apiKey = "";
         private String baseUrl = "https://api.openai.com/v1";
         private String model = "gpt-4o-mini";
+        private double temperature = 0.7;
+        private int maxTokens = 1024;
+    }
+
+    @Data
+    public static class GroqProperties {
+        private String apiKey = "";
+        private String baseUrl = "https://api.groq.com/openai/v1";
+        private String model = "llama-3.3-70b-versatile";
         private double temperature = 0.7;
         private int maxTokens = 1024;
     }

@@ -97,10 +97,10 @@ export function NoticeBoard() {
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   Official Campus Bulletin & Directives
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
                   Notice Board
                 </h1>
-                <p className="text-blue-100/80 text-sm max-w-xl">
+                <p className="text-blue-100/90 text-sm max-w-xl">
                   Stay updated with official university announcements, examination timetables, scholarship deadlines, council circulars, and placement drives.
                 </p>
               </div>

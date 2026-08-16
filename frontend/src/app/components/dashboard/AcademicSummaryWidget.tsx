@@ -123,7 +123,7 @@ export const AcademicSummaryWidget: React.FC = memo(function AcademicSummaryWidg
               {degreePlan ? `${degreePlan.completedCredits}/${degreePlan.totalRequiredCredits}` : '78/120'}
             </div>
             <span className="text-[11px] text-amber-700">
-              {degreePlan ? degreePlan.programName : 'B.S. Computer Engineering'}
+              {degreePlan ? degreePlan.programName : 'B.Tech Computer Engineering'}
             </span>
           </div>
           <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
