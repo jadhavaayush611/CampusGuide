@@ -43,12 +43,17 @@ class ConversationLifecycleIT {
     @MockitoBean(name = "openAIProvider")
     private AIProvider openAiProvider;
 
+    @MockitoBean(name = "groqProvider")
+    private AIProvider groqProvider;
+
     @BeforeEach
     void setUp() {
-        reset(openAiProvider);
+        reset(openAiProvider, groqProvider);
         ProviderMetadata metadata = ProviderMetadata.builder().name("MockOpenAI").build();
         when(openAiProvider.getMetadata()).thenReturn(metadata);
         when(openAiProvider.isAvailable()).thenReturn(true);
+        when(groqProvider.getMetadata()).thenReturn(metadata);
+        when(groqProvider.isAvailable()).thenReturn(true);
     }
 
     @Test
@@ -65,6 +70,7 @@ class ConversationLifecycleIT {
                 .build();
 
         when(openAiProvider.sendPrompt(any(AtlasPrompt.class))).thenReturn(mockResponse1);
+        when(groqProvider.sendPrompt(any(AtlasPrompt.class))).thenReturn(mockResponse1);
 
         AtlasChatRequest request1 = AtlasChatRequest.builder()
                 .prompt("What courses should I take?")
@@ -99,6 +105,7 @@ class ConversationLifecycleIT {
                 .build();
 
         when(openAiProvider.sendPrompt(any(AtlasPrompt.class))).thenReturn(mockResponse2);
+        when(groqProvider.sendPrompt(any(AtlasPrompt.class))).thenReturn(mockResponse2);
 
         AtlasChatRequest request2 = AtlasChatRequest.builder()
                 .conversationId(generatedConvId)

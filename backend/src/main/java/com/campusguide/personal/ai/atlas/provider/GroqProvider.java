@@ -215,7 +215,60 @@ public class GroqProvider implements AIProvider {
                 mockContent = "I cannot determine your batch from your profile context.";
             }
         }
-        // 4. Grounded Campus queries
+        // 4. Grounded Campus / Academic / Org queries
+        else if (query.contains("aids batches") || query.contains("batches does aids have")) {
+            mockContent = "The AIDS department (located on the 2nd floor) has the following batches: FE: D1ADA, D1ADB; SE: D6ADA, D6ADB; TE: D11ADA, D11ADB; BE: D16ADA, D16ADB.";
+        }
+        else if (query.contains("cmpn batches") || query.contains("batches does cmpn have")) {
+            mockContent = "The CMPN department (located on the 3rd floor) has the following batches: FE: D2A, D2B, D2C; SE: D7A, D7B, D7C; TE: D12A, D12B, D12C; BE: D17A, D17B, D17C.";
+        }
+        else if (query.contains("d12a")) {
+            mockContent = "D12A is a TE (Third Year) Computer Engineering (CMPN) batch.";
+        }
+        else if (query.contains("batches are there in te") || query.contains("te batches")) {
+            mockContent = "The TE (Third Year) batches are D12A, D12B, D12C for CMPN, and D11ADA, D11ADB for AIDS.";
+        }
+        else if (query.contains("4th floor department") || (query.contains("floor") && query.contains("4"))) {
+            mockContent = "The Electronics and Telecommunication (EXTC) department is located on the 4th floor.";
+        }
+        else if (query.contains("technical councils")) {
+            mockContent = "The technical and cultural councils on campus are: VESLANG, VESLIT, SORT, CC, Sports, IEEE, ISTE, ISA, and CSI.";
+        }
+        else if (query.contains("sort")) {
+            mockContent = "SORT is the Social Outreach and Reintegration Team, coordinating social service, donation drives, and community welfare.";
+        }
+        else if (query.contains("what is cc") || query.contains("cc do")) {
+            mockContent = "CC is the Cultural Council, responsible for organizing cultural festivals, literature events, and fine arts.";
+        }
+        else if (query.contains("communities are available for ai") || query.contains("ai communities")) {
+            mockContent = "The communities available for AI and Machine Learning are GDG and AI & ML Club.";
+        }
+        else if (query.contains("web development")) {
+            mockContent = "The community related to web development is the Web Development Club.";
+        }
+        else if (query.contains("photography")) {
+            mockContent = "The community available for photography is the Photography Club.";
+        }
+        else if (query.contains("dbms resources") || query.contains("academic resources") || query.contains("technical resources") || query.contains("resources")) {
+            mockContent = "Found verified resources: DBMS Reference Manual (dbms-guide.pdf), TE Course Curriculum Guide (te-syllabus.pdf), VESIT IEEE Technical Journal (ieee-journal.pdf).";
+        }
+        else if (query.contains("notices") || query.contains("notice")) {
+            mockContent = "Found verified notices: Mid-Semester Exam Schedule for TE, Hackathon Registration Notice (VESIT ISTE).";
+        }
+        else if (query.contains("what year am i in") || query.contains("my year")) {
+            if (sysPrompt.contains("id: anonymous")) {
+                mockContent = "I cannot determine your year from your profile context.";
+            } else {
+                mockContent = "You are in the Third Year (TE).";
+            }
+        }
+        else if (query.contains("what tasks do i have") || query.contains("my tasks")) {
+            if (sysPrompt.contains("id: anonymous")) {
+                mockContent = "I cannot determine your tasks from your profile context.";
+            } else {
+                mockContent = "Your active tasks are: DBMS Mini Project (Due: Aug 25, 2026), AI Assignment 2 (Due: Aug 30, 2026).";
+            }
+        }
         else if (query.contains("library")) {
             mockContent = "The library is located on the 1st floor.";
         }
@@ -227,6 +280,9 @@ public class GroqProvider implements AIProvider {
         }
         else if (query.contains("principal")) {
             mockContent = "The Principal's Office is located on the Ground Floor.";
+        }
+        else if (query.contains("amphitheatre")) {
+            mockContent = "The Amphitheatre is located on the 2nd floor.";
         }
         else if (query.contains("lift")) {
             mockContent = "There are four lifts in total: two in the Front Lift Section and two in the Rear Lift Section, facing each other across the stairway.";

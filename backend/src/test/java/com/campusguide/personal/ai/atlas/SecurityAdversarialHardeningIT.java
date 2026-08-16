@@ -69,7 +69,7 @@ class SecurityAdversarialHardeningIT {
         AtlasChatRequest longReq = AtlasChatRequest.builder().prompt(longPrompt).build();
         
         // Assert validator does not crash or handles it cleanly
-        assertDoesNotThrow(() -> {
+        assertThrows(AtlasPromptValidationException.class, () -> {
             promptValidator.validateRequest(longReq);
         });
     }
