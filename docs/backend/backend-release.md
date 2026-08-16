@@ -63,7 +63,7 @@ Prior to launching the service container stack in a live environment, operationa
 ## 4. Deployment Specification
 
 ### Containerized Stack Execution (Recommended)
-Copy the production environment template from `.env.example` into a local `.env` file, edit its secret values, and bring up the container orchestrator:
+Copy the production environment template from `.env` into a local `.env` file, edit its secret values, and bring up the container orchestrator:
 ```bash
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```

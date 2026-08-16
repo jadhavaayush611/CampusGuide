@@ -1,15 +1,13 @@
 package com.campusguide.personal.ai.atlas.provider;
 
 import com.campusguide.personal.ai.atlas.config.AtlasProperties;
-import com.campusguide.personal.ai.atlas.exception.AtlasConfigurationException;
-import com.campusguide.personal.ai.atlas.exception.AtlasProviderException;
-import com.campusguide.personal.ai.atlas.exception.AtlasProviderUnavailableException;
+import com.campusguide.personal.ai.atlas.exception.*;
 import com.campusguide.personal.ai.atlas.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
 import java.util.HashMap;
@@ -17,13 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
-@ExtendWith(MockitoExtension.class)
 class GroqProviderTest {
 
-    @Mock
     private RestClient restClient;
-
+    private MockRestServiceServer mockServer;
     private AtlasProperties properties;
     private GroqProvider provider;
 
@@ -31,7 +29,14 @@ class GroqProviderTest {
     void setUp() {
         properties = new AtlasProperties();
         properties.setDefaultProvider("groq");
-        properties.getProviders().getGroq().setApiKey("mock-key");
+        
+        RestClient.Builder builder = RestClient.builder()
+                .baseUrl("https://api.groq.com/openai/v1")
+                .defaultHeader("Authorization", "Bearer real-test-key")
+                .defaultHeader("Content-Type", "application/json");
+        
+        mockServer = MockRestServiceServer.bindTo(builder).build();
+        restClient = builder.build();
         provider = new GroqProvider(properties, restClient);
     }
 
@@ -62,6 +67,7 @@ class GroqProviderTest {
 
     @Test
     void testSendPrompt_MockApiKey_ReturnsNormalizedResponse() {
+        properties.getProviders().getGroq().setApiKey("mock-key");
         AtlasPrompt prompt = AtlasPrompt.builder()
                 .userMessage("Tell me about course registration")
                 .formattedMessages(List.of(AtlasChatMessage.builder().role(AtlasRole.USER).content("Tell me about course registration").build()))
@@ -73,8 +79,82 @@ class GroqProviderTest {
         assertEquals("Groq", response.getProviderName());
         assertEquals(AtlasRole.ASSISTANT, response.getRole());
         assertTrue(response.getContent().contains("CampusGuide AI advisor"));
-        assertNotNull(response.getUsage());
-        assertTrue(response.getUsage().getTotalTokens() > 0);
+    }
+
+    @Test
+    void testSendPrompt_Success_WithRealClientCall() {
+        properties.getProviders().getGroq().setApiKey("real-test-key");
+
+        mockServer.expect(requestTo("https://api.groq.com/openai/v1/chat/completions"))
+                .andExpect(method(org.springframework.http.HttpMethod.POST))
+                .andExpect(header("Authorization", "Bearer real-test-key"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andRespond(withSuccess(
+                        "{\"id\":\"groq-123\",\"model\":\"llama-3.3-70b-versatile\"," +
+                        "\"choices\":[{\"finish_reason\":\"stop\",\"message\":{\"role\":\"assistant\",\"content\":\"Hello from Groq API!\"}}]," +
+                        "\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":20,\"total_tokens\":30}}",
+                        MediaType.APPLICATION_JSON));
+
+        AtlasPrompt prompt = AtlasPrompt.builder()
+                .userMessage("Hello")
+                .formattedMessages(List.of(AtlasChatMessage.builder().role(AtlasRole.USER).content("Hello").build()))
+                .build();
+
+        AtlasNormalizedResponse response = provider.sendPrompt(prompt);
+        assertNotNull(response);
+        assertEquals("groq-123", response.getId());
+        assertEquals("Hello from Groq API!", response.getContent());
+        assertEquals("Groq", response.getProviderName());
+        assertEquals(30, response.getUsage().getTotalTokens());
+        mockServer.verify();
+    }
+
+    @Test
+    void testSendPrompt_Http401_ThrowsProviderException() {
+        properties.getProviders().getGroq().setApiKey("invalid-key");
+
+        mockServer.expect(requestTo("https://api.groq.com/openai/v1/chat/completions"))
+                .andRespond(withStatus(HttpStatus.UNAUTHORIZED).body("{\"error\":\"Invalid API Key\"}"));
+
+        AtlasPrompt prompt = AtlasPrompt.builder()
+                .userMessage("Hello")
+                .formattedMessages(List.of(AtlasChatMessage.builder().role(AtlasRole.USER).content("Hello").build()))
+                .build();
+
+        assertThrows(AtlasProviderException.class, () -> provider.sendPrompt(prompt));
+        mockServer.verify();
+    }
+
+    @Test
+    void testSendPrompt_Http429_ThrowsProviderUnavailableException() {
+        properties.getProviders().getGroq().setApiKey("real-test-key");
+
+        mockServer.expect(requestTo("https://api.groq.com/openai/v1/chat/completions"))
+                .andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS).body("{\"error\":\"Rate limit exceeded\"}"));
+
+        AtlasPrompt prompt = AtlasPrompt.builder()
+                .userMessage("Hello")
+                .formattedMessages(List.of(AtlasChatMessage.builder().role(AtlasRole.USER).content("Hello").build()))
+                .build();
+
+        assertThrows(AtlasProviderUnavailableException.class, () -> provider.sendPrompt(prompt));
+        mockServer.verify();
+    }
+
+    @Test
+    void testSendPrompt_Http5xx_ThrowsProviderUnavailableException() {
+        properties.getProviders().getGroq().setApiKey("real-test-key");
+
+        mockServer.expect(requestTo("https://api.groq.com/openai/v1/chat/completions"))
+                .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE).body("{\"error\":\"Server Overloaded\"}"));
+
+        AtlasPrompt prompt = AtlasPrompt.builder()
+                .userMessage("Hello")
+                .formattedMessages(List.of(AtlasChatMessage.builder().role(AtlasRole.USER).content("Hello").build()))
+                .build();
+
+        assertThrows(AtlasProviderUnavailableException.class, () -> provider.sendPrompt(prompt));
+        mockServer.verify();
     }
 
     @Test
