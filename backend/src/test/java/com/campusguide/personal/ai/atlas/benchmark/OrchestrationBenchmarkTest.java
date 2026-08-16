@@ -63,7 +63,7 @@ class OrchestrationBenchmarkTest {
                 null
         );
 
-        when(contextEngine.buildContext(any())).thenReturn(AtlasContext.builder().build());
+        when(contextEngine.buildContext(any(), any())).thenReturn(AtlasContext.builder().build());
         when(contextSectionAssembler.assembleSections(any())).thenReturn(List.of());
         when(promptBuilder.buildPrompt(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(AtlasPrompt.builder().userMessage("test").build());

@@ -132,7 +132,7 @@ public class ConversationOrchestrator {
 
             // 5. Context Engine Execution with Latency Tracking
             long contextStart = System.currentTimeMillis();
-            AtlasContext atlasContext = contextEngine.buildContext(request);
+            AtlasContext atlasContext = contextEngine.buildContext(request, userId);
             if (StringUtils.hasText(userId)) {
                 atlasContext.setUserId(userId);
             }

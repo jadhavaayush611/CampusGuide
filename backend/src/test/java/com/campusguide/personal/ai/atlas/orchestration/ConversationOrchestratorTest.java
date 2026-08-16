@@ -101,7 +101,7 @@ class ConversationOrchestratorTest {
                 .metadata(Map.of())
                 .build();
 
-        when(contextEngine.buildContext(any())).thenReturn(context);
+        when(contextEngine.buildContext(any(), any())).thenReturn(context);
         when(contextSectionAssembler.assembleSections(context)).thenReturn(List.of());
         when(promptBuilder.buildPrompt(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(prompt);
         when(aiProvider.sendPrompt(prompt)).thenReturn(normalizedResponse);
@@ -161,7 +161,7 @@ class ConversationOrchestratorTest {
 
         when(conversationRepository.findById(existingConvId)).thenReturn(Optional.of(existingConv));
         when(messageRepository.findByConversationIdOrderByTimestampAsc(existingConvId)).thenReturn(List.of(historicalMsg1, historicalMsg2));
-        when(contextEngine.buildContext(request)).thenReturn(context);
+        when(contextEngine.buildContext(eq(request), any())).thenReturn(context);
         when(contextSectionAssembler.assembleSections(context)).thenReturn(List.of());
         when(promptBuilder.buildPrompt(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(prompt);
         when(aiProvider.sendPrompt(prompt)).thenReturn(normalizedResponse);

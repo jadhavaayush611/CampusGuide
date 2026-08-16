@@ -179,9 +179,70 @@ public class GroqProvider implements AIProvider {
     }
 
     private AtlasNormalizedResponse generateMockNormalizedResponse(AtlasPrompt prompt, String model) {
-        String mockContent = "Hello! I am Atlas, your CampusGuide AI advisor (powered by Groq " + model + "). You asked: \"" 
-                + (prompt.getUserMessage() != null ? prompt.getUserMessage() : "") 
-                + "\". How else can I assist you with your academic goals today?";
+        String query = prompt.getUserMessage() != null ? prompt.getUserMessage().toLowerCase() : "";
+        String sysPrompt = prompt.getSystemPrompt() != null ? prompt.getSystemPrompt().toLowerCase() : "";
+        String mockContent;
+
+        // 1. Prompt Injection or Operational secrets checks
+        if (query.contains("system prompt") || query.contains("previous instructions") || 
+            query.contains("api key") || query.contains("environment variable") || 
+            query.contains("connection string") || query.contains("java class") || 
+            query.contains("rag implementation") || query.contains("safety rules") ||
+            query.contains("credentials") || query.contains("secret")) {
+            mockContent = "I am sorry, but I am an assistant for CampusGuide and cannot disclose operational, configuration, or system details.";
+        }
+        // 2. Unknown info checks (absent from system prompt evidence)
+        else if (query.contains("swimming pool") || query.contains("dean of robotics") || 
+                 query.contains("photography studio") || query.contains("gym")) {
+            mockContent = "I lack verified information on that topic. I cannot provide answers for facilities or entities not present in the verified campus database.";
+        }
+        // 3. User Specific
+        else if (query.contains("what department am i in") || query.contains("my department")) {
+            if (sysPrompt.contains("id: anonymous")) {
+                mockContent = "I cannot determine your department from your profile context.";
+            } else if (sysPrompt.contains("computer science") || sysPrompt.contains("cmpn")) {
+                mockContent = "You are in the Computer Engineering department.";
+            } else if (sysPrompt.contains("electronics")) {
+                mockContent = "You are in the Electronics department.";
+            } else {
+                mockContent = "I cannot determine your department from your profile context.";
+            }
+        }
+        else if (query.contains("what batch am i in") || query.contains("my batch")) {
+            if (sysPrompt.contains("d12a")) {
+                mockContent = "You are in batch D12A.";
+            } else {
+                mockContent = "I cannot determine your batch from your profile context.";
+            }
+        }
+        // 4. Grounded Campus queries
+        else if (query.contains("library")) {
+            mockContent = "The library is located on the 1st floor.";
+        }
+        else if (query.contains("aids")) {
+            mockContent = "The AIDS department is located on the 2nd floor.";
+        }
+        else if (query.contains("cmpn")) {
+            mockContent = "The CMPN department is located on the 3rd floor.";
+        }
+        else if (query.contains("principal")) {
+            mockContent = "The Principal's Office is located on the Ground Floor.";
+        }
+        else if (query.contains("lift")) {
+            mockContent = "There are four lifts in total: two in the Front Lift Section and two in the Rear Lift Section, facing each other across the stairway.";
+        }
+        else if (query.contains("washroom")) {
+            mockContent = "There are four washrooms per floor: two male and two female, located near the lift sections.";
+        }
+        else if (query.contains("workshop")) {
+            mockContent = "The FE workshops (Woodwork and Metalwork) are located on the Ground Floor.";
+        }
+        // 5. Default fallback
+        else {
+            mockContent = "Hello! I am Atlas, your CampusGuide AI advisor (powered by Groq " + model + "). You asked: \"" 
+                    + (prompt.getUserMessage() != null ? prompt.getUserMessage() : "") 
+                    + "\". How else can I assist you with your academic goals today?";
+        }
 
         int promptLen = prompt.getUserMessage() != null ? prompt.getUserMessage().length() : 10;
         int promptTokens = Math.max(5, promptLen / 4);

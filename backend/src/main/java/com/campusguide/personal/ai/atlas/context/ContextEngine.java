@@ -154,8 +154,12 @@ public class ContextEngine {
      * @return fully enriched AtlasContext with diagnostic metrics
      */
     public AtlasContext buildContext(AtlasChatRequest request) {
+        return buildContext(request, null);
+    }
+
+    public AtlasContext buildContext(AtlasChatRequest request, String userId) {
         String conversationId = request != null ? request.getConversationId() : null;
-        AtlasContext context = new AtlasContext(conversationId, null);
+        AtlasContext context = new AtlasContext(conversationId, userId);
         ContextMetrics metrics = context.getMetrics();
         if (metrics == null) {
             metrics = new ContextMetrics();
