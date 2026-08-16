@@ -241,15 +241,48 @@ public class ContextIntelligenceEngine {
                 }
 
                 // 3. Classrooms, Facilities, Lifts, Washrooms match
+                boolean isLiftQuery = qLower.contains("lift") || qLower.contains("lifts") || qLower.contains("stairway");
+                boolean isWashroomQuery = qLower.contains("washroom") || qLower.contains("washrooms") || qLower.contains("toilet") || qLower.contains("toilets");
+
+                if (isLiftQuery) {
+                    RetrievalEvidence liftEv = RetrievalEvidence.builder()
+                            .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                            .source(EvidenceSource.KNOWLEDGE_BASE)
+                            .entityKey("campus_lifts")
+                            .contentSnippet("Lifts Layout: There are four lifts in total in the building: two Front lifts and two Rear lifts. The Front Lift Section faces the Rear Lift Section across the stairway.")
+                            .rationale("Authoritative lift layout query match")
+                            .score(EvidenceScore.builder().relevanceScore(0.99).confidenceScore(0.99).sourceAuthorityScore(0.99).qualityScore(0.99).build())
+                            .build();
+                    liftEv.getScore().calculateOverallScore();
+                    campusEvList.add(liftEv);
+                }
+
+                if (isWashroomQuery) {
+                    RetrievalEvidence wrEv = RetrievalEvidence.builder()
+                            .type(EvidenceType.CAMPUS_KNOWLEDGE)
+                            .source(EvidenceSource.KNOWLEDGE_BASE)
+                            .entityKey("campus_washrooms")
+                            .contentSnippet("Washrooms Layout: There are four washrooms per floor: two male and two female washrooms, positioned near the lift sections (Front Lift and Rear Lift).")
+                            .rationale("Authoritative washrooms layout query match")
+                            .score(EvidenceScore.builder().relevanceScore(0.99).confidenceScore(0.99).sourceAuthorityScore(0.99).qualityScore(0.99).build())
+                            .build();
+                    wrEv.getScore().calculateOverallScore();
+                    campusEvList.add(wrEv);
+                }
+
                 for (var c : campusKnowledgeService.getClassrooms()) {
                     String roomLower = c.getRoomNumber().toLowerCase();
+                    
+                    if ((isLiftQuery && roomLower.contains("lift")) || 
+                        (isWashroomQuery && (roomLower.contains("washroom") || roomLower.contains("toilet")))) {
+                        continue;
+                    }
+
                     boolean match = qLower.contains(roomLower);
                     if (!match) {
                         if (qLower.contains("library") && roomLower.contains("library")) match = true;
                         else if (qLower.contains("principal") && roomLower.contains("principal")) match = true;
                         else if (qLower.contains("amphitheatre") && roomLower.contains("amphi")) match = true;
-                        else if (qLower.contains("lift") && roomLower.contains("lift")) match = true;
-                        else if (qLower.contains("washroom") && (roomLower.contains("washroom") || roomLower.contains("toilet"))) match = true;
                         else if (qLower.contains("workshop") && (roomLower.contains("workshop") || roomLower.contains("woodwork") || roomLower.contains("metalwork"))) match = true;
                         else if (qLower.contains("canteen") && roomLower.contains("canteen")) match = true;
                         else if (qLower.contains("common room") && roomLower.contains("common room")) match = true;
@@ -270,7 +303,10 @@ public class ContextIntelligenceEngine {
                 }
 
                 // 4. Batches query match
-                if (qLower.contains("batch") || qLower.contains("batches")) {
+                boolean isBatchQuery = qLower.contains("batch") || qLower.contains("batches") ||
+                        qLower.contains("fe") || qLower.contains("se") || qLower.contains("te") || qLower.contains("be") ||
+                        qLower.matches(".*\\bd\\d{1,2}[a-z]*\\b.*");
+                if (isBatchQuery) {
                     RetrievalEvidence bEv = RetrievalEvidence.builder()
                             .type(EvidenceType.CAMPUS_KNOWLEDGE)
                             .source(EvidenceSource.KNOWLEDGE_BASE)
@@ -290,7 +326,11 @@ public class ContextIntelligenceEngine {
                 }
 
                 // 5. Councils query match
-                if (qLower.contains("council") || qLower.contains("councils")) {
+                boolean isCouncilQuery = qLower.contains("council") || qLower.contains("councils") ||
+                        qLower.contains("veslang") || qLower.contains("veslit") || qLower.contains("sort") ||
+                        qLower.contains("sports") || qLower.contains("ieee") || qLower.contains("iste") ||
+                        qLower.contains("isa") || qLower.contains("csi");
+                if (isCouncilQuery) {
                     RetrievalEvidence cEv = RetrievalEvidence.builder()
                             .type(EvidenceType.CAMPUS_KNOWLEDGE)
                             .source(EvidenceSource.KNOWLEDGE_BASE)
@@ -313,7 +353,10 @@ public class ContextIntelligenceEngine {
                 }
 
                 // 6. Communities query match
-                if (qLower.contains("communit") || qLower.contains("club") || qLower.contains("ai")) {
+                boolean isCommunityQuery = qLower.contains("communit") || qLower.contains("club") || qLower.contains("ai") ||
+                        qLower.contains("gdg") || qLower.contains("cybersecurity") || qLower.contains("web development") ||
+                        qLower.contains("photography");
+                if (isCommunityQuery) {
                     RetrievalEvidence coEv = RetrievalEvidence.builder()
                             .type(EvidenceType.CAMPUS_KNOWLEDGE)
                             .source(EvidenceSource.KNOWLEDGE_BASE)

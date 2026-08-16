@@ -124,6 +124,24 @@ public class ContextSectionAssembler {
             }
         }
 
+        // 6. RAG Evidence Section (Priority 1 - Required for fact grounding)
+        if (atlasContext.getEvidenceBundles() != null && !atlasContext.getEvidenceBundles().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            atlasContext.getEvidenceBundles().forEach((domain, bundle) -> {
+                if (bundle.getEvidences() != null && !bundle.getEvidences().isEmpty()) {
+                    sb.append("Domain [").append(domain).append("] verified facts:\n");
+                    for (var ev : bundle.getEvidences()) {
+                        sb.append("- ").append(ev.getContentSnippet()).append("\n");
+                    }
+                    sb.append("\n");
+                }
+            });
+            String content = sb.toString().trim();
+            if (!content.isBlank()) {
+                sections.add(ContextSection.of("--- RETRIEVED VERIFIED EVIDENCE ---", content, "EVIDENCE", 1, true));
+            }
+        }
+
         return sections;
     }
 }

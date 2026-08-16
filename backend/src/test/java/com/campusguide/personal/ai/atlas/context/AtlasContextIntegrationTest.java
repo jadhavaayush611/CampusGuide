@@ -94,7 +94,7 @@ class AtlasContextIntegrationTest {
 
         // 3. Assemble ContextSections & Render Prompt
         List<ContextSection> sections = contextSectionAssembler.assembleSections(context);
-        assertEquals(5, sections.size());
+        assertEquals(6, sections.size());
 
         var prompt = promptBuilder.buildPrompt(
                 request.getPrompt(),
@@ -114,6 +114,7 @@ class AtlasContextIntegrationTest {
         assertTrue(prompt.getSystemPrompt().contains("--- PLANNER CONTEXT ---"));
         assertTrue(prompt.getSystemPrompt().contains("--- CALENDAR CONTEXT ---"));
         assertTrue(prompt.getSystemPrompt().contains("--- CAMPUS CONTEXT ---"));
+        assertTrue(prompt.getSystemPrompt().contains("--- RETRIEVED VERIFIED EVIDENCE ---"));
         assertEquals("What should I focus on today for Computer Science at the campus library?", prompt.getUserMessage());
     }
 }

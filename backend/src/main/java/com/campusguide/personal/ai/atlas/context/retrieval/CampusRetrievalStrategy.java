@@ -32,7 +32,16 @@ public class CampusRetrievalStrategy implements RetrievalStrategy {
         }
         if (queryContext.getNormalizedQuery() != null) {
             String lower = queryContext.getNormalizedQuery().toLowerCase();
-            if (lower.contains("campus") || lower.contains("library") || lower.contains("building") || lower.contains("location") || lower.contains("cafeteria") || lower.contains("hall") || lower.contains("dorm") || lower.contains("map")) {
+            if (lower.contains("campus") || lower.contains("library") || lower.contains("building") || 
+                lower.contains("location") || lower.contains("cafeteria") || lower.contains("hall") || 
+                lower.contains("dorm") || lower.contains("map") || lower.contains("floor") || 
+                lower.contains("department") || lower.contains("dept") || lower.contains("office") || 
+                lower.contains("room") || lower.contains("lift") || lower.contains("washroom") || 
+                lower.contains("toilet") || lower.contains("stairway") || lower.contains("workshop") || 
+                lower.contains("canteen") || lower.contains("common room") || lower.contains("auditorium") || 
+                lower.contains("music room") || lower.contains("amphitheatre") || lower.contains("principal") || 
+                lower.contains("cmpn") || lower.contains("aids") || lower.contains("it") || 
+                lower.contains("extc") || lower.contains("auro") || lower.contains("ecs")) {
                 return true;
             }
         }

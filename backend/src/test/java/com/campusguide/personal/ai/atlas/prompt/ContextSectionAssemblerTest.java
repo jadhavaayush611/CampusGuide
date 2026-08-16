@@ -68,6 +68,31 @@ class ContextSectionAssemblerTest {
     }
 
     @Test
+    void testAssembleSections_WithEvidenceBundles_AssemblesSixSections() {
+        AtlasContext context = AtlasContext.builder()
+                .userContext(UserContext.builder().name("Alex").role("STUDENT").status("ACTIVE").summary("Profile summary").build())
+                .build();
+        
+        com.campusguide.personal.ai.atlas.context.evidence.RetrievalEvidence ev = com.campusguide.personal.ai.atlas.context.evidence.RetrievalEvidence.builder()
+                .contentSnippet("Ground floor contains ECS.")
+                .build();
+        context.addEvidenceBundle(com.campusguide.personal.ai.atlas.context.evidence.EvidenceBundle.builder()
+                .targetDomain("campus")
+                .evidences(List.of(ev))
+                .build());
+
+        List<ContextSection> sections = assembler.assembleSections(context);
+        assertEquals(2, sections.size()); // User profile + Evidence
+
+        ContextSection evidenceSection = sections.get(1);
+        assertEquals("--- RETRIEVED VERIFIED EVIDENCE ---", evidenceSection.getTitle());
+        assertEquals("EVIDENCE", evidenceSection.getCategory());
+        assertEquals(1, evidenceSection.getPriority());
+        assertTrue(evidenceSection.isRequired());
+        assertTrue(evidenceSection.getContent().contains("Ground floor contains ECS."));
+    }
+
+    @Test
     void testAssembleSections_PartialContext_OmitsNullDomains() {
         AtlasContext context = AtlasContext.builder()
                 .userContext(UserContext.builder().name("Sarah").build())

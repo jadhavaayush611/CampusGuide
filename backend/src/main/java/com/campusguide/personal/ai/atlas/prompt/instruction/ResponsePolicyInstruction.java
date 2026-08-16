@@ -16,6 +16,6 @@ public class ResponsePolicyInstruction implements InstructionLayer {
 
     @Override
     public String renderInstruction() {
-        return "Be direct, concise, and helpful. Prioritize user clarity and actionability. If requested information is unknown or context is missing, acknowledge constraints politely.";
+        return "Be direct, concise, and helpful. Prioritize user clarity and actionability. Do not invent or fabricate facts about the campus layout, departments, locations, HODs, staff rooms, batches, councils, or communities. Rely ONLY on the verified evidence context provided. If requested information is unknown or context is missing, acknowledge constraints politely, stating that you lack verified information on the topic, and never present fabricated campus information as fact.";
     }
 }
