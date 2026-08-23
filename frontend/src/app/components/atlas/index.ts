@@ -8,3 +8,4 @@ export * from './AtlasSidebar';
 export * from './AtlasHeader';
 export * from './AtlasCapabilitiesModal';
 export * from './AtlasErrorBoundary';
+export * from './AtlasFeatureBarricade';

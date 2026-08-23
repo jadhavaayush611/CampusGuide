@@ -27,6 +27,9 @@ export interface AppConfig {
 
   /** Flag indicating development build environment */
   readonly isDevelopment: boolean;
+
+  /** Flag indicating whether Atlas AI is available for MVP release */
+  readonly isAtlasMvpAvailable: boolean;
 }
 
 const parseBoolean = (value: string | undefined, defaultValue: boolean): boolean => {
@@ -59,6 +62,11 @@ export const config: Readonly<AppConfig> = Object.freeze({
   ),
   isProduction: import.meta.env.PROD ?? false,
   isDevelopment: import.meta.env.DEV ?? true,
+  isAtlasMvpAvailable: parseBoolean(
+    (import.meta.env as Record<string, string | undefined>)["VITE_ATLAS_MVP_AVAILABLE"] ||
+      (import.meta.env as Record<string, string | undefined>)["ATLAS_MVP_AVAILABLE"],
+    false
+  ),
 });
 
 /**
