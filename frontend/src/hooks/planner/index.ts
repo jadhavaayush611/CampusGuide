@@ -14,8 +14,6 @@ export * from './useTask';
 export * from './useCreateTask';
 export * from './useUpdateTask';
 export * from './useDeleteTask';
-export * from './useArchiveTask';
-export * from './useRestoreTask';
 export * from './useMarkTaskComplete';
 export * from './useUpdateTaskProgress';
 export * from './useDeleteStudyGoal';

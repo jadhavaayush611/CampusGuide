@@ -1,7 +1,7 @@
 import React from 'react';
-import { ClipboardList, Target, CalendarDays, GraduationCap, Archive } from 'lucide-react';
+import { ClipboardList, Target, CalendarDays, GraduationCap } from 'lucide-react';
 
-export type PlannerTab = 'TASKS' | 'GOALS' | 'DEADLINES' | 'ACADEMIC' | 'ARCHIVED';
+export type PlannerTab = 'TASKS' | 'GOALS' | 'DEADLINES' | 'ACADEMIC';
 
 interface PlannerTabsProps {
   activeTab: PlannerTab;
@@ -9,7 +9,6 @@ interface PlannerTabsProps {
   tasksCount?: number;
   goalsCount?: number;
   overdueCount?: number;
-  archivedCount?: number;
 }
 
 export const PlannerTabs: React.FC<PlannerTabsProps> = ({
@@ -18,14 +17,12 @@ export const PlannerTabs: React.FC<PlannerTabsProps> = ({
   tasksCount = 0,
   goalsCount = 0,
   overdueCount = 0,
-  archivedCount = 0,
 }) => {
   const tabs: { id: PlannerTab; label: string; icon: React.FC<{ className?: string }>; badge?: number; badgeColor?: string }[] = [
     { id: 'TASKS', label: 'Tasks & Productivity', icon: ClipboardList, badge: tasksCount, badgeColor: 'bg-blue-100 text-blue-800' },
     { id: 'GOALS', label: 'Study Goals', icon: Target, badge: goalsCount, badgeColor: 'bg-emerald-100 text-emerald-800' },
     { id: 'DEADLINES', label: 'Deadlines & Milestones', icon: CalendarDays, badge: overdueCount > 0 ? overdueCount : undefined, badgeColor: 'bg-red-100 text-red-700 font-bold' },
     { id: 'ACADEMIC', label: 'Academic & Degree', icon: GraduationCap },
-    { id: 'ARCHIVED', label: 'Archived Tasks', icon: Archive, badge: archivedCount, badgeColor: 'bg-gray-100 text-gray-700' },
   ];
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {

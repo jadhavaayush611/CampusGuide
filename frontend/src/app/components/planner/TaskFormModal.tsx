@@ -35,7 +35,7 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: 'TODO', label: 'To Do' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'COMPLETED', label: 'Completed' },
-  { value: 'ARCHIVED', label: 'Archived' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ];
 
 export const TaskFormModal: React.FC<TaskFormModalProps> = ({
@@ -124,7 +124,6 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
         tags,
         attachments,
         isCompleted: status === 'COMPLETED' || progress === 100,
-        isArchived: status === 'ARCHIVED',
       });
     } else {
       onSubmitCreate({

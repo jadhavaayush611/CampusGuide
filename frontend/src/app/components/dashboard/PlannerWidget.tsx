@@ -1,22 +1,43 @@
 import React, { useState, memo, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router';
 import { useTimetable } from '../../../hooks/planner/useTimetable';
 import { useStudyGoals } from '../../../hooks/planner/useStudyGoals';
 import { useDegreePlan } from '../../../hooks/planner/useDegreePlan';
 import { useCreateStudyGoal } from '../../../hooks/planner/useCreateStudyGoal';
-import { Calendar, Target, Award, Plus, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { useTasks } from '../../../hooks/planner/useTasks';
+import { Calendar, Target, Award, Plus, CheckCircle2, Clock, Sparkles, ArrowRight } from 'lucide-react';
 
 export const PlannerWidget: React.FC = memo(function PlannerWidget() {
+  const navigate = useNavigate();
   const { data: timetable = [], isLoading: loadingTimetable } = useTimetable();
   const { data: studyGoals = [], isLoading: loadingGoals } = useStudyGoals();
   const { data: degreePlan, isLoading: loadingDegree } = useDegreePlan();
+  const { data: tasksData, isLoading: loadingTasks } = useTasks({ pageSize: 100 });
   const createGoalMutation = useCreateStudyGoal();
+
+  const tasks = useMemo(() => tasksData?.tasks || [], [tasksData]);
+  const activeTasks = useMemo(() => tasks.filter((t) => !t.isCompleted), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter((t) => t.isCompleted), [tasks]);
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const overdueTasks = useMemo(
+    () => activeTasks.filter((t) => t.dueDate && t.dueDate.split('T')[0] < todayStr),
+    [activeTasks, todayStr]
+  );
+  const upcomingTasks = useMemo(
+    () =>
+      activeTasks
+        .filter((t) => t.dueDate && t.dueDate.split('T')[0] >= todayStr)
+        .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''))
+        .slice(0, 3),
+    [activeTasks, todayStr]
+  );
 
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [goalTitle, setGoalTitle] = useState('');
   const [targetHours, setTargetHours] = useState('5');
   const [goalCategory, setGoalCategory] = useState('Study');
 
-  const isLoading = loadingTimetable || loadingGoals || loadingDegree;
+  const isLoading = loadingTimetable || loadingGoals || loadingDegree || loadingTasks;
 
   const handleCreateGoal = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -89,24 +110,55 @@ export const PlannerWidget: React.FC = memo(function PlannerWidget() {
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
             <Target className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">Academic Planner</h3>
-            <p className="text-xs text-gray-500">Schedule, study goals & degree progress</p>
+            <p className="text-xs text-gray-500">Schedule, tasks, study goals & degree progress</p>
           </div>
         </div>
 
-        <button
-          onClick={handleOpenModal}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-semibold hover:bg-teal-700 transition-colors shadow-xs"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>New Study Goal</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/planner')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
+          >
+            <span>Open Planner</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleOpenModal}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-semibold hover:bg-teal-700 transition-colors shadow-xs cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Study Goal</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Task Summary Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+          <span className="text-[11px] font-semibold text-blue-600">Active Tasks</span>
+          <div className="text-xl font-bold text-blue-950 mt-0.5">{activeTasks.length}</div>
+        </div>
+        <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-3">
+          <span className="text-[11px] font-semibold text-emerald-600">Completed Tasks</span>
+          <div className="text-xl font-bold text-emerald-950 mt-0.5">{completedTasks.length}</div>
+        </div>
+        <div className="bg-red-50/60 border border-red-100 rounded-xl p-3">
+          <span className="text-[11px] font-semibold text-red-600">Overdue Tasks</span>
+          <div className="text-xl font-bold text-red-950 mt-0.5">{overdueTasks.length}</div>
+        </div>
+        <div className="bg-purple-50/60 border border-purple-100 rounded-xl p-3">
+          <span className="text-[11px] font-semibold text-purple-600">Study Goals</span>
+          <div className="text-xl font-bold text-purple-950 mt-0.5">
+            {completedGoalsCount}/{studyGoals.length}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -237,25 +289,51 @@ export const PlannerWidget: React.FC = memo(function PlannerWidget() {
               </p>
             </div>
 
-            <h5 className="text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-2">
-              Upcoming Deadlines
-            </h5>
-            <div className="space-y-2 text-xs">
-              <div className="bg-white p-2.5 rounded-lg border border-gray-200 flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-gray-900">Lab Assignment 4</p>
-                  <p className="text-[10px] text-gray-500">Data Structures</p>
-                </div>
-                <span className="text-[10px] bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded">Apr 14</span>
-              </div>
-              <div className="bg-white p-2.5 rounded-lg border border-gray-200 flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-gray-900">Mid-Term Project Proposal</p>
-                  <p className="text-[10px] text-gray-500">Web Architecture</p>
-                </div>
-                <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded">Apr 20</span>
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <h5 className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">
+                Upcoming Deadlines
+              </h5>
+              {overdueTasks.length > 0 && (
+                <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
+                  {overdueTasks.length} Overdue
+                </span>
+              )}
             </div>
+
+            {upcomingTasks.length === 0 && overdueTasks.length === 0 ? (
+              <p className="text-xs text-gray-500 py-2">No pending task deadlines.</p>
+            ) : (
+              <div className="space-y-2 text-xs">
+                {overdueTasks.slice(0, 2).map((t) => (
+                  <div
+                    key={t.id}
+                    className="bg-red-50/70 p-2.5 rounded-lg border border-red-200 flex items-center justify-between"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <p className="font-bold text-red-950 truncate">{t.title}</p>
+                      <p className="text-[10px] text-red-700">{t.category} • Overdue</p>
+                    </div>
+                    <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded shrink-0">
+                      {t.dueDate ? t.dueDate.split('T')[0] : 'Past'}
+                    </span>
+                  </div>
+                ))}
+                {upcomingTasks.map((t) => (
+                  <div
+                    key={t.id}
+                    className="bg-white p-2.5 rounded-lg border border-gray-200 flex items-center justify-between"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <p className="font-bold text-gray-900 truncate">{t.title}</p>
+                      <p className="text-[10px] text-gray-500">{t.category}</p>
+                    </div>
+                    <span className="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded shrink-0">
+                      {t.dueDate ? t.dueDate.split('T')[0] : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

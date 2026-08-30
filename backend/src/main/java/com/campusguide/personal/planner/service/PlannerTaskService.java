@@ -102,14 +102,8 @@ public class PlannerTaskService {
     }
 
     public PlannerTask findAndVerifyOwnership(UUID id, String userId) {
-        PlannerTask task = plannerTaskRepository.findById(id)
-                .orElseThrow(() -> new PlannerTaskNotFoundException("Planner task not found with id: " + id));
-
-        if (!task.getUserId().equals(userId)) {
-            throw new PlannerTaskAccessDeniedException("User is not authorized to access this planner task");
-        }
-
-        return task;
+        return plannerTaskRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new PlannerTaskNotFoundException("Planner task not found"));
     }
 
     private void applyStatusTransition(PlannerTask task, TaskStatus newStatus, LocalDateTime now) {

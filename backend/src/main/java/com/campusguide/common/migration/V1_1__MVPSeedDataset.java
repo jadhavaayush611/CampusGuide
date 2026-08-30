@@ -53,6 +53,8 @@ import com.campusguide.personal.ai.enums.ConversationType;
 import com.campusguide.personal.ai.enums.MessageRole;
 import com.campusguide.personal.ai.repository.ConversationRepository;
 import com.campusguide.personal.ai.repository.MessageRepository;
+import com.campusguide.personal.planner.entity.StudyGoal;
+import com.campusguide.personal.planner.repository.StudyGoalRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +105,9 @@ public class V1_1__MVPSeedDataset implements Migration {
 
     @Autowired
     private PlannerTaskRepository plannerTaskRepository;
+
+    @Autowired
+    private StudyGoalRepository studyGoalRepository;
 
     @Autowired
     private CalendarEntryRepository calendarEntryRepository;
@@ -611,7 +616,7 @@ public class V1_1__MVPSeedDataset implements Migration {
         if (golden == null) {
             golden = User.builder()
                     .email(goldenEmail)
-                    .username("golden.student")
+                    .username("test.student")
                     .passwordHash(passwordHash)
                     .role(Role.STUDENT)
                     .enabled(true)
@@ -620,6 +625,10 @@ public class V1_1__MVPSeedDataset implements Migration {
                     .updatedAt(Instant.now())
                     .build();
             golden = userRepository.save(golden);
+        } else if ("golden.student".equals(golden.getUsername())) {
+            // Update existing golden.student username to test.student
+            golden.setUsername("test.student");
+            userRepository.save(golden);
         }
         map.put(goldenEmail, golden);
 
@@ -990,13 +999,46 @@ public class V1_1__MVPSeedDataset implements Migration {
 
     private void seedPlannerTasksAndGoals(String goldenStudentId, Map<String, User> students) {
         log.info("Seeding Planner Tasks & Goals...");
+        LocalDateTime now = LocalDateTime.now();
+
+        if (studyGoalRepository.count() == 0) {
+            log.info("Seeding Study Goals for Golden QA Student...");
+            StudyGoal goal1 = StudyGoal.builder()
+                    .id(UUID.randomUUID())
+                    .userId(goldenStudentId)
+                    .title("Set up Python environment")
+                    .description("Install Anaconda and Jupyter notebooks.")
+                    .targetHours(5)
+                    .completedHours(5)
+                    .deadline(now.minusDays(5).toLocalDate().toString())
+                    .isCompleted(true)
+                    .category("Environment Setup")
+                    .createdAt(Instant.now().minusSeconds(86400 * 5))
+                    .updatedAt(Instant.now().minusSeconds(86400 * 5))
+                    .build();
+            studyGoalRepository.save(goal1);
+
+            StudyGoal goal2 = StudyGoal.builder()
+                    .id(UUID.randomUUID())
+                    .userId(goldenStudentId)
+                    .title("Complete Python Data Science Course")
+                    .description("Learn NumPy, Pandas, and Matplotlib data visualization techniques.")
+                    .targetHours(20)
+                    .completedHours(8)
+                    .deadline(now.plusDays(5).toLocalDate().toString())
+                    .isCompleted(false)
+                    .category("Coursework")
+                    .createdAt(Instant.now())
+                    .updatedAt(Instant.now())
+                    .build();
+            studyGoalRepository.save(goal2);
+        }
+
         long count = plannerTaskRepository.count();
         if (count > 5) {
             log.info("Planner tasks already seeded. Skipping.");
             return;
         }
-
-        LocalDateTime now = LocalDateTime.now();
 
         Object[][] goldenTasks = {
                 {"Complete DBMS Assignment 2", "Submit relational algebra queries on portal.", TaskType.ASSIGNMENT, TaskPriority.HIGH, TaskStatus.IN_PROGRESS, now.plusDays(1)},
@@ -1065,7 +1107,7 @@ public class V1_1__MVPSeedDataset implements Migration {
     private void seedAchievements(String goldenStudentId, Map<String, User> students) {
         log.info("Seeding Achievements...");
         long count = achievementProgressRepository.count();
-        if (count > 5) {
+        if (count > 0) {
             log.info("Achievements already seeded. Skipping.");
             return;
         }

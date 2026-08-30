@@ -182,7 +182,7 @@ class PlannerTaskServiceTest {
     @Test
     void getTaskById_Success() {
 
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
 
         PlannerTaskResponse response = plannerTaskService.getTaskById(userDetails, taskId);
 
@@ -193,28 +193,23 @@ class PlannerTaskServiceTest {
     @Test
     void getTaskById_NotFound_ThrowsPlannerTaskNotFoundException() {
 
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.empty());
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.empty());
 
         assertThrows(PlannerTaskNotFoundException.class, () -> plannerTaskService.getTaskById(userDetails, taskId));
     }
 
     @Test
-    void getTaskById_OtherUser_ThrowsPlannerTaskAccessDeniedException() {
+    void getTaskById_OtherUser_IndistinguishableFromNotFound_ThrowsPlannerTaskNotFoundException() {
 
-        PlannerTask otherUserTask = PlannerTask.builder()
-                .id(taskId)
-                .userId(UUID.randomUUID().toString())
-                .title("Other User Task")
-                .build();
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(otherUserTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.empty());
 
-        assertThrows(PlannerTaskAccessDeniedException.class, () -> plannerTaskService.getTaskById(userDetails, taskId));
+        assertThrows(PlannerTaskNotFoundException.class, () -> plannerTaskService.getTaskById(userDetails, taskId));
     }
 
     @Test
     void updateTask_TransitionToCompleted_SetsCompletedAt() {
 
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
         UpdatePlannerTaskRequest request = UpdatePlannerTaskRequest.builder()
@@ -236,7 +231,7 @@ class PlannerTaskServiceTest {
 
         existingTask.setReminderAt(LocalDateTime.now().plusHours(2));
         existingTask.setDueAt(LocalDateTime.now().plusDays(1));
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
         UpdatePlannerTaskRequest request = UpdatePlannerTaskRequest.builder()
@@ -260,7 +255,7 @@ class PlannerTaskServiceTest {
 
         existingTask.setStatus(TaskStatus.COMPLETED);
         existingTask.setCompletedAt(LocalDateTime.now().minusHours(1));
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
 
         UpdatePlannerTaskRequest request = UpdatePlannerTaskRequest.builder()
                 .title("Changed Title")
@@ -278,7 +273,7 @@ class PlannerTaskServiceTest {
 
         existingTask.setStatus(TaskStatus.COMPLETED);
         existingTask.setCompletedAt(LocalDateTime.now().minusHours(1));
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
         UpdatePlannerTaskRequest request = UpdatePlannerTaskRequest.builder()
@@ -298,7 +293,7 @@ class PlannerTaskServiceTest {
     @Test
     void updateTaskStatus_Success() {
 
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
         when(plannerTaskRepository.save(any(PlannerTask.class))).thenAnswer(i -> i.getArgument(0));
 
         UpdateTaskStatusRequest request = UpdateTaskStatusRequest.builder()
@@ -313,7 +308,7 @@ class PlannerTaskServiceTest {
     @Test
     void deleteTask_Success() {
 
-        when(plannerTaskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
+        when(plannerTaskRepository.findByIdAndUserId(taskId, userId.toString())).thenReturn(Optional.of(existingTask));
 
         plannerTaskService.deleteTask(userDetails, taskId);
 

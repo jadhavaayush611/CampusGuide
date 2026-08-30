@@ -109,6 +109,18 @@ class PlannerTaskAuthorizationIT {
                 .updatedAt(LocalDateTime.now())
                 .build();
         user2Task = plannerTaskRepository.save(user2Task);
+
+        PlannerTask user1Task = PlannerTask.builder()
+                .id(UUID.randomUUID())
+                .userId(user1.getId())
+                .title("User 1 Own Task")
+                .type(TaskType.STUDY)
+                .priority(TaskPriority.MEDIUM)
+                .status(TaskStatus.TODO)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        user1Task = plannerTaskRepository.save(user1Task);
     }
 
     @AfterEach
@@ -138,11 +150,26 @@ class PlannerTaskAuthorizationIT {
     }
 
     @Test
-    void accessingOtherUserTask_Returns403() throws Exception {
-        // User 1 tries to access User 2's task
+    void accessingOwnTask_Returns200() throws Exception {
+        PlannerTask ownTask = plannerTaskRepository.findByUserId(user1.getId()).get(0);
+        mockMvc.perform(get("/api/v1/planner/" + ownTask.getId())
+                        .with(user(userDetails1)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void accessingNonexistentTask_Returns404() throws Exception {
+        mockMvc.perform(get("/api/v1/planner/" + UUID.randomUUID())
+                        .with(user(userDetails1)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void accessingOtherUserTask_IndistinguishableFromNotFound_Returns404() throws Exception {
+        // User 1 tries to access User 2's task - returns 404 to prevent ID enumeration
         mockMvc.perform(get("/api/v1/planner/" + user2Task.getId())
                         .with(user(userDetails1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isNotFound());
 
         UpdatePlannerTaskRequest updateRequest = UpdatePlannerTaskRequest.builder()
                 .title("Hacked Title")
@@ -154,10 +181,10 @@ class PlannerTaskAuthorizationIT {
                         .with(user(userDetails1))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isNotFound());
 
         mockMvc.perform(delete("/api/v1/planner/" + user2Task.getId())
                         .with(user(userDetails1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isNotFound());
     }
 }

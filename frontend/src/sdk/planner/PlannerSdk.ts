@@ -466,73 +466,6 @@ const FALLBACK_CALENDAR: AcademicCalendarItemDto[] = [
   },
 ];
 
-const GOALS_STORAGE_KEY = 'campusguide_planner_goals';
-
-const INITIAL_FALLBACK_GOALS: StudyGoalDto[] = [
-  {
-    id: 'sg-1',
-    userId: 'user-1',
-    title: 'Algorithms Midterm Prep',
-    description: 'Review dynamic programming and graph traversals',
-    targetHours: 15,
-    completedHours: 10,
-    deadline: '2026-08-18',
-    isCompleted: false,
-    category: 'Exam Prep',
-  },
-  {
-    id: 'sg-2',
-    userId: 'user-1',
-    title: 'DBMS SQL Assignment',
-    description: 'Complete complex join queries & index optimization',
-    targetHours: 8,
-    completedHours: 8,
-    deadline: '2026-08-05',
-    isCompleted: true,
-    category: 'Homework',
-  },
-  {
-    id: 'sg-3',
-    userId: 'user-1',
-    title: 'OS System Call Labs',
-    description: 'Practice C system programming and process synchronization',
-    targetHours: 12,
-    completedHours: 4,
-    deadline: '2026-08-22',
-    isCompleted: false,
-    category: 'Lab Practice',
-  },
-];
-
-let cachedGoals: StudyGoalDto[] | null = null;
-
-function getStoredGoals(): StudyGoalDto[] {
-  if (cachedGoals) return cachedGoals;
-  if (typeof window === 'undefined') return INITIAL_FALLBACK_GOALS;
-  try {
-    const raw = localStorage.getItem(GOALS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(INITIAL_FALLBACK_GOALS));
-      cachedGoals = INITIAL_FALLBACK_GOALS;
-      return INITIAL_FALLBACK_GOALS;
-    }
-    cachedGoals = JSON.parse(raw);
-    return cachedGoals || INITIAL_FALLBACK_GOALS;
-  } catch {
-    cachedGoals = INITIAL_FALLBACK_GOALS;
-    return INITIAL_FALLBACK_GOALS;
-  }
-}
-
-function saveStoredGoals(goals: StudyGoalDto[]): void {
-  cachedGoals = goals;
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(GOALS_STORAGE_KEY, JSON.stringify(goals));
-  } catch {
-    // Ignore storage write errors
-  }
-}
 
 /**
  * Production Planner SDK encapsulating tasks, schedules, course catalog, timetable, study goals, degree plan, and academic calendar.
@@ -585,16 +518,6 @@ export class PlannerSdk extends BaseSdk {
 
   public async deleteTask(id: string): Promise<void> {
     await this.delete<void>(`${this.tasksUrl}/${id}`);
-  }
-
-  public async archiveTask(id: string): Promise<PlannerTask> {
-    return this.updateTask(id, { status: 'ARCHIVED', isArchived: true });
-  }
-
-  public async restoreTask(id: string): Promise<PlannerTask> {
-    const existing = await this.getTaskById(id);
-    const restoredStatus = existing.isCompleted ? 'COMPLETED' : (existing.progress > 0 ? 'IN_PROGRESS' : 'TODO');
-    return this.updateTask(id, { status: restoredStatus, isArchived: false });
   }
 
   public async markTaskComplete(id: string, completed: boolean): Promise<PlannerTask> {
@@ -655,13 +578,6 @@ export class PlannerSdk extends BaseSdk {
 
     if (params?.tag) {
       filtered = filtered.filter((t) => t.tags.includes(params.tag!));
-    }
-
-    if (params?.isArchived !== undefined) {
-      filtered = filtered.filter((t) => t.isArchived === params.isArchived);
-    } else if (!params?.status || params.status !== 'ARCHIVED') {
-      // By default hide archived tasks unless explicitly requesting ARCHIVED status or isArchived=true
-      filtered = filtered.filter((t) => !t.isArchived);
     }
 
     if (params?.isCompleted !== undefined) {
@@ -819,75 +735,25 @@ export class PlannerSdk extends BaseSdk {
   // --- Study Goals ---
 
   public async getStudyGoals(): Promise<StudyGoal[]> {
-    try {
-      const dtos = await this.get<StudyGoalDto[]>(this.goalsUrl);
-      return (dtos || []).map(mapStudyGoalDtoToModel);
-    } catch {
-      const storedDtos = getStoredGoals();
-      return storedDtos.map(mapStudyGoalDtoToModel);
-    }
+    const dtos = await this.get<StudyGoalDto[]>(this.goalsUrl);
+    return (dtos || []).map(mapStudyGoalDtoToModel);
   }
 
   public async createStudyGoal(payload: CreateStudyGoalDto): Promise<StudyGoal> {
-    try {
-      const dto = await this.post<StudyGoalDto>(this.goalsUrl, payload);
-      return mapStudyGoalDtoToModel(dto);
-    } catch {
-      const stored = getStoredGoals();
-      const newGoalDto: StudyGoalDto = {
-        id: `sg-${Date.now()}`,
-        userId: 'user-1',
-        title: payload.title,
-        description: payload.description || null,
-        targetHours: payload.targetHours,
-        completedHours: 0,
-        deadline: payload.deadline || null,
-        isCompleted: false,
-        category: payload.category || 'General',
-      };
-      stored.unshift(newGoalDto);
-      saveStoredGoals(stored);
-      return mapStudyGoalDtoToModel(newGoalDto);
-    }
+    const dto = await this.post<StudyGoalDto>(this.goalsUrl, payload);
+    return mapStudyGoalDtoToModel(dto);
   }
 
   public async updateStudyGoal(
     id: string,
     payload: Partial<CreateStudyGoalDto> & { completedHours?: number; isCompleted?: boolean }
   ): Promise<StudyGoal> {
-    try {
-      const dto = await this.put<StudyGoalDto>(`${this.goalsUrl}/${id}`, payload);
-      return mapStudyGoalDtoToModel(dto);
-    } catch {
-      const stored = getStoredGoals();
-      const index = stored.findIndex((g) => g.id === id);
-      if (index === -1) {
-        throw new Error(`Study Goal ${id} not found`);
-      }
-      const existing = stored[index];
-      const completedHours = payload.completedHours !== undefined ? payload.completedHours : existing.completedHours;
-      const isCompleted = payload.isCompleted !== undefined ? payload.isCompleted : completedHours >= existing.targetHours;
-
-      const updatedDto: StudyGoalDto = {
-        ...existing,
-        ...payload,
-        completedHours,
-        isCompleted,
-      };
-      stored[index] = updatedDto;
-      saveStoredGoals(stored);
-      return mapStudyGoalDtoToModel(updatedDto);
-    }
+    const dto = await this.put<StudyGoalDto>(`${this.goalsUrl}/${id}`, payload);
+    return mapStudyGoalDtoToModel(dto);
   }
 
   public async deleteStudyGoal(id: string): Promise<void> {
-    try {
-      await this.delete<void>(`${this.goalsUrl}/${id}`);
-    } catch {
-      const stored = getStoredGoals();
-      const filtered = stored.filter((g) => g.id !== id);
-      saveStoredGoals(filtered);
-    }
+    await this.delete<void>(`${this.goalsUrl}/${id}`);
   }
 
 

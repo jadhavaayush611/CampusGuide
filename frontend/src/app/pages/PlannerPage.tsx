@@ -25,8 +25,6 @@ import {
   useCreateTask,
   useUpdateTask,
   useDeleteTask,
-  useArchiveTask,
-  useRestoreTask,
   useMarkTaskComplete,
   useUpdateTaskProgress,
   useStudyGoals,
@@ -68,8 +66,6 @@ export function PlannerPage() {
   // Compute effective query filters based on active tab
   const computedTaskFilters: TaskQueryParams = {
     ...filters,
-    isArchived: activeTab === 'ARCHIVED' ? true : false,
-    status: activeTab === 'ARCHIVED' ? 'ARCHIVED' : filters.status,
   };
 
   // Queries
@@ -81,8 +77,6 @@ export function PlannerPage() {
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
-  const archiveTaskMutation = useArchiveTask();
-  const restoreTaskMutation = useRestoreTask();
   const markCompleteMutation = useMarkTaskComplete();
   const updateProgressMutation = useUpdateTaskProgress();
 
@@ -146,21 +140,8 @@ export function PlannerPage() {
     );
   };
 
-  const handleArchiveTask = (id: string) => {
-    archiveTaskMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success('Task moved to Archived.');
-      },
-    });
-  };
-
-  const handleRestoreTask = (id: string) => {
-    restoreTaskMutation.mutate(id, {
-      onSuccess: () => {
-        toast.success('Task restored to active planner.');
-      },
-    });
-  };
+  // Archive operations removed - not part of MVP
+  // Task state is managed through TODO, IN_PROGRESS, COMPLETED, CANCELLED
 
   const handleDeleteTask = (id: string) => {
     deleteTaskMutation.mutate(id, {
@@ -210,8 +191,7 @@ export function PlannerPage() {
   const tasksList = taskResponse?.tasks || [];
   const allTasksList = allTasksResponse?.tasks || [];
   const todayStr = new Date().toISOString().split('T')[0];
-  const overdueCount = allTasksList.filter((t) => !t.isArchived && t.dueDate && t.dueDate.split('T')[0] < todayStr && !t.isCompleted).length;
-  const archivedCount = allTasksList.filter((t) => t.isArchived).length;
+  const overdueCount = allTasksList.filter((t) => t.dueDate && t.dueDate.split('T')[0] < todayStr && !t.isCompleted).length;
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-background text-foreground transition-colors duration-150">
@@ -231,16 +211,15 @@ export function PlannerPage() {
           <PlannerTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            tasksCount={allTasksList.filter((t) => !t.isArchived && !t.isCompleted).length}
+            tasksCount={allTasksList.filter((t) => !t.isCompleted).length}
             goalsCount={studyGoals.filter((g) => !g.isCompleted).length}
             overdueCount={overdueCount}
-            archivedCount={archivedCount}
           />
 
           {/* Section Content */}
           <PlannerErrorBoundary fallbackTitle="Error loading Planner tab content">
-            {/* TAB 1 & TAB 5: TASKS & ARCHIVED */}
-            {(activeTab === 'TASKS' || activeTab === 'ARCHIVED') && (
+            {/* TAB 1: TASKS */}
+            {activeTab === 'TASKS' && (
               <div className="space-y-6">
                 <TaskFilters
                   filters={filters}
@@ -260,13 +239,9 @@ export function PlannerPage() {
                   </div>
                 ) : tasksList.length === 0 ? (
                   <TaskEmptyState
-                    title={activeTab === 'ARCHIVED' ? 'No archived tasks' : 'No tasks found'}
-                    description={
-                      activeTab === 'ARCHIVED'
-                        ? 'You have not archived any tasks yet.'
-                        : 'No tasks match your filter criteria or search query.'
-                    }
-                    onAction={activeTab === 'TASKS' ? handleOpenCreateTask : undefined}
+                    title="No tasks found"
+                    description="No tasks match your filter criteria or search query."
+                    onAction={handleOpenCreateTask}
                     actionLabel="Create Task"
                   />
                 ) : (
@@ -287,8 +262,6 @@ export function PlannerPage() {
                           onEdit={handleOpenEditTask}
                           onMarkComplete={handleMarkTaskComplete}
                           onUpdateProgress={handleUpdateTaskProgress}
-                          onArchive={handleArchiveTask}
-                          onRestore={handleRestoreTask}
                           onDelete={handleDeleteTask}
                         />
                       ))}
@@ -415,8 +388,6 @@ export function PlannerPage() {
           }}
           onMarkComplete={handleMarkTaskComplete}
           onUpdateProgress={handleUpdateTaskProgress}
-          onArchive={handleArchiveTask}
-          onRestore={handleRestoreTask}
           onDelete={handleDeleteTask}
         />
 

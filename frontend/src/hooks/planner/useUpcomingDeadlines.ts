@@ -32,7 +32,7 @@ export function useUpcomingDeadlines() {
 
       // Add tasks with due date
       taskRes.tasks.forEach((task) => {
-        if (task.dueDate && !task.isArchived) {
+        if (task.dueDate) {
           const taskDate = task.dueDate.split('T')[0];
           items.push({
             id: `task-${task.id}`,

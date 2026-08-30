@@ -121,7 +121,7 @@ export interface PlannerTaskDto {
   category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS' | string | null;
   type?: 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'PERSONAL' | 'EXAM' | 'OTHER' | string | null;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | string | null;
-  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'ARCHIVED' | string | null;
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | string | null;
   progress?: number | null;
   dueDate?: string | null;
   dueAt?: string | null;
@@ -142,7 +142,7 @@ export interface CreateTaskDto {
   description?: string;
   category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | string | null;
   progress?: number;
   dueDate?: string;
   tags?: string[];
@@ -154,7 +154,7 @@ export interface UpdateTaskDto {
   description?: string;
   category?: 'PERSONAL' | 'ACADEMIC' | 'ASSIGNMENT' | 'PROJECT' | 'STUDY_GOAL' | 'EXAMINATION' | 'REMINDER' | 'MISCELLANEOUS';
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';
+  status?: 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | string | null;
   progress?: number;
   dueDate?: string;
   completedDate?: string;

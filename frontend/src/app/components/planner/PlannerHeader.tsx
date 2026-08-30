@@ -16,8 +16,8 @@ export const PlannerHeader: React.FC<PlannerHeaderProps> = ({
   onOpenCreateGoal,
 }) => {
   const todayStr = new Date().toISOString().split('T')[0];
-  const activeTasks = tasks.filter((t) => !t.isArchived && !t.isCompleted);
-  const completedTasks = tasks.filter((t) => !t.isArchived && t.isCompleted);
+  const activeTasks = tasks.filter((t) => !t.isCompleted);
+  const completedTasks = tasks.filter((t) => t.isCompleted);
   const dueTodayTasks = activeTasks.filter((t) => t.dueDate && t.dueDate.split('T')[0] === todayStr);
   const overdueTasks = activeTasks.filter((t) => t.dueDate && t.dueDate.split('T')[0] < todayStr);
 

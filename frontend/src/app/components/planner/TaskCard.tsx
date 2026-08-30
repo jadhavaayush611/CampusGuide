@@ -7,8 +7,6 @@ import {
   Paperclip,
   Tag,
   AlertCircle,
-  Archive,
-  RotateCcw,
   Trash2,
   Edit,
   Minus,
@@ -30,8 +28,6 @@ interface TaskCardProps {
   onEdit: (task: PlannerTask) => void;
   onMarkComplete: (id: string, completed: boolean) => void;
   onUpdateProgress: (id: string, progress: number) => void;
-  onArchive: (id: string) => void;
-  onRestore: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -60,16 +56,14 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
   onEdit,
   onMarkComplete,
   onUpdateProgress,
-  onArchive,
-  onRestore,
   onDelete,
 }) {
   const { isOverdue, isDueToday } = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const overdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted && !task.isArchived;
+    const overdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted;
     const dueToday = task.dueDate && task.dueDate.split('T')[0] === todayStr && !task.isCompleted;
     return { isOverdue: Boolean(overdue), isDueToday: Boolean(dueToday) };
-  }, [task.dueDate, task.isCompleted, task.isArchived]);
+  }, [task.dueDate, task.isCompleted]);
 
   const categoryStyle = CATEGORY_STYLES[task.category] || CATEGORY_STYLES.MISCELLANEOUS;
   const priorityStyle = PRIORITY_STYLES[task.priority] || PRIORITY_STYLES.MEDIUM;
@@ -102,14 +96,6 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
   const handleToggleComplete = useCallback(() => {
     onMarkComplete(task.id, !task.isCompleted);
   }, [onMarkComplete, task.id, task.isCompleted]);
-
-  const handleRestore = useCallback(() => {
-    onRestore(task.id);
-  }, [onRestore, task.id]);
-
-  const handleArchive = useCallback(() => {
-    onArchive(task.id);
-  }, [onArchive, task.id]);
 
   const handleDelete = useCallback(() => {
     onDelete(task.id);
@@ -222,15 +208,6 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
                   {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {task.isArchived ? (
-                  <DropdownMenuItem onClick={handleRestore}>
-                    <RotateCcw className="w-4 h-4 mr-2 text-blue-500" aria-hidden="true" /> Restore Task
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={handleArchive}>
-                    <Archive className="w-4 h-4 mr-2 text-amber-500" aria-hidden="true" /> Archive Task
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                   <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" /> Delete Task
                 </DropdownMenuItem>
@@ -289,15 +266,6 @@ export const TaskCard: React.FC<TaskCardProps> = memo(function TaskCard({
                 {task.isCompleted ? 'Mark Pending' : 'Mark Complete'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {task.isArchived ? (
-                <DropdownMenuItem onClick={handleRestore}>
-                  <RotateCcw className="w-4 h-4 mr-2 text-blue-500" aria-hidden="true" /> Restore Task
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={handleArchive}>
-                  <Archive className="w-4 h-4 mr-2 text-amber-500" aria-hidden="true" /> Archive Task
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                 <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" /> Delete Task
               </DropdownMenuItem>

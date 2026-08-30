@@ -36,7 +36,7 @@ const STATUSES: { value: TaskStatus | 'ALL'; label: string }[] = [
   { value: 'TODO', label: 'To Do' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'COMPLETED', label: 'Completed' },
-  { value: 'ARCHIVED', label: 'Archived' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ];
 
 const DUE_DATE_FILTERS = [

@@ -36,7 +36,17 @@ The Planner module (`com.campusguide.personal.planner`) handles personal task ma
 6. **Automatic Completed Timestamp**: Transitioning status to `COMPLETED` automatically records `completedAt = LocalDateTime.now()`. Transitioning away from `COMPLETED` clears `completedAt`.
 7. **Reminder Cleanup**: Transitioning status to `CANCELLED` automatically clears `reminderAt`.
 8. **Immutability of Completed Tasks**: Once a task is in `COMPLETED` status, only the `notes` field may be updated. Any attempt to modify non-notes fields raises a `PlannerTaskValidationException` (`400 Bad Request`).
-9. **Access Control**: Users can only query, update, status-patch, or delete their own planner tasks. Attempting to access another user's task raises `PlannerTaskAccessDeniedException` (`403 Forbidden`).
+9. **Access Control & ID Enumeration Prevention**: Task lookups, updates, status patches, and deletes are strictly scoped by the authenticated user's ID (`findByIdAndUserId`). Inaccessible tasks (whether nonexistent or owned by another user) return `404 Not Found`, eliminating task UUID enumeration.
+
+## Study Goal Domain Model
+- **Aggregate Entity**: `StudyGoal` (`study_goals` collection in MongoDB).
+- **Primary Key**: `UUID` (`id`).
+- **User Ownership**: `UUID` (`userId` - indexed, mandatory).
+- **Fields**: `title`, `description`, `targetHours`, `completedHours`, `deadline`, `isCompleted`, `category`, audit fields (`createdAt`, `updatedAt`).
+- **Invariants**:
+  - Scoped strictly to authenticated student.
+  - Inaccessible or foreign goals return `404 Not Found`.
+  - Reaching `completedHours >= targetHours` automatically marks `isCompleted = true`.
 
 ## Future Readiness & Extensibility
 The `PlannerTask` aggregate root is designed for backward-compatible extension in future phases:

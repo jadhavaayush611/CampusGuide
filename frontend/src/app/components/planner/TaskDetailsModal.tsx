@@ -7,8 +7,6 @@ import {
   Paperclip,
   Tag,
   AlertCircle,
-  Archive,
-  RotateCcw,
   Trash2,
   Edit,
 } from 'lucide-react';
@@ -22,8 +20,6 @@ interface TaskDetailsModalProps {
   onEdit: (task: PlannerTask) => void;
   onMarkComplete: (id: string, completed: boolean) => void;
   onUpdateProgress: (id: string, progress: number) => void;
-  onArchive: (id: string) => void;
-  onRestore: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -34,14 +30,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   onEdit,
   onMarkComplete,
   onUpdateProgress,
-  onArchive,
-  onRestore,
   onDelete,
 }) => {
   if (!task) return null;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const isOverdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted && !task.isArchived;
+  const isOverdue = task.dueDate && task.dueDate.split('T')[0] < todayStr && !task.isCompleted;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -174,27 +168,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         {/* Modal Actions Footer */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
-            {task.isArchived ? (
-              <button
-                onClick={() => {
-                  onRestore(task.id);
-                  onClose();
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
-              >
-                <RotateCcw className="w-4 h-4" aria-hidden="true" /> Restore
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  onArchive(task.id);
-                  onClose();
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-1"
-              >
-                <Archive className="w-4 h-4" aria-hidden="true" /> Archive
-              </button>
-            )}
             <button
               onClick={() => {
                 onDelete(task.id);
