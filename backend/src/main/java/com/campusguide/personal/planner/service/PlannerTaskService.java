@@ -13,7 +13,10 @@ import com.campusguide.personal.planner.mapper.PlannerTaskMapper;
 import com.campusguide.personal.planner.repository.PlannerTaskRepository;
 import com.campusguide.personal.planner.validation.PlannerTaskValidator;
 import com.campusguide.platform.user.service.CurrentUserService;
+import com.campusguide.common.attachment.entity.AttachmentOwnerType;
+import com.campusguide.common.attachment.service.AttachmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +27,33 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class PlannerTaskService {
 
     private final PlannerTaskRepository plannerTaskRepository;
     private final PlannerTaskMapper plannerTaskMapper;
     private final PlannerTaskValidator plannerTaskValidator;
     private final CurrentUserService currentUserService;
+    private final AttachmentService attachmentService;
+
+    public PlannerTaskService(PlannerTaskRepository plannerTaskRepository,
+                              PlannerTaskMapper plannerTaskMapper,
+                              PlannerTaskValidator plannerTaskValidator,
+                              CurrentUserService currentUserService) {
+        this(plannerTaskRepository, plannerTaskMapper, plannerTaskValidator, currentUserService, null);
+    }
+
+    @Autowired
+    public PlannerTaskService(PlannerTaskRepository plannerTaskRepository,
+                              PlannerTaskMapper plannerTaskMapper,
+                              PlannerTaskValidator plannerTaskValidator,
+                              CurrentUserService currentUserService,
+                              @Autowired(required = false) AttachmentService attachmentService) {
+        this.plannerTaskRepository = plannerTaskRepository;
+        this.plannerTaskMapper = plannerTaskMapper;
+        this.plannerTaskValidator = plannerTaskValidator;
+        this.currentUserService = currentUserService;
+        this.attachmentService = attachmentService;
+    }
 
     public PlannerTaskResponse createTask(UserDetails userDetails, CreatePlannerTaskRequest request) {
         String userId = resolveUserId(userDetails);
@@ -47,14 +70,24 @@ public class PlannerTaskService {
         String userId = resolveUserId(userDetails);
         List<PlannerTask> tasks = plannerTaskRepository.findByUserIdOrderByDueAtAsc(userId);
         return tasks.stream()
-                .map(plannerTaskMapper::toResponse)
+                .map(t -> {
+                    PlannerTaskResponse res = plannerTaskMapper.toResponse(t);
+                    if (attachmentService != null) {
+                        res.setAttachments(attachmentService.getAttachmentsForOwner(userDetails, AttachmentOwnerType.PLANNER_TASK, t.getId()));
+                    }
+                    return res;
+                })
                 .collect(Collectors.toList());
     }
 
     public PlannerTaskResponse getTaskById(UserDetails userDetails, UUID id) {
         String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
-        return plannerTaskMapper.toResponse(task);
+        PlannerTaskResponse response = plannerTaskMapper.toResponse(task);
+        if (attachmentService != null) {
+            response.setAttachments(attachmentService.getAttachmentsForOwner(userDetails, AttachmentOwnerType.PLANNER_TASK, id));
+        }
+        return response;
     }
 
     public PlannerTaskResponse updateTask(UserDetails userDetails, UUID id, UpdatePlannerTaskRequest request) {
@@ -98,6 +131,9 @@ public class PlannerTaskService {
     public void deleteTask(UserDetails userDetails, UUID id) {
         String userId = resolveUserId(userDetails);
         PlannerTask task = findAndVerifyOwnership(id, userId);
+        if (attachmentService != null) {
+            attachmentService.deleteByOwner(AttachmentOwnerType.PLANNER_TASK, id);
+        }
         plannerTaskRepository.delete(task);
     }
 

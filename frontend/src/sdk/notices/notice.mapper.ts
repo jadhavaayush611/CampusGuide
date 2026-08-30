@@ -55,23 +55,35 @@ export function mapNoticeDtoToModel(dto: NoticeDto, readNoticeIds?: Set<string>)
   const isImportant = priority === 'HIGH' || priority === 'URGENT';
   const isRead = readNoticeIds ? readNoticeIds.has(dto.id) : false;
 
-  const attachments: NoticeAttachment[] = (dto.attachments || []).map((att, index) => ({
-    id: att.id || `att-${dto.id}-${index}`,
-    name: att.name || 'Attachment Document',
-    fileType: att.fileType || 'pdf',
-    fileSize: att.fileSize || '1.2 MB',
-    url: att.url || '#',
-    externalUrl: att.externalUrl,
-    isPreviewable: Boolean(
-      att.fileType?.includes('pdf') ||
-      att.fileType?.includes('image') ||
-      att.fileType?.includes('jpg') ||
-      att.fileType?.includes('png') ||
-      att.url?.endsWith('.pdf') ||
-      att.url?.endsWith('.png') ||
-      att.url?.endsWith('.jpg')
-    ),
-  }));
+  const attachments: NoticeAttachment[] = (dto.attachments || []).map((att: any, index) => {
+    const name = att.name || att.originalFileName || 'Attachment Document';
+    const url = att.url || att.downloadUrl || '#';
+    const fileType = att.fileType || att.contentType || 'pdf';
+    const fileSize = typeof att.fileSize === 'number'
+      ? `${Math.round(att.fileSize / 1024)} KB`
+      : (att.fileSize || '1.2 MB');
+
+    return {
+      id: att.id || `att-${dto.id}-${index}`,
+      name,
+      fileType,
+      fileSize,
+      url,
+      externalUrl: att.externalUrl,
+      isPreviewable: Boolean(
+        fileType?.includes('pdf') ||
+        fileType?.includes('image') ||
+        fileType?.includes('jpg') ||
+        fileType?.includes('png') ||
+        url?.endsWith('.pdf') ||
+        url?.endsWith('.png') ||
+        url?.endsWith('.jpg') ||
+        name?.endsWith('.pdf') ||
+        name?.endsWith('.png') ||
+        name?.endsWith('.jpg')
+      ),
+    };
+  });
 
   // Infer publisher if missing
   let postedBy = dto.postedBy || dto.councilName || 'Office of Academic Affairs';

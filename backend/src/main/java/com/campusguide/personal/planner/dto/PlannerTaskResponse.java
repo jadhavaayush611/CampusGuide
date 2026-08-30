@@ -29,6 +29,8 @@ public class PlannerTaskResponse {
     private LocalDateTime completedAt;
     private LocalDateTime reminderAt;
     private String notes;
+    @Builder.Default
+    private java.util.List<com.campusguide.common.attachment.dto.AttachmentResponse> attachments = new java.util.ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

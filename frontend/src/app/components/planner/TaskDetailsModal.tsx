@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { PlannerTask } from '../../../models/planner.model';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { AttachmentManager } from '../common/AttachmentManager';
 
 interface TaskDetailsModalProps {
   isOpen: boolean;
@@ -139,31 +140,31 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         )}
 
         {/* Attachments */}
-        {task.attachments && task.attachments.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Attachments</h4>
-            <div className="space-y-2">
-              {task.attachments.map((att, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl border border-gray-200 text-xs">
-                  <div className="flex items-center gap-2 truncate">
-                    <Paperclip className="w-4 h-4 text-blue-500 shrink-0" aria-hidden="true" />
-                    <span className="font-bold text-gray-800 truncate">{att.name}</span>
-                    <span className="text-gray-400">({att.size || '1 MB'})</span>
-                  </div>
-                  <a
-                    href={att.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-semibold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-1"
-                  >
-                    <span>View File</span>
-                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Attachments</h4>
+          <AttachmentManager
+            ownerType="PLANNER_TASK"
+            ownerId={task.id}
+            attachments={task.attachments || []}
+            canUpload={true}
+            canDelete={true}
+            onAttachmentUploaded={(newAtt) => {
+              if (!task.attachments) task.attachments = [];
+              task.attachments.push({
+                id: newAtt.id,
+                name: newAtt.originalFileName,
+                url: newAtt.downloadUrl,
+                size: `${Math.round(newAtt.fileSize / 1024)} KB`,
+                type: newAtt.contentType,
+              });
+            }}
+            onAttachmentDeleted={(deletedId) => {
+              if (task.attachments) {
+                task.attachments = task.attachments.filter((a) => a.id !== deletedId);
+              }
+            }}
+          />
+        </div>
 
         {/* Modal Actions Footer */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100">

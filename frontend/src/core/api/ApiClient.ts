@@ -70,6 +70,10 @@ export class ApiClient {
         headers[HTTP_HEADER.X_CORRELATION_ID] = generateCorrelationId();
       }
 
+      if (reqConfig.body instanceof FormData) {
+        delete headers[HTTP_HEADER.CONTENT_TYPE];
+      }
+
       return {
         ...reqConfig,
         headers,

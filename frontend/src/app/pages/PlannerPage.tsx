@@ -35,8 +35,12 @@ import {
 import { PlannerTask, StudyGoal, TaskQueryParams } from '../../models/planner.model';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../sdk/queryKeys';
+import { attachmentSdk } from '../../sdk/attachments/AttachmentSdk';
 
 export function PlannerPage() {
+  const queryClient = useQueryClient();
   // Navigation Tab state
   const [activeTab, setActiveTab] = useState<PlannerTab>('TASKS');
 
@@ -353,10 +357,20 @@ export function PlannerPage() {
           isOpen={isTaskFormOpen}
           onClose={() => setIsTaskFormOpen(false)}
           taskToEdit={taskToEdit}
-          onSubmitCreate={(payload) => {
+          onSubmitCreate={(payload, pendingFiles) => {
             createTaskMutation.mutate(payload, {
-              onSuccess: () => {
+              onSuccess: async (createdTask) => {
                 toast.success('New task created successfully!');
+                if (pendingFiles && pendingFiles.length > 0) {
+                  for (const file of pendingFiles) {
+                    try {
+                      await attachmentSdk.uploadAttachment(file, 'PLANNER_TASK', createdTask.id);
+                    } catch (err: any) {
+                      toast.error(`Failed to upload ${file.name}: ${err.message || 'Upload failed'}`);
+                    }
+                  }
+                  queryClient.invalidateQueries({ queryKey: queryKeys.planner.all });
+                }
               },
               onError: (err) => {
                 toast.error(`Error creating task: ${err.message}`);

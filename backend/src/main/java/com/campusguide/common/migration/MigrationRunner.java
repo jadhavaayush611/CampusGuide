@@ -106,8 +106,18 @@ public class MigrationRunner implements SmartInitializingSingleton {
                             indexOps.ensureIndex(index);
                             log.debug("Validated/Created index: {} on collection {}", index, collection);
                         } catch (Exception e) {
-                            log.error("Failed to create index {} on collection {}: {}", index, collection, e.getMessage());
-                            throw new RuntimeException("Startup index creation failed for collection: " + collection, e);
+                            if (e.getMessage() != null && e.getMessage().contains("IndexOptionsConflict")) {
+                                log.warn("IndexOptionsConflict on collection {}, recreating index: {}", collection, index);
+                                try {
+                                    indexOps.dropAllIndexes();
+                                    indexOps.ensureIndex(index);
+                                } catch (Exception inner) {
+                                    log.error("Failed to re-create index {} after conflict: {}", index, inner.getMessage());
+                                }
+                            } else {
+                                log.error("Failed to create index {} on collection {}: {}", index, collection, e.getMessage());
+                                throw new RuntimeException("Startup index creation failed for collection: " + collection, e);
+                            }
                         }
                     });
                 }

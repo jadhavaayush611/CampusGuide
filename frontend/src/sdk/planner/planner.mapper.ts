@@ -135,12 +135,12 @@ export function mapTaskDtoToModel(dto: PlannerTaskDto): PlannerTask {
     createdDate,
     completedDate,
     tags: dto.tags || [],
-    attachments: (dto.attachments || []).map((att) => ({
+    attachments: (dto.attachments || []).map((att: any) => ({
       id: att.id ?? undefined,
-      name: att.name,
-      url: att.url,
-      size: att.size ?? undefined,
-      type: att.type ?? undefined,
+      name: att.name || att.originalFileName || 'Attachment',
+      url: att.url || att.downloadUrl || '',
+      size: att.size || (att.fileSize ? `${Math.round(att.fileSize / 1024)} KB` : undefined),
+      type: att.type || att.contentType || undefined,
     })),
     isArchived,
     isCompleted,

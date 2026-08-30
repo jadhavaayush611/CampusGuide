@@ -17,6 +17,12 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import com.campusguide.common.attachment.entity.AttachmentOwnerType;
+import com.campusguide.common.attachment.service.AttachmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +32,9 @@ public class NoticeService {
     private final NoticeRepository noticeRepository;
     private final CouncilRepository councilRepository;
     private final NoticeMapper noticeMapper;
+
+    @Autowired(required = false)
+    private AttachmentService attachmentService;
 
     public static final Comparator<Notice> NOTICE_COMPARATOR = Comparator
             .comparing((Notice n) -> Boolean.TRUE.equals(n.getIsPinned()), Comparator.reverseOrder())
@@ -74,13 +83,31 @@ public class NoticeService {
     public NoticeResponse getNoticeById(UUID id) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new NoticeNotFoundException("Notice not found with ID: " + id));
-        return noticeMapper.toResponse(notice);
+        NoticeResponse response = noticeMapper.toResponse(notice);
+        if (attachmentService != null) {
+            try {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                UserDetails userDetails = auth != null && auth.getPrincipal() instanceof UserDetails ud ? ud : null;
+                response.setAttachments(attachmentService.getAttachmentsForOwner(userDetails, AttachmentOwnerType.NOTICE, id));
+            } catch (Exception ignored) {
+            }
+        }
+        return response;
     }
 
     public NoticeResponse getNoticeBySlug(String slug) {
         Notice notice = noticeRepository.findBySlug(slug)
                 .orElseThrow(() -> new NoticeNotFoundException("Notice not found with slug: " + slug));
-        return noticeMapper.toResponse(notice);
+        NoticeResponse response = noticeMapper.toResponse(notice);
+        if (attachmentService != null) {
+            try {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                UserDetails userDetails = auth != null && auth.getPrincipal() instanceof UserDetails ud ? ud : null;
+                response.setAttachments(attachmentService.getAttachmentsForOwner(userDetails, AttachmentOwnerType.NOTICE, notice.getId()));
+            } catch (Exception ignored) {
+            }
+        }
+        return response;
     }
 
     public NoticeResponse updateNotice(UUID id, UpdateNoticeRequest request) {
@@ -133,6 +160,9 @@ public class NoticeService {
     public void deleteNotice(UUID id) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new NoticeNotFoundException("Notice not found with ID: " + id));
+        if (attachmentService != null) {
+            attachmentService.deleteByOwner(AttachmentOwnerType.NOTICE, id);
+        }
         noticeRepository.delete(notice);
     }
 

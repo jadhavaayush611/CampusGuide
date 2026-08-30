@@ -3,12 +3,13 @@ import { X, Plus, Trash2, Paperclip, Tag, Calendar, AlertCircle } from 'lucide-r
 import { PlannerTask, TaskCategory, TaskPriority, TaskStatus, TaskAttachment } from '../../../models/planner.model';
 import { CreateTaskDto, UpdateTaskDto } from '../../../sdk/planner/planner.dto';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { AttachmentManager } from '../common/AttachmentManager';
 
 interface TaskFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskToEdit?: PlannerTask | null;
-  onSubmitCreate: (payload: CreateTaskDto) => void;
+  onSubmitCreate: (payload: CreateTaskDto, pendingFiles?: File[]) => void;
   onSubmitUpdate: (id: string, payload: UpdateTaskDto) => void;
   isSubmitting?: boolean;
 }
@@ -55,10 +56,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const [progress, setProgress] = useState(0);
   const [tagsInput, setTagsInput] = useState('');
   const [attachments, setAttachments] = useState<TaskAttachment[]>([]);
-
-  // New Attachment inputs
-  const [newAttName, setNewAttName] = useState('');
-  const [newAttUrl, setNewAttUrl] = useState('');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (taskToEdit) {
@@ -71,6 +69,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
       setProgress(taskToEdit.progress);
       setTagsInput(taskToEdit.tags.join(', '));
       setAttachments(taskToEdit.attachments || []);
+      setPendingFiles([]);
     } else {
       setTitle('');
       setDescription('');
@@ -81,27 +80,9 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
       setProgress(0);
       setTagsInput('');
       setAttachments([]);
+      setPendingFiles([]);
     }
   }, [taskToEdit, isOpen]);
-
-  const handleAddAttachment = () => {
-    if (!newAttName.trim() || !newAttUrl.trim()) return;
-    setAttachments([
-      ...attachments,
-      {
-        id: `att-${Date.now()}`,
-        name: newAttName.trim(),
-        url: newAttUrl.trim(),
-        size: '1.0 MB',
-      },
-    ]);
-    setNewAttName('');
-    setNewAttUrl('');
-  };
-
-  const handleRemoveAttachment = (index: number) => {
-    setAttachments(attachments.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,17 +107,20 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
         isCompleted: status === 'COMPLETED' || progress === 100,
       });
     } else {
-      onSubmitCreate({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        category,
-        priority,
-        status,
-        dueDate: dueDate || undefined,
-        progress,
-        tags,
-        attachments,
-      });
+      onSubmitCreate(
+        {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          category,
+          priority,
+          status,
+          dueDate: dueDate || undefined,
+          progress,
+          tags,
+          attachments,
+        },
+        pendingFiles
+      );
     }
     onClose();
   };
@@ -306,54 +290,29 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
             <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Attachments (Optional)
             </span>
-
-            {attachments.length > 0 && (
-              <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                {attachments.map((att, index) => (
-                  <div key={index} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
-                    <div className="flex items-center gap-2 truncate">
-                      <Paperclip className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                      <span className="font-semibold text-gray-800 truncate">{att.name}</span>
-                      <span className="text-gray-400 text-[10px]">({att.size || '1 MB'})</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAttachment(index)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      aria-label={`Remove attachment ${att.name}`}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="File Title (e.g. Draft Report)"
-                value={newAttName}
-                onChange={(e) => setNewAttName(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs"
-                aria-label="Attachment Title"
-              />
-              <input
-                type="url"
-                placeholder="File URL (https://...)"
-                value={newAttUrl}
-                onChange={(e) => setNewAttUrl(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs"
-                aria-label="Attachment URL"
-              />
-              <button
-                type="button"
-                onClick={handleAddAttachment}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold shrink-0"
-              >
-                + Add
-              </button>
-            </div>
+            <AttachmentManager
+              ownerType="PLANNER_TASK"
+              ownerId={taskToEdit?.id}
+              attachments={attachments}
+              pendingFiles={pendingFiles}
+              onPendingFileAdded={(file) => setPendingFiles((prev) => [...prev, file])}
+              onPendingFileRemoved={(idx) => setPendingFiles((prev) => prev.filter((_, i) => i !== idx))}
+              onAttachmentUploaded={(att) => {
+                setAttachments((prev) => [
+                  ...prev,
+                  {
+                    id: att.id,
+                    name: att.originalFileName,
+                    url: att.downloadUrl,
+                    size: `${Math.round(att.fileSize / 1024)} KB`,
+                    type: att.contentType,
+                  },
+                ]);
+              }}
+              onAttachmentDeleted={(attId) => {
+                setAttachments((prev) => prev.filter((a) => a.id !== attId));
+              }}
+            />
           </div>
 
           {/* Form Actions */}

@@ -231,8 +231,11 @@ export class NoticeSdk extends BaseSdk {
   }
 
   public async downloadAttachment(attachmentId: string, url: string): Promise<void> {
-    if (url && url !== '#') {
-      window.open(url, '_blank', 'noopener,noreferrer');
+    const targetUrl = attachmentId && !attachmentId.startsWith('att-')
+      ? `/api/v1/attachments/${attachmentId}/download`
+      : (url || '#');
+    if (targetUrl && targetUrl !== '#') {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
     }
   }
 }

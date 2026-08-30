@@ -3,6 +3,11 @@ import { X, Plus, Trash2, Calendar, FileText, Shield, Tag, Send } from 'lucide-r
 import { Notice, NoticeCategory, NoticePriority, NoticeVisibility, CreateNoticePayload, UpdateNoticePayload, NoticeAttachment } from '../../../models/notice.model';
 import { useCreateNotice } from '../../../hooks/notices/useCreateNotice';
 import { useUpdateNotice } from '../../../hooks/notices/useUpdateNotice';
+import { AttachmentManager } from '../common/AttachmentManager';
+import { attachmentSdk } from '../../../sdk/attachments/AttachmentSdk';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../sdk/queryKeys';
+import { toast } from 'sonner';
 
 interface NoticeFormModalProps {
   isOpen: boolean;
@@ -26,6 +31,7 @@ const PRIORITIES: NoticePriority[] = ['URGENT', 'HIGH', 'MEDIUM', 'LOW'];
 const VISIBILITIES: NoticeVisibility[] = ['PUBLIC', 'STUDENTS', 'FACULTY', 'COUNCIL_MEMBERS', 'INTERNAL'];
 
 export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormModalProps) {
+  const queryClient = useQueryClient();
   const createMutation = useCreateNotice();
   const updateMutation = useUpdateNotice();
 
@@ -44,9 +50,7 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
 
   // Attachments form state
   const [attachments, setAttachments] = useState<NoticeAttachment[]>([]);
-  const [attName, setAttName] = useState('');
-  const [attUrl, setAttUrl] = useState('');
-  const [attType, setAttType] = useState('pdf');
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (noticeToEdit) {
@@ -103,25 +107,6 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
     }
   };
 
-  const handleAddAttachment = () => {
-    if (!attName.trim() || !attUrl.trim()) return;
-    const newAtt: NoticeAttachment = {
-      id: `att-${Date.now()}`,
-      name: attName.trim(),
-      fileType: attType,
-      fileSize: '1.5 MB',
-      url: attUrl.trim(),
-      isPreviewable: attType === 'pdf' || attType === 'image',
-    };
-    setAttachments([...attachments, newAtt]);
-    setAttName('');
-    setAttUrl('');
-  };
-
-  const handleRemoveAttachment = (id: string) => {
-    setAttachments(attachments.filter((a) => a.id !== id));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
@@ -172,7 +157,17 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
         attachments,
       };
       createMutation.mutate(payload, {
-        onSuccess: () => {
+        onSuccess: async (createdNotice) => {
+          if (pendingFiles.length > 0) {
+            for (const file of pendingFiles) {
+              try {
+                await attachmentSdk.uploadAttachment(file, 'NOTICE', createdNotice.id);
+              } catch (err: any) {
+                toast.error(`Failed to upload ${file.name}: ${err.message || 'Upload failed'}`);
+              }
+            }
+            queryClient.invalidateQueries({ queryKey: queryKeys.notices.all });
+          }
           onClose();
         },
       });
@@ -377,62 +372,36 @@ export function NoticeFormModal({ isOpen, onClose, noticeToEdit }: NoticeFormMod
           {/* Attachments Section */}
           <div className="space-y-3 pt-2 border-t border-gray-100">
             <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Attachments</span>
-            {attachments.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {attachments.map((att) => (
-                  <div
-                    key={att.id}
-                    className="flex items-center justify-between p-2.5 bg-blue-50/50 border border-blue-100 rounded-xl text-xs"
-                  >
-                    <span className="font-semibold text-gray-800">{att.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAttachment(att.id)}
-                      className="text-red-500 hover:text-red-700 p-1"
-                      aria-label={`Remove attachment ${att.name}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Attachment Name (e.g. Timetable.pdf)"
-                value={attName}
-                onChange={(e) => setAttName(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
-                aria-label="Attachment Title"
-              />
-              <input
-                type="text"
-                placeholder="File URL or Link"
-                value={attUrl}
-                onChange={(e) => setAttUrl(e.target.value)}
-                className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
-                aria-label="Attachment URL"
-              />
-              <select
-                value={attType}
-                onChange={(e) => setAttType(e.target.value)}
-                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs"
-                aria-label="Attachment Type"
-              >
-                <option value="pdf">PDF</option>
-                <option value="image">Image</option>
-                <option value="doc">Document</option>
-              </select>
-              <button
-                type="button"
-                onClick={handleAddAttachment}
-                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add
-              </button>
-            </div>
+            <AttachmentManager
+              ownerType="NOTICE"
+              ownerId={noticeToEdit?.id}
+              attachments={attachments}
+              pendingFiles={pendingFiles}
+              onPendingFileAdded={(file) => setPendingFiles((prev) => [...prev, file])}
+              onPendingFileRemoved={(idx) => setPendingFiles((prev) => prev.filter((_, i) => i !== idx))}
+              onAttachmentUploaded={(att) => {
+                setAttachments((prev) => [
+                  ...prev,
+                  {
+                    id: att.id,
+                    name: att.originalFileName,
+                    url: att.downloadUrl,
+                    fileSize: `${Math.round(att.fileSize / 1024)} KB`,
+                    fileType: att.contentType,
+                    isPreviewable: Boolean(
+                      att.contentType?.includes('image') ||
+                      att.contentType?.includes('pdf') ||
+                      att.originalFileName?.endsWith('.pdf') ||
+                      att.originalFileName?.endsWith('.png') ||
+                      att.originalFileName?.endsWith('.jpg')
+                    ),
+                  },
+                ]);
+              }}
+              onAttachmentDeleted={(attId) => {
+                setAttachments((prev) => prev.filter((a) => a.id !== attId));
+              }}
+            />
           </div>
 
           {/* Toggles */}
